@@ -1,0 +1,158 @@
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>p5.js</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/p5.min.js">
+  </script>
+
+  <style type="text/css">
+  body {
+    padding:0;
+    margin:0;
+  }
+  </style>
+</head>
+
+<body>
+  <script type="text/javascript">
+    var m = 20; //multiplier
+    var tOffset = 4; //offset for text on grid
+
+    var arrayM;
+    var arrayLogL;
+    var arrayLogTeff;
+    var arrayR;
+    var arrayL = [];
+    var arrayTeff = [];
+
+    function setup () {
+      createCanvas(windowWidth,windowHeight);
+
+      arrayM = [10, 9, 8, 7, 6, 5, 4, 3, 2.5, 2, 1.8, 1.6, 1.4, 1.2, 1, 0.8];
+      arrayLogL = [3.7600, 3.6118, 3.4433, 3.2380, 3.0184, 2.7381, 2.3815, 1.9087, 1.6002, 1.2157, 1.0298, 0.8186, 0.5562, 0.2325, -0.1523, -0.5742];
+      arrayLogTeff = [4.4096, 4.3855, 4.3576, 4.3251, 4.2865, 4.2380, 4.1766, 4.0928, 4.0376, 3.9658, 3.9297, 3.8855, 3.8355, 3.7965, 3.7514, 3.7016];
+      arrayR = [3.8434, 3.6213, 3.3916, 3.1472, 2.8860, 2.6122, 2.2992, 1.9620, 1.7737, 1.5858, 1.5120, 1.4532, 1.3526, 1.1157, 0.8813, 0.6820];
+
+      // make graph linear
+      
+      for (var i = 0; i < arrayLogL.length; i++) {
+        append(arrayL, pow(10, arrayLogL[i]));
+      }
+      for (var i = 0; i < arrayLogTeff.length; i++) {
+        append(arrayTeff, pow(10, arrayLogTeff[i]));
+      }
+
+      var vertGridDistance = 60; //changes size of grid on X axis
+      var horizGridDistance = 120; //changes size of grid on Y axis
+
+      var vertGridLines = round(width / vertGridDistance);
+      var horizGridLines = round(height / horizGridDistance);
+      print(vertGridLines);
+
+      background(255);
+      stroke(50);
+
+      push();
+      translate(windowWidth/2, windowHeight/2); // move origin to center of window
+
+
+      // create grid
+      /*ellipse(0,0,10,10);
+
+      for (var i = 0-vertGridLines; i < vertGridLines; i++) { // display background grid vertical lines + numbers
+        stroke(200);
+        line(i*vertGridDistance, 0-height/2, i*vertGridDistance, height);
+        if (i != 0) {
+          fill(100);
+          noStroke();
+          if (i*vertGridDistance > 0) {
+            text(round(i*vertGridDistance), i*vertGridDistance+tOffset, -tOffset);
+          } else {
+            textAlign(RIGHT);
+            text(round(i*vertGridDistance), i*vertGridDistance-tOffset/2, tOffset*3);
+          } 
+          textAlign(LEFT);
+          noFill();
+          stroke(20);
+        }
+      }
+
+      for (var i = 0-horizGridLines; i < horizGridLines; i++) { // display background grid horizontal lines + numbers
+        stroke(200);
+        line(0-width/2, i*horizGridDistance, width, i*horizGridDistance);
+        if (i != 0) {
+          fill(100);
+          noStroke();
+          if (i*horizGridDistance > 0) {
+            text(round(i*horizGridDistance), tOffset, i*horizGridDistance-tOffset);
+          } else {
+            textAlign(RIGHT);
+            text(round(i*horizGridDistance), -tOffset/2, i*horizGridDistance-tOffset);
+          } 
+          textAlign(LEFT);
+          noFill(); 
+          stroke(20);
+        }     
+      }*/
+
+
+      /*
+      // create isochrones (linear)
+      stroke(50, 255, 255);
+
+      for (var i = 1; i < arrayM.length; i++) { // display line connecting stars
+        line(arrayTeff[i]*m, 
+             arrayL[i]*m, 
+             arrayTeff[i-1]*m, 
+             arrayL[i-1]*m);
+      }
+
+      noStroke();
+
+      for (var i = 0; i < arrayM.length; i++) { // display stars
+        ellipse(arrayTeff[i]*m, 
+                arrayL[i]*m, 
+                arrayR[i], 
+                arrayR[i]);
+      }
+
+      fill(0);
+      for (var i = 0; i < arrayM.length; i++) { // display values of stars
+        text(arrayM[i] + " M" + "\n" + arrayLogL[i] + " L" + "\n" + arrayLogTeff[i] + " Teff",
+             arrayTeff[i]*m+5, 
+             arrayL[i]*m);
+      }
+      */
+
+      // create isochrones (log)
+      stroke(50, 255, 255);
+
+      for (var i = 1; i < arrayM.length; i++) { // display line connecting stars
+        line(arrayLogTeff[i]*m, 
+             arrayLogL[i]*m, 
+             arrayLogTeff[i-1]*m, 
+             arrayLogL[i-1]*m);
+      }
+
+      noStroke();
+      fill(0);
+
+      for (var i = 0; i < arrayM.length; i++) { // display stars
+        ellipse(arrayLogTeff[i]*m, 
+                arrayLogL[i]*m, 
+                arrayR[i], 
+                arrayR[i]);
+      }
+
+      fill(0);
+      for (var i = 0; i < arrayM.length; i++) { // display values of stars
+        text(arrayM[i] + " M" + "\n" + arrayLogL[i] + " L" + "\n" + arrayLogTeff[i] + " Teff",
+             arrayLogTeff[i]*m+5, 
+             arrayLogL[i]*m);
+      }
+
+      pop();
+    }
+
+  </script>
+</body>
