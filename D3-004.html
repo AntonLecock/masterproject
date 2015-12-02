@@ -1,0 +1,360 @@
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>D3.js</title>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/p5.min.js">
+  </script>
+
+  <style type="text/css">
+  body {
+    padding:0;
+    margin:0;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+  .axis line {
+    length: 400px;
+  }
+
+  text {
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+
+  .grid {
+    stroke-width:1;
+    stroke: black;
+    shape-rendering: crispEdges;
+    opacity: .2;
+  }
+
+  </style>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+    // var Teff = [4.4096, 4.3855, 4.3576, 4.3251, 4.2865, 4.2380, 4.1766, 4.0928, 4.0376, 3.9658, 3.9297, 3.8855, 3.8355, 3.7965, 3.7514, 3.7016];
+
+    // var L = [3.7600, 3.6118, 3.4433, 3.2380, 3.0184, 2.7381, 2.3815, 1.9087, 1.6002, 1.2157, 1.0298, 0.8186, 0.5562, 0.2325, -0.1523, -0.5742];
+    
+    // var R = [3.8434, 3.6213, 3.3916, 3.1472, 2.8860, 2.6122, 2.2992, 1.9620, 1.7737, 1.5858, 1.5120, 1.4532, 1.3526, 1.1157, 0.8813, 0.6820];
+
+    // var M = [10, 9, 8, 7, 6, 5, 4, 3, 2.5, 2, 1.8, 1.6, 1.4, 1.2, 1, 0.8];
+
+    // var dataset = [];
+    
+    
+
+    var dataset = [
+        0.8000, -0.612, 3.687,
+      0.8000, -0.485,  3.704,  
+0.8083, -0.457,  3.707,  
+0.8167, -0.429,  3.711,  
+0.8250, -0.401,  3.715,  
+0.8333, -0.373,  3.718,  
+0.8417, -0.345,  3.722,  
+0.8500, -0.317,  3.725,  
+0.8583, -0.289,  3.729,  
+0.8667, -0.261,  3.732,  
+0.8750, -0.233,  3.735,  
+0.8833, -0.205,  3.738,  
+0.8917, -0.176,  3.741,  
+0.9000, -0.147,  3.744,  
+0.9083, -0.118,  3.747,  
+0.9167, -0.089,  3.749,  
+0.9250, -0.060,  3.752,  
+0.9333, -0.030,  3.754,  
+0.9417, -0.001,  3.755,  
+0.9486,  0.024,  3.757,  
+0.9556,  0.051,  3.758,  
+0.9625,  0.078,  3.759,  
+0.9694,  0.105,  3.760,  
+0.9764,  0.131,  3.761,  
+0.9833,  0.158,  3.762,  
+0.9891,  0.183,  3.763,  
+0.9949,  0.209,  3.763,  
+1.0007,  0.235,  3.762,  
+1.0065,  0.260,  3.760,  
+1.0123,  0.285,  3.759,  
+1.0181,  0.311,  3.758,  
+1.0238,  0.337,  3.755,  
+1.0296,  0.363,  3.749,  
+1.0345,  0.377,  3.740,  
+1.0372,  0.379,  3.730,  
+1.0392,  0.377,  3.721,  
+1.0408,  0.379,  3.712,  
+1.0424,  0.397,  3.703,  
+1.0437,  0.426,  3.698,  
+1.0446,  0.452,  3.695,  
+1.0453,  0.481,  3.693,  
+1.0461,  0.509,  3.692,  
+1.0467,  0.534,  3.690,  
+1.0473,  0.563,  3.689,  
+1.0479,  0.592,  3.688,  
+1.0485,  0.621,  3.686,  
+1.0490,  0.650,  3.686,  
+1.0495,  0.680,  3.685,  
+1.0500,  0.709,  3.684,  
+1.0504,  0.738,  3.683,  
+1.0508,  0.768,  3.682,  
+1.0512,  0.797,  3.681,  
+1.0515,  0.825,  3.681,  
+1.0518,  0.854,  3.680,  
+1.0521,  0.883,  3.679,  
+1.0524,  0.913,  3.678,  
+1.0526,  0.943,  3.677,  
+1.0528,  0.968,  3.676,  
+1.0530,  0.996,  3.674,  
+1.0531,  1.024,  3.673,  
+1.0533,  1.052,  3.672,  
+1.0534,  1.079,  3.670,  
+1.0536,  1.108,  3.669,  
+1.0537,  1.136,  3.667,  
+1.0538,  1.162,  3.666,  
+1.0539,  1.190,  3.664,  
+1.0539,  1.217,  3.663,  
+1.0540,  1.247,  3.662,  
+1.0540,  1.274,  3.661,  
+1.0541,  1.301,  3.660,  
+1.0541,  1.328,  3.659,  
+1.0541,  1.354,  3.657,  
+1.0540,  1.379,  3.656,  
+1.0540,  1.405,  3.654,  
+1.0539,  1.430,  3.652,  
+1.0539,  1.456,  3.651,  
+1.0538,  1.481,  3.650,  
+1.0537,  1.503,  3.648,  
+1.0535,  1.520,  3.647,  
+1.0534,  1.537,  3.646,  
+1.0532,  1.555,  3.645,  
+1.0531,  1.572,  3.644,  
+1.0530,  1.592,  3.642,  
+1.0528,  1.619,  3.641,  
+1.0526,  1.646,  3.640,  
+1.0524,  1.676,  3.638,  
+1.0522,  1.705,  3.636,  
+1.0520,  1.734,  3.634,  
+1.0517,  1.763,  3.632,  
+1.0514,  1.790,  3.630,  
+1.0511,  1.817,  3.628,  
+1.0508,  1.844,  3.625,  
+1.0505,  1.870,  3.624,  
+1.0501,  1.897,  3.622,  
+1.0497,  1.923,  3.621,  
+1.0494,  1.948,  3.619,  
+1.0490,  1.975,  3.618,  
+1.0485,  2.001,  3.616,  
+1.0481,  2.029,  3.614,  
+1.0475,  2.055,  3.612,  
+1.0470,  2.081,  3.610,  
+1.0465,  2.107,  3.608,  
+1.0458,  2.137,  3.606,  
+1.0450,  2.167,  3.604,  
+1.0443,  2.196,  3.602,  
+1.0435,  2.225,  3.600,  
+1.0426,  2.254,  3.597,  
+1.0418,  2.283,  3.595,  
+1.0408,  2.311,  3.593,  
+1.0398,  2.339,  3.591,  
+1.0388,  2.367,  3.589,  
+1.0376,  2.394,  3.587,  
+1.0365,  2.421,  3.585,  
+1.0353,  2.448,  3.582,  
+1.0340,  2.473,  3.580,  
+1.0326,  2.499,  3.576,  
+1.0312,  2.526,  3.573,  
+1.0297,  2.554,  3.570,  
+1.0277,  2.583,  3.568,  
+1.0257,  2.613,  3.567,  
+1.0239,  2.639,  3.565,  
+1.0215,  2.668,  3.562,  
+1.0192,  2.697,  3.559,  
+1.0172,  2.721,  3.557,  
+1.0145,  2.749,  3.554,  
+1.0118,  2.777,  3.551,  
+1.0090,  2.804,  3.548,  
+1.0058,  2.830,  3.546,  
+1.0025,  2.856,  3.544,  
+0.9992,  2.882,  3.542,  
+0.9951,  2.910,  3.540,  
+0.9904,  2.941,  3.537,  
+0.9858,  2.971,  3.534,  
+0.9798,  3.003,  3.531,  
+0.9731,  3.036,  3.528,  
+0.9667,  3.067,  3.525  
+    ];
+
+    var M = [];
+    var L = [];
+    var Teff = [];
+    var R = [];
+
+    var t = 10; // age, time as log, so 10^t
+    
+
+    // push values of dataset to arrays for each property (M, L, Teff)
+    for (i = 0; i <= dataset.length; i = i+3) {
+      M.push(parseFloat(dataset[i]));
+    };
+
+    for (i = 1; i <= dataset.length; i = i+3) {
+      L.push(parseFloat(dataset[i]))
+    };
+
+    for (i = 2; i <= dataset.length; i = i+3) {
+      Teff.push(parseFloat(dataset[i]))
+    };
+
+    // get R out of values through formula: R is proportional to M^0.9
+    for (i = 0; i <= dataset.length; i = i+3) {
+      R.push(parseFloat(Math.pow(dataset[i], 0.9)));
+    };
+
+
+    var datasetTemp = [];
+
+    // push each property back into array in right order
+    for (i = 0; i < M.length; i++) {
+      var datasetTempArray = [M[i], L[i], Teff[i], R[i]];
+      var datasetTempArraySlice = datasetTempArray.slice();
+      datasetTemp.push(datasetTempArraySlice);
+    };
+    dataset = datasetTemp;
+
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+
+    var padding = 30;
+
+    //Get max/min values of data
+    var max_Teff = d3.max(Teff);
+    var min_Teff = d3.min(Teff);
+    var max_L = d3.max(L);
+    var min_L = d3.min(L);
+    var max_R = d3.max(R);
+    var min_R = d3.min(R);
+    
+
+    //Round min/max values 
+    var maxRound_Teff = d3.round(max_Teff);
+    var minRound_Teff = d3.round(min_Teff);
+    var maxRound_L = d3.round(max_L);
+    var minRound_L = d3.round(min_L);
+
+    //Create the SVG Viewport
+    var svgContainer = d3.select("body").append("svg")
+                                        .attr("width", w)
+                                        .attr("height", h);
+
+    //Define the Scale for Teff (x)
+    var TeffAxisScale = d3.scale.linear()
+                                .domain([maxRound_Teff + 0.5, minRound_Teff -0.5])
+                                .range([padding, w-padding]);
+
+    //Define the Scale for L (y)
+    var LAxisScale = d3.scale.linear()
+                             .domain([maxRound_L + 0.5, minRound_L - 0.5])
+                             .range([padding, h-padding]);
+
+    //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([max_R, min_R])
+                         .range([5,1]);
+
+    //Create scattered data in plot
+    var circles = svgContainer.selectAll("circle")
+                     .data(datasetTemp)
+                     .enter()
+                     .append("circle")
+                     .attr("cx", function(d) {return TeffAxisScale(d[2]); })
+                     .attr("cy", function(d) {return LAxisScale(d[1]); })
+                     .attr("r",  function(d) {return RScale(d[3])});
+
+    // var text_M = svgContainer.selectAll("text")
+    //                          .data(datasetTemp)
+    //                          .enter()
+    //                          .append("text")
+    //                          .text( function(d) {return (d[0]);})
+    //                          .attr("x", function(d) {return TeffAxisScale(d[2]) + 10})
+    //                          .attr("y", function(d) {return LAxisScale(d[1]) - 10});
+
+    //Create gridlines on axises
+
+    for (i = -5; i <= 5; i++) {
+      var lines_y = svgContainer.append("line")
+                             .attr("x1", 0 + padding)
+                             .attr("y1", LAxisScale(i))
+                             .attr("x2", w - padding)
+                             .attr("y2", LAxisScale(i))
+                             .attr("class", "grid lines-y");
+    }
+
+    for (i = -5; i <= 5; i = i +.1) {
+      var lines_x = svgContainer.append("line")
+                             .attr("x1", TeffAxisScale(i))
+                             .attr("y1", 0 + padding)
+                             .attr("x2", TeffAxisScale(i))
+                             .attr("y2", h - padding)
+                             .attr("class", "grid lines-x");
+    }
+
+    
+
+    //Create the TeffAxis (x)
+    var TeffAxis = d3.svg.axis()
+                         .scale(TeffAxisScale)
+                         .orient("bottom")
+                         .ticks(5);
+    
+    //Create label on TeffAxis (x)
+    var TeffAxisLabel = svgContainer.append("text")
+                               .attr("class", "teff-label label")
+                               .attr("x", w - (padding + 5))
+                               .attr("y", h - (padding + 5))
+                               .attr("text-anchor", "end")
+                               .text("logTeff");
+
+    //Create the LAxis (y)
+    var LAxis = d3.svg.axis()
+                      .scale(LAxisScale)
+                      .orient("left")
+                      .ticks(7);
+
+    //Create label on LAxis (y)
+    var LAxisLabel = svgContainer.append("text")
+                           .attr("class", "l-label label")
+                           .attr("x", padding + 5)
+                           .attr("y", padding + 5)
+                           .text("logL");
+    
+    //Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    var TeffAxisGroup = svgContainer.append("g")
+                                    .attr("class", "text teff-axis axis")
+                                    .attr("transform", "translate(0," + (h - padding) + ")")
+                                    .call(TeffAxis);
+
+    //Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    var LAxisGroup = svgContainer.append("g")
+                                    .attr("class", "text l-axis axis")
+                                    .attr("transform", "translate(" + padding + ", 0)")
+                                    .call(LAxis);
+
+    //Create age label
+    var Timestamp = svgContainer.append("text")
+                                .attr("class", "label timestamp")
+                                .attr("x", w-padding)
+                                .attr("y", padding)
+                                .attr("text-anchor", "end")
+                                .text("log(age) = " + t);
+
+  </script>
+</body>
