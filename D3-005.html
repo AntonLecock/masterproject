@@ -54,8 +54,7 @@
     
     
 
-    var dataset = d3.csv("data/iso_c020_0300.UBVRIJHKLM.csv")
-      .row(function(d) { return {key: d.key, value: +d.value}; })
+    var dataset = d3.csv.parse("data/iso_c020_0300.UBVRIJHKLM.csv")
       .get(function(error, rows) { console.log(rows); });
 
     var M = [];
