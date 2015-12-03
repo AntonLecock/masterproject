@@ -54,13 +54,14 @@
     
     
 
-    var dataset = d3.csv("data/iso_c020_0300.UBVRIJHKLM.csv", function (d) {
+    var dataset = d3.csv("data/iso_c020_0300.UBVRIJHKLM.csv"/*, function (d) {
       return {
        +d,; 
       };
     }, function(error, rows) {
       console.log(rows);
-    });
+    }*/);
+    console.log(dataset);
 
     var M = [];
     var L = [];
