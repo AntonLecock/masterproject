@@ -8,8 +8,11 @@
 }
 
 .d3slider-rect-range {
-  fill: #777;
-  stroke: none;
+  fill: none;
+  stroke: #333;
+  stroke-width: 0.5px;
+  height:3px;
+  transform:translate(0, 5px);
 }
 
 .d3slider-rect-value {
