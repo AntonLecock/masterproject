@@ -3,8 +3,9 @@
   <meta charset="utf-8"/>
   <title>D3.js</title>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" charset="utf-8"></script>
+  <script src="js/d3.slider.js" charset="utf-8"></script>
+  <link rel="stylesheet" type="text/css" href="stylesheets/d3.slider.css"/>
   <style type="text/css">
   body {
     padding:0;
@@ -27,6 +28,10 @@
     font-size: 11px;
   }
 
+  circle {
+    stroke-width:0;
+  }
+
   .grid {
     stroke-width:1;
     stroke: black;
@@ -34,141 +39,58 @@
     opacity: .2;
   }
 
+  form {
+    position:fixed;
+  }
+
   </style>
 </head>
 
 <body>
+
   <script type="text/javascript">
 
-    
-    var t = 800, // age, time as log, so 10^t
+    var ages = [300, 500, 530, 559, 580, 590, 600, 605, 609, 615, 619, 625, 630, 634, 640, 644, 650, 655, 659, 665, 669, 675, 680, 684, 690, 694, 700, 705, 709, 715, 719, 725, 730, 734, 740, 744, 750, 755, 759, 765, 769, 775, 780, 784, 790, 794, 800, 805, 810, 814, 819, 825, 830, 835, 839, 844, 850, 855, 860, 864, 869, 875, 880, 885, 889, 894, 900, 905, 910, 914, 919, 925, 930, 935, 939, 944, 950, 955, 960, 964, 969, 975, 980, 985, 989, 994]; //86 data files
+
+    var age = undefined, //initial age is 1 (ages[1] => 300)
+        t = ages[age]; // age, time as log, so 10^t
+        
+
+    var padding = 30,
         w = window.innerWidth,
         h = window.innerHeight;
-
-    var padding = 30;
 
     var M = [],
         L = [],
         Teff = [],
         R = [];
 
-    //Indicate index of values in array 
+    //Indicate index of values in the dataset[] array 
     //For example, M is i[2]
     var Marr = 2,
         Larr = 5,
         Teffarr = 3; 
 
-    var dataset = [],
-        datasetTemp = [];
-
-
-    //Import dataset from csv and parse it to array called dataset
-    d3.text("data/iso_c020_0" + t + ".UBVRIJHKLM.csv", function(text) {
-      var data = d3.csv.parseRows(text).map(function(row) {
-        return row.map(function(value) {
-          return +value;
-        });
-      });
-
-      dataset = data;
-    
-    // push values of dataset to arrays for each property (M, L, Teff)
-    for (i = 0; i < dataset.length; i++) { 
-      var temp = dataset[i];
-      for (j = 0; j < dataset[i].length; j++) {
-        if (temp[Marr] <= 30) { // stars more massive than 30 solar masses are neglected
-             M.push(parseFloat(temp[Marr]));
-             L.push(parseFloat(temp[Larr]));
-          Teff.push(parseFloat(temp[Teffarr]));
-             R.push(parseFloat(Math.pow(temp[Marr], 0.9))); // get R out of values through formula: R is proportional to M^0.9
-        };
-
-      };
-    };
-
-
-    // push each property back into array in right order
-    for (i = 0; i < M.length; i++) {
-      var datasetTempArray = [M[i], L[i], Teff[i], R[i]];
-      var datasetTempArraySlice = datasetTempArray.slice();
-      datasetTemp.push(datasetTempArraySlice);
-    };
-    dataset = datasetTemp;
-
-    //Get max/min values of data
-    var max_M = d3.max(M);
-    var min_M = d3.min(M);
-    var max_Teff = d3.max(Teff);
-    var min_Teff = d3.min(Teff);
-    var max_L = d3.max(L);
-    var min_L = d3.min(L);
-    var max_R = d3.max(R);
-    var min_R = d3.min(R);
-    
-
-    //Round min/max values 
-    var maxRound_Teff = d3.round(max_Teff);
-    var minRound_Teff = d3.round(min_Teff);
-    var maxRound_L = d3.round(max_L);
-    var minRound_L = d3.round(min_L);
+    //Initiate the slider viewport
+    var sliderContainer = d3.select("body").append("div")
+                                           .attr("id", "slider")
+                                           .attr("height", padding)
 
     //Create the SVG Viewport
     var svgContainer = d3.select("body").append("svg")
+                                        .attr("id","svg-container")
                                         .attr("width", w)
                                         .attr("height", h);
 
     //Define the Scale for Teff (x)
     var TeffAxisScale = d3.scale.linear()
-                                .domain([maxRound_Teff + 0.5, minRound_Teff -0.5])
+                                .domain([5, 3])
                                 .range([padding, w-padding]);
 
     //Define the Scale for L (y)
     var LAxisScale = d3.scale.linear()
-                             .domain([maxRound_L + 0.5, minRound_L - 0.5])
+                             .domain([7, -3])
                              .range([padding, h-padding]);
-
-    //Define the Scale for R (size circles)
-    var RScale = d3.scale.linear()
-                         .domain([max_R, min_R])
-                         .range([5,1]);
-
-    //Create scattered data in plot
-    var circles = svgContainer.selectAll("circle")
-                     .data(dataset)
-                     .enter()
-                     .append("circle")
-                     .attr("cx", function(d) {return TeffAxisScale(d[2]); })
-                     .attr("cy", function(d) {return LAxisScale(d[1]); })
-                     .attr("r", function(d) {return RScale(d[3]); });
-
-    // var text_M = svgContainer.selectAll("text")
-    //                          .data(datasetTemp)
-    //                          .enter()
-    //                          .append("text")
-    //                          .text( function(d) {return (d[0]);})
-    //                          .attr("x", function(d) {return TeffAxisScale(d[2]) + 10})
-    //                          .attr("y", function(d) {return LAxisScale(d[1]) - 10});
-
-    // //Create gridlines
-    // for (i = minRound_L-1; i <= maxRound_L; i++) {
-    //   var lines_y = svgContainer.append("line")
-    //                          .attr("x1", 0 + padding)
-    //                          .attr("y1", LAxisScale(i))
-    //                          .attr("x2", w - padding)
-    //                          .attr("y2", LAxisScale(i))
-    //                          .attr("class", "grid lines-y");
-    // }
-
-    // for (i = minRound_Teff; i <= maxRound_Teff; i++) {
-    //   var lines_x = svgContainer.append("line")
-    //                          .attr("x1", TeffAxisScale(i))
-    //                          .attr("y1", 0 + padding)
-    //                          .attr("x2", TeffAxisScale(i))
-    //                          .attr("y2", h - padding)
-    //                          .attr("class", "grid lines-x");
-    // }
-
-    
 
     //Create the TeffAxis (x)
     var TeffAxis = d3.svg.axis()
@@ -209,29 +131,185 @@
                                     .attr("transform", "translate(" + padding + ", 0)")
                                     .call(LAxis);
 
+    //Create an SVG group Element for the circles/stars
+    var circlesGroup = svgContainer.append("g")
+                                   .attr("class", "circlesgroup circles stars");
+
+    //Create an SVG group Element for the age / mass labels
+    var labelGroup = svgContainer.append("g")
+                                 .attr("class", "labelgroup labels");
+
+    //Create the slider elements
+    var slider = d3.slider().min(1)
+                            .max(ages.length)
+                            .ticks(ages.length / 10)
+                            .value(1);
+
+    // Render the slider in the div
+    d3.select('#slider')
+      .call(slider);
+    
+    var draggerValueTemp = $(".dragger-input").val();
+    var draggerValue;
+
+    //Check for value updates in slider (dragger value)
+    window.setInterval(function draggerValueChecker(){
+      draggerValue = $(".dragger-input").val();
+      if (draggerValue === draggerValueTemp) {
+      } else {
+      draggerValueTemp = draggerValue;
+        handleClick();
+      };
+    }, 10);
+
+    //Function that does the magic
+    function handleClick(event){
+      age = Math.round(slider.value());
+      
+      t = ages[age];
+    
+      $(".circlesgroup").empty(); //make svg groups empty
+      $(".labelgroup").empty();   //
+      drawDiagram(); //fill svgContainer with stellar goodness
+
+      return false;
+
+    };
+
+    //the function that draws the diagram
+    function drawDiagram (){
+
+
+    var dataset = [],
+        datasetTemp = [];
+
+    var M = [],
+        L = [],
+        Teff = [],
+        R = [];
+
+    //Import dataset from csv and parse it to array called dataset
+    d3.text("data/iso_c020_0" + t + ".UBVRIJHKLM.csv", function(text) {
+      var data = d3.csv.parseRows(text).map(function(row) {
+        return row.map(function(value) {
+          return +value;
+        });
+      });
+
+      dataset = data;
+    
+    // push values of dataset to arrays for each property (M, L, Teff)
+    for (i = 0; i < dataset.length; i++) { 
+      var temp = dataset[i];
+      for (j = 0; j < dataset[i].length; j = j+21) {
+        if (temp[Marr] <= 30) { // stars more massive than 30 solar masses are neglected
+             M.push(parseFloat(temp[Marr]));
+             L.push(parseFloat(temp[Larr]));
+          Teff.push(parseFloat(temp[Teffarr]));
+             R.push(parseFloat(Math.pow(temp[Marr], 0.9))); // get R out of values through formula: R is proportional to M^0.9 for M < 2Msol
+        };
+      };
+    };
+
+    // push each property back into array in right order
+    for (i = 0; i < M.length; i++) {
+      var datasetTempArray = [M[i], L[i], Teff[i], R[i]];
+      var datasetTempArraySlice = datasetTempArray.slice();
+      datasetTemp.push(datasetTempArraySlice);
+    };
+
+    dataset = datasetTemp;
+
+
+    //Get max/min values of data
+    var max_M = d3.max(M);
+    var min_M = d3.min(M);
+    var max_Teff = d3.max(Teff);
+    var min_Teff = d3.min(Teff);
+    var max_L = d3.max(L);
+    var min_L = d3.min(L);
+    var max_R = d3.max(R);
+    var min_R = d3.min(R);
+    
+
+    //Round min/max values 
+    var maxRound_Teff = d3.round(max_Teff);
+    var minRound_Teff = d3.round(min_Teff);
+    var maxRound_L = d3.round(max_L);
+    var minRound_L = d3.round(min_L);
+
+
+    //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([max_R, min_R])
+                         .range([10,1]);
+
+
+    // var text_M = svgContainer.selectAll("text")
+    //                          .data(datasetTemp)
+    //                          .enter()
+    //                          .append("text")
+    //                          .text( function(d) {return (d[0]);})
+    //                          .attr("x", function(d) {return TeffAxisScale(d[2]) + 10})
+    //                          .attr("y", function(d) {return LAxisScale(d[1]) - 10});
+
+    // //Create gridlines
+    // for (i = minRound_L-1; i <= maxRound_L; i++) {
+    //   var lines_y = svgContainer.append("line")
+    //                          .attr("x1", 0 + padding)
+    //                          .attr("y1", LAxisScale(i))
+    //                          .attr("x2", w - padding)
+    //                          .attr("y2", LAxisScale(i))
+    //                          .attr("class", "grid lines-y");
+    // }
+
+    // for (i = minRound_Teff; i <= maxRound_Teff; i++) {
+    //   var lines_x = svgContainer.append("line")
+    //                          .attr("x1", TeffAxisScale(i))
+    //                          .attr("y1", 0 + padding)
+    //                          .attr("x2", TeffAxisScale(i))
+    //                          .attr("y2", h - padding)
+    //                          .attr("class", "grid lines-x");
+    // }
+
+    //Create scattered data in plot
+    var circles = circlesGroup.selectAll("circle")
+                              .data(dataset)
+                              .enter()
+                              .append("circle")
+                              .attr("cx", function(d) {return TeffAxisScale(d[2]); })
+                              .attr("cy", function(d) {return LAxisScale(d[1]); })
+                              .attr("r", function(d) {return RScale(d[3]); });
+          
     //Create age label
-    var Timestamp = svgContainer.append("text")
-                                .attr("class", "label timestamp")
+    var timeStamp = labelGroup.append("text")
+                              .attr("class", "label timestamp")
+                              .attr("x", w-padding)
+                              .attr("y", padding)
+                              .attr("text-anchor", "end")
+                              .text("log(age) = " + t / 100 + ", meaning these stars are about " + d3.round(Math.pow(10, t/100)) + " years old");
+
+    //Label for most massive
+    var mostMassive = labelGroup.append("text")
+                                .attr("class", "label masstext")
                                 .attr("x", w-padding)
-                                .attr("y", padding)
+                                .attr("y", padding*1.5)
                                 .attr("text-anchor", "end")
-                                .text("log(age) = " + t / 100 + ", meaning these stars are " + Math.pow(10, t/100) + " years old");
+                                .text("Most massive = " + max_M + " Msol");
 
-    svgContainer.append("text")
-                .attr("class", "label masstext")
-                .attr("x", w-padding)
-                .attr("y", padding*1.5)
-                .attr("text-anchor", "end")
-                .text("Most massive = " + max_M + " Msol");
+    //Label  for least massive
+    var leastMassive = labelGroup.append("text")
+                                 .attr("class", "label masstext")
+                                 .attr("x", w-padding)
+                                 .attr("y", padding*2)
+                                 .attr("text-anchor", "end")
+                                 .text("Least massive = " + min_M + " Msol");
 
-    svgContainer.append("text")
-                .attr("class", "label masstext")
-                .attr("x", w-padding)
-                .attr("y", padding*2)
-                .attr("text-anchor", "end")
-                .text("Least massive = " + min_M + " Msol");
     
     });
+    };
 
+    handleClick();
+    
   </script>
 </body>
