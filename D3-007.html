@@ -72,7 +72,7 @@
         R = [];
 
     //Indicate index of values in the dataset[] array 
-    //For example, M is i[2]
+    //For example, M is [2] of dataset[]
     var Marr = 2,
         Larr = 5,
         Teffarr = 3; 
@@ -90,12 +90,12 @@
 
     //Define the Scale for Teff (x)
     var TeffAxisScale = d3.scale.linear()
-                                .domain([4.7, 3.5])
+                                .domain([4.7, 3.3])
                                 .range([padding, w-padding]);
 
     //Define the Scale for L (y)
     var LAxisScale = d3.scale.linear()
-                             .domain([6.5, -1.5])
+                             .domain([6.5, -3])
                              .range([padding, h-padding]);
 
     //Create the TeffAxis (x)
@@ -145,10 +145,15 @@
     var labelGroup = svgContainer.append("g")
                                  .attr("class", "labelgroup labels");
 
+    //Create slider scale 
+    var sliderScale = d3.scale.linear()
+                              .domain([3, 9.94])
+                              .range([w, w/2]);
+
     //Create the slider elements
     var slider = d3.slider().min(1)
                             .max(ages.length)
-                            .ticks(ages.length / 10)
+                            .ticks(ages.length / 5)
                             .value(1);
 
     // Render the slider in the div
@@ -166,7 +171,7 @@
       draggerValueTemp = draggerValue;
         handleClick();
       };
-    }, 10);
+    }, 1);
 
     //Function that does the magic
     function handleClick(event){
