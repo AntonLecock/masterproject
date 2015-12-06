@@ -1,6 +1,6 @@
 ####**Instrumentalist** scientific diagrams:
 
-* [*Stellar constellations*](https://s-media-cache-ak0.pinimg.com/736x/6f/70/bd/6f70bd5d482fbe0c9bbdaeb9101d5a68.jpg) 
+* [*Stellar constellations*](https://s-media-cache-ak0.pinimg.com/736x/6f/70/bd/6f70bd5d482fbe0c9bbdaeb9101d5a68.jpg): stars in the sky as shapes—had many applications 
 * [*De revolutionibus orbium coelestium*](https://upload.wikimedia.org/wikipedia/commons/9/95/Copernican_heliocentrism_theory_diagram.svg): Copernicus' heliocentric model 
 * [*Sidereus Nuncius*](http://www.hps.cam.ac.uk/starry/galileo2lrg.jpg): Galileo Galileis Galilean Moons (sort of realist)
 * [*Feynman Diagram*](https://en.wikipedia.org/wiki/Feynman_diagram): Visualization of quantum electromechanics by Richard Feynman
