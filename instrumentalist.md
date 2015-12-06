@@ -6,4 +6,4 @@
 * [*Feynman Diagram*](https://en.wikipedia.org/wiki/Feynman_diagram): Visualization of quantum electromechanics by Richard Feynman
 * [*Bohr Model*](https://en.wikipedia.org/wiki/Bohr_model): Depiction of atoms by Niels Bohr
 * [*Minkowski or Spacetime diagram*](https://en.wikipedia.org/wiki/Minkowski_diagram): Model to visualize length contraction and time dilation without mathematical equations
-* [Hertzsprung-Russell Diagram](https://en.wikipedia.org/wiki/Hertzsprung-Russelldiagram): Plot of stars and their properties
+* [*Hertzsprung-Russell Diagram*](https://en.wikipedia.org/wiki/Hertzsprung-Russelldiagram): Plot of stars and their properties
