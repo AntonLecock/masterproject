@@ -1,0 +1,52 @@
+<html>
+<head>
+	<title>p5.js</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/p5.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/addons/p5.dom.min.js">
+  </script>
+
+  <style type="text/css">
+  body {
+    padding:0;
+    margin:0;
+  }
+  </style>
+</head>
+
+<body>
+  <script type="text/javascript">
+    var L;    //luminosity
+    var Teff; //effective temperature
+    var m = 10; //multiplier
+    
+    var arrayL = [3.7600, 3.6118, 3.4433, 3.2380, 3.0184, 2.7381, 2.3815, 1.9087, 1.6002, 1.2157, 1.0298, 0.8186, 0.5562, 0.2325, -0.1523, -0.5742];
+    var arrayTeff = [4.4096, 4.3855, 4.3576, 4.3251, 4.2865, 4.2380, 4.1766, 4.0928, 4.0376, 3.9658, 3.9297, 3.8855, 3.8355, 3.7965, 3.7514, 3.7016];
+    var arrayR = [3.8434, 3.6213, 3.3916, 3.1472, 2.8860, 2.6122, 2.2992, 1.9620, 1.7737, 1.5858, 1.5120, 1.4532, 1.3526, 1.1157, 0.8813, 0.6820];
+    
+    function setup () {
+      createCanvas(windowWidth,windowHeight);
+    }
+    
+    function draw () {
+      background(0);
+      var paddingX = 60;
+      var paddingY = 40;
+      stroke(27);
+      for (var i = 1; i < arrayL.length; i++) {
+        line(arrayTeff[i]*m+paddingX*i+paddingX, 
+             arrayL[i]*m+paddingY*i+paddingY, 
+             arrayTeff[i-1]+paddingX*(i-1)+paddingX, 
+             arrayL[i-1]+paddingY*(i-1)+paddingY
+             );
+      }
+      noStroke();
+      for (var i = 0; i < arrayL.length; i++) {
+        ellipse(arrayTeff[i]*m+paddingX*i+paddingX, 
+                arrayL[i]*m+paddingY*i+paddingY, 
+                arrayR[i]*m, 
+                arrayR[i]*m);
+      }
+    }
+  </script>
+</body>
