@@ -10,28 +10,35 @@
   body {
     padding:0;
     margin:0;
+    background-color:#111;
   }
 
   .axis path,
   .axis line {
     fill: none;
-    stroke: black;
+    stroke: white;
     shape-rendering: crispEdges;
   }
 
   .axis line {
     length: 400px;
+    stroke:white;
   }
 
   text {
     font-family: sans-serif;
     font-size: 11px;
+    fill:white;
   }
 
   circle {
     stroke-width:0;
-    fill:#333;
+    fill:#DDD;
     box-shadow: 0 0 2px #DDD;
+  }
+
+  circle.blur {
+    fill:yellow;
   }
 
   .grid {
@@ -59,12 +66,17 @@
     var ages = [300, 500, 530, 559, 580, 590, 600, 605, 609, 615, 619, 625, 630, 634, 640, 644, 650, 655, 659, 665, 669, 675, 680, 684, 690, 694, 700, 705, 709, 715, 719, 725, 730, 734, 740, 744, 750, 755, 759, 765, 769, 775, 780, 784, 790, 794, 800, 805, 810, 814, 819, 825, 830, 835, 839, 844, 850, 855, 860, 864, 869, 875, 880, 885, 889, 894, 900, 905, 910, 914, 919, 925, 930, 935, 939, 944, 950, 955, 960, 964, 969, 975, 980, 985, 989, 994]; //86 data files
 
     var age = undefined, //initial age is 1 (ages[1] => 300)
-        t = ages[age]; // age, time as log, so 10^t
-        
+        t = ages[age], // age, time as log, so 10^t
+        ageIndex = 1, // needed for refresh-time, see also tIndex = ages[agesIndex]
+        tIndex = ages[ageIndex]; 
 
     var padding = 30,
         w = window.innerWidth,
         h = window.innerHeight;
+
+    var speed = 4,
+        time = 0, //time elapsed
+        timeFactor = 10000; //refresh rate, in miliseconds
 
     var M = [],
         L = [],
@@ -85,12 +97,13 @@
     //Create the SVG Viewport
     var svgContainer = d3.select("body").append("svg")
                                         .attr("id","svg-container")
+                                        .attr("class","svg-container")
                                         .attr("width", w)
                                         .attr("height", h);
 
     //Define the Scale for Teff (x)
     var TeffAxisScale = d3.scale.linear()
-                                .domain([4.7, 3.3])
+                                .domain([4.7, 3.5])
                                 .range([padding, w-padding]);
 
     //Define the Scale for L (y)
@@ -141,46 +154,89 @@
     var circlesGroup = svgContainer.append("g")
                                    .attr("class", "circlesgroup circles stars");
 
+    var circlesFilter = circlesGroup.append("filter")
+                                    .attr("class", "circlesfilter")
+                                    .attr("id", "circlesfilter"); 
+
+    var circlesFilterBlur = circlesFilter.append("feGaussianBlur")
+                                         .attr("in", "SourceGraphic")
+                                         .attr("stdDeviation", "1");
+
     //Create an SVG group Element for the age / mass labels
     var labelGroup = svgContainer.append("g")
                                  .attr("class", "labelgroup labels");
+
+    //Create an SVG group Element for the timeElapsed label, because it needs to be refreshed (emptied) often
+    var timeElapsedGroup = svgContainer.append("g")
+                                       .attr("class", "timeelapsedgroup labels");
+
 
     //Create slider scale 
     var sliderScale = d3.scale.linear()
                               .domain([3, 9.94])
                               .range([w, w/2]);
 
-    //Create the slider elements
-    var slider = d3.slider().min(1)
-                            .max(ages.length)
-                            .ticks(ages.length / 5)
-                            .value(1);
-
-    // Render the slider in the div
-    d3.select('#slider')
-      .call(slider);
     
-    var draggerValueTemp = $(".dragger-input").val();
+    var draggerValueTemp = 1;
     var draggerValue;
 
-    //Check for value updates in slider (dragger value)
-    window.setInterval(function draggerValueChecker(){
-      draggerValue = $(".dragger-input").val();
-      if (draggerValue === draggerValueTemp) {
+    var up = true;
+
+    //Update the value (dragger value)
+    window.setInterval(function valueChanger () {
+      
+      if (up === true) {
+        time = time + timeFactor;
       } else {
-      draggerValueTemp = draggerValue;
+        time = time - timeFactor;
+      }
+
+      tIndex = d3.round(Math.pow(10, (ages[ageIndex] / 100)));
+
+      //Remove previous timeElapsed value
+      $(".timeelapsedgroup").empty();
+
+      //Create timeElapsed label
+      var timeElapsed = timeElapsedGroup.append("text")
+                                        .attr("class", "label timeelapsed")
+                                        .attr("x", w-padding)
+                                        .attr("y", padding*1.5)
+                                        .attr("text-anchor", "end")
+                                        .text("Time elapsed = " + time + " years");
+
+      if (time >= tIndex) {
+
+        if (draggerValueTemp < ages.length && up === true) {
+          draggerValueTemp ++;
+          ageIndex ++;
+        } else if (draggerValueTemp === ages.length && up === true) {
+          up = false;
+        } else if (draggerValueTemp > 1 && up === false) {
+          draggerValueTemp = draggerValueTemp - 1;
+          ageIndex --;
+        } else { 
+          up = true;
+        };
         handleClick();
-      };
-    }, 1);
+
+      }
+    }, speed);
 
     //Function that does the magic
     function handleClick(event){
-      age = Math.round(slider.value()) - 1;
-      
+      age = Math.round(draggerValueTemp) - 1;
       t = ages[age];
-    
-      $(".circlesgroup").empty(); //make svg groups empty
-      $(".labelgroup").empty();   //
+
+      // // Create filter element in circlesGroup
+      // var circlesFilter = circlesGroup.append("filter")
+      //                                 .attr("class", "circlesfilter")
+      //                                 .attr("id", "circlesfilter"); 
+  
+      // // Add gaussian blur to circlesFilter
+      // var circlesFilterBlur = circlesFilter.append("feGaussianBlur")
+      //                                      .attr("in", "SourceGraphic")
+      //                                      .attr("stdDeviation", "1");
+
       drawDiagram(); //fill svgContainer with stellar goodness
 
       return false;
@@ -257,7 +313,7 @@
     //Define the Scale for R (size circles)
     var RScale = d3.scale.linear()
                          .domain([max_R, min_R])
-                         .range([2,0.5]);
+                         .range([5,1]);
 
 
     // var text_M = svgContainer.selectAll("text")
@@ -288,14 +344,29 @@
     // }
 
     //Create scattered data in plot
-    var circles = circlesGroup.selectAll("circle")
+    //circlesBlur is glow behind the stars, circles are the stars themselves
+    // var circlesBlur = circlesGroup.selectAll("circle.blur")
+    //                               .data(dataset, function(d) {return d})
+    //                               .enter()
+    //                               .append("circle")
+    //                               .attr("class", "blur")
+    //                               .attr("cx", function(d) {return TeffAxisScale(d[2]); })
+    //                               .attr("cy", function(d) {return LAxisScale(d[1]); })
+    //                               .attr("r", function(d) {return RScale(d[3]);})
+    //                               .attr("filter","url(#circlesfilter)");
+
+    $(".circlesgroup").empty(); //make svg groups empty
+    $(".labelgroup").empty();   //
+
+    var circles = circlesGroup.selectAll("circle.shape")
                               .data(dataset)
                               .enter()
                               .append("circle")
+                              .attr("class", "shape")
                               .attr("cx", function(d) {return TeffAxisScale(d[2]); })
                               .attr("cy", function(d) {return LAxisScale(d[1]); })
                               .attr("r", function(d) {return RScale(d[3]); });
-          
+     
     //Create age label
     var timeStamp = labelGroup.append("text")
                               .attr("class", "label timestamp")
@@ -308,7 +379,7 @@
     var mostMassive = labelGroup.append("text")
                                 .attr("class", "label masstext")
                                 .attr("x", w-padding)
-                                .attr("y", padding*1.5)
+                                .attr("y", padding*2)
                                 .attr("text-anchor", "end")
                                 .text("Most massive = " + max_M + " Msol");
 
@@ -316,7 +387,7 @@
     var leastMassive = labelGroup.append("text")
                                  .attr("class", "label masstext")
                                  .attr("x", w-padding)
-                                 .attr("y", padding*2)
+                                 .attr("y", padding*2.5)
                                  .attr("text-anchor", "end")
                                  .text("Least massive = " + min_M + " Msol");
 
