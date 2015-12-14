@@ -232,9 +232,7 @@
       age = Math.round(draggerValueTemp) - 1;
       
       t = ages[age];
-    
-      $(".circlesgroup").empty(); //make svg groups empty
-      $(".labelgroup").empty();   //
+  
       drawDiagram(); //fill svgContainer with stellar goodness
 
       return false;
@@ -357,6 +355,9 @@
     //                          .attr("y2", h - padding)
     //                          .attr("class", "grid lines-x");
     // }
+
+    $(".circlesgroup").empty(); //make svg groups empty
+    $(".labelgroup").empty();   //
 
     //LEFTSIDE
     //Create scattered data in plot
