@@ -62,9 +62,12 @@
 <body>
 
 <form>
-  <label>Press spacebar or button:</label>
+  <label>Press spacebar to pause</label>
+  <input id="slower-button" value="10x Slower" type="button" onClick="slower();"/>
   <input id="pause-button" value="Pause" type="button" onClick="pause();"/>
+  <input id="faster-button" value="10x Faster" type="button" onClick="faster();"/>
 </form>
+
   <script type="text/javascript">
 
     var ages = [300, 500, 530, 559, 580, 590, 600, 605, 609, 615, 619, 625, 630, 634, 640, 644, 650, 655, 659, 665, 669, 675, 680, 684, 690, 694, 700, 705, 709, 715, 719, 725, 730, 734, 740, 744, 750, 755, 759, 765, 769, 775, 780, 784, 790, 794, 800, 805, 810, 814, 819, 825, 830, 835, 839, 844, 850, 855, 860, 864, 869, 875, 880, 885, 889, 894, 900, 905, 910, 914, 919, 925, 930, 935, 939, 944, 950, 955, 960, 964, 969, 975, 980, 985, 989, 994]; //86 data files
@@ -183,17 +186,26 @@
     var dataValue;
 
     var up = true;
+    var reachedMin = false,
+        reachedMax = false;
 
     var pause = function () {
       if (paused === false) {
         paused = true;
         timeFactor = 0;
-        document.getElementById("pause-button").value = "Unpause";
-        console.log()
+        document.getElementById("pause-button").value = "Resume";
+        document.getElementById("slower-button").disabled = true;
+        document.getElementById("faster-button").disabled = true;
       } else if (paused === true) {
         paused = false;
         timeFactor = 10000;
         document.getElementById("pause-button").value = "Pause";
+        if (reachedMin === false) {
+          document.getElementById("slower-button").disabled = false;
+        } 
+        if (reachedMax === false) {
+          document.getElementById("faster-button").disabled = false;
+        }
       }
     };
  
@@ -203,17 +215,53 @@
         }
       });
 
+    var slower = function () {
+      if (timeFactor >= 100) {
+        timeFactor = timeFactor / 10;
+        console.log("timeFactor is " + timeFactor);
+        document.getElementById("slower-button").disabled = false;
+        document.getElementById("faster-button").disabled = false;
+        reachedMin = false;
+      } else {
+        document.getElementById("slower-button").disabled = true;
+        reachedMin = true;
+        alert("Timer has reached minimum!");
+      }
+    }
+
+    var faster = function () {
+      if (timeFactor <= 10000000) {
+        timeFactor = timeFactor * 10;
+        console.log("timeFactor is " + timeFactor);
+        document.getElementById("faster-button").disabled = false;
+        document.getElementById("slower-button").disabled = false;
+        reachedMax = false;
+      } else {
+        document.getElementById("faster-button").disabled = true;
+        reachedMax = true;
+        alert("Timer has reached maximum!");
+      }
+    }
+
     //Update the value (dragger value)
     window.setInterval(function valueChanger () {
-    
+
+      if (dataValueTemp === ages.length) {
+        up = false; 
+      } else {
+        up = true;
+      }
+
+      console.log(dataValueTemp);
+      console.log(ages.length);
+
       if (up === true) {
         time = time + timeFactor;
-      } else {
+      } else if (up === false) {
         time = time - timeFactor;
       }
 
       tIndex = d3.round(Math.pow(10, (ages[ageIndex] / 100)));
-
       //Remove previous timeElapsed value
       $(".timeelapsedgroup").empty();
 
@@ -223,17 +271,23 @@
                                         .attr("x", w-padding)
                                         .attr("y", padding*1.5)
                                         .attr("text-anchor", "end")
-                                        .text("Time elapsed = " + time + " years");
+                                        .text("Time elapsed = " + time + " years (+" + timeFactor + " every " + speed + " milliseconds)");
 
       if (time >= tIndex && paused === false) {
 
-        if (dataValueTemp < ages.length && up === true) {
-          dataValueTemp ++;
-          ageIndex ++;
-        } else if (dataValueTemp === ages.length && up === true) {
+
+        if (dataValueTemp < ages.length) {
+          if (up === true) {
+            dataValueTemp ++;
+            ageIndex ++;
+          } else if (up === false) {
+            dataValueTemp --;
+            ageIndex --;
+          }
+        } else if (dataValueTemp === (ages.length) && up === true) {
           up = false;
         } else if (dataValueTemp > 1 && up === false) {
-          dataValueTemp = dataValueTemp - 1;
+          dataValueTemp --;
           ageIndex --;
         } else { 
           up = true;
