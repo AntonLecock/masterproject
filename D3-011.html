@@ -112,8 +112,10 @@
         hotColor = d3.rgb("white"), // hot color in the graph
         coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
         coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
+    var designer = d3.rgb("#111"); // Define a nice black color for the background, store it as var
 
-    var designer = d3.rgb("#111");
+    var clicked = false; // is there a star selected? initial is set to false
+
 
     //Create the SVG Viewport
     var svgContainer = d3.select("body").append("svg")
@@ -378,7 +380,11 @@
     
         // push each property back into array in right order
         for (i = 0; i < M.length; i++) {
-          var datasetTempArray = [n[i], M[i], L[i], Teff[i], R[i]]; // n = 0, M = 1, L = 2, Teff = 3, R = 4
+          var datasetTempArray = [n[i],    // n = d[0]
+                                  M[i],    // M = d[1]
+                                  L[i],    // L = d[2]
+                                  Teff[i], // Teff = d[3]
+                                  R[i]];   // R = d[4] 
           var datasetTempArraySlice = datasetTempArray.slice();
           datasetTemp.push(datasetTempArraySlice);
         };
@@ -417,29 +423,58 @@
         $(".circlesgroup").empty(); //make svg groups empty
         $(".labelgroup").empty();   //
     
+        // draw circles with proper data, and create function when clicked
         var circles = circlesGroup.selectAll("circle")
                                   .data(dataset)
                                   .enter()
                                   .append("circle")
                                   .attr("class", "star")
+                                  .attr("id", function(d) {return "star" + d[0]; })
+                                  .attr("mass", function(d) {return d[1]; })
                                   .attr("cx", function(d) {return TeffAxisScale(d[3]); })
                                   .attr("cy", function(d) {return LAxisScale(d[2]); })
                                   .attr("r", function(d) {return RScale(d[4]); })
                                   .attr("fill", function(d) {return cScale(d[3]); })
-                                  .attr("id", function(d) {return d[0]; })
-                                  .on("click", function(){
-                                    
-                                    d3.select(this).attr("r", function(d) {return RScale(d[4]) * 20; })
+                                  .on("click", function(){ // when a star is clicked...
+
+                                    if (paused === false ) {
+                                      pause();
+                                    }
+
+                                    if (clicked === true) {
+                                      d3.select("#" + idClicked).attr("r", rClicked)
+                                                          .attr("cx", cxClicked)
+                                                          .attr("cy", cyClicked)
+                                                          .attr("class", "star");
+                                      d3.select("#starinfo").remove();
+
+                                      clicked = false;
+                                    }
+
+                                    console.log(d3.select(this).attr("id"));
+
+                                    idClicked = d3.select(this).attr("id"),
+                                    cxClicked = d3.select(this).attr("cx"),
+                                    cyClicked = d3.select(this).attr("cy"),
+                                    rClicked = d3.select(this).attr("r");
+
+                                    clicked = true;
+
+                                    d3.select(this).attr("r", function(d) {return RScale(d[4]) * 25; })
                                                    .attr("cx", w/2)
                                                    .attr("cy", h/2)
                                                    .attr("class", "selected");
 
-                                    svgContainer.append("text")
-                                                .attr("class", "selected-text")
-                                                .attr("cx", w/2)
-                                                .attr("cy", h/2)
-                                                .attr("text-anchor", "middle")
-                                                .text("Hello there");
+                                    var mass = d3.select(this).attr("mass");
+
+                                    var massText = labelGroup.append("text")
+                                                             .attr("x", w/2)
+                                                             .attr("y", h/2 + padding*5)
+                                                             .attr("id", "starinfo")
+                                                             .attr("class", "label starinfo selected-text")
+                                                             .attr("text-anchor", "middle")
+                                                             .text("This star has a mass of " + mass + " Msol");
+
                                   });
          
         //Create age label
