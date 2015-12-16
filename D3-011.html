@@ -72,39 +72,48 @@
 
     var ages = [300, 500, 530, 559, 580, 590, 600, 605, 609, 615, 619, 625, 630, 634, 640, 644, 650, 655, 659, 665, 669, 675, 680, 684, 690, 694, 700, 705, 709, 715, 719, 725, 730, 734, 740, 744, 750, 755, 759, 765, 769, 775, 780, 784, 790, 794, 800, 805, 810, 814, 819, 825, 830, 835, 839, 844, 850, 855, 860, 864, 869, 875, 880, 885, 889, 894, 900, 905, 910, 914, 919, 925, 930, 935, 939, 944, 950, 955, 960, 964, 969, 975, 980, 985, 989, 994]; //86 data files
 
-    var age = undefined, //initial age is 1 (ages[1] => 300)
-        t = ages[age], // age, time as log, so 10^t
-        ageIndex = 1, // needed for refresh-time, see also tIndex = ages[agesIndex]
-        tIndex = ages[ageIndex]; 
+    var age = 0, // initial age is 0 (ages[0] => 300)
+        t = ages[age], // age, time as log, so 10^t (example: t = ages[1] => t = 300)
+        age = 0, // needed for refresh-time, see also tIndex = ages[agesIndex] -> is first datafile initially (300)
+        tIndex = ages[age]; 
 
     var padding = 30,
         w = window.innerWidth,
         h = window.innerHeight;
 
-    var speed = 4,
-        time = 0, //time elapsed
-        timeFactor = 10000, //refresh rate, in miliseconds
-        paused = false; //timer is running (not paused)
+    var speed = 4, // interval rate (in miliseconds)
+        time = 0, // time elapsed, counts the years that have passed, in years
+        timeFactor = 10000, // amount of years added, in years. Results in timeFactor/speed (eg. 10000 years for every 4 miliseconds)
+        paused = false, // timer is running (not paused)
+        up = true, // timerFactor starts by going up initially
+        reachedMin = false, // timerFactor has not reached Min initially
+        reachedMax = false; // timerFactor has not reached Max initially
+
+    var plusMinus = "+"; // counter starts positive (because up === true)
+
+    var dataValue = 1; // 1 -> 86
 
 
-    var M = [], //Mass, in solar mass
-        L = [], //Luminosity, in solar luminosity
-        Teff = [], //Effective Temperature, in K
-        R = [], //Radius, in solar radii
-        BV = []; //B-V color index
+    var n = [],   // Identifier of star, "id"
+        M = [],    // Mass or star, in solar mass
+        L = [],    // Luminosity of star, in solar luminosity
+        Teff = [], // Effective Temperature of star, in K
+        R = [];    // Radius of star, in solar radii, calculated later: NOT found in data!
 
-    var c; //color in RGB spectrum
-    var hottestColor = d3.rgb("#9eb5ff"),
-        middleColor = d3.rgb("white"),
-        coldestColor = d3.rgb("#ff5200");
-
-
-    //Indicate index of values in the dataset[] array 
-    //For example, M is [2] of dataset[]
-    var Marr = 2,
+    // Indicate index of values in the dataset[] array 
+    // For example, M is the 3rd column in the dataset, so that results in [2]
+    var narr = 0,
+        Marr = 2,
         Larr = 5,
-        Teffarr = 3,
-        BVarr = 8; 
+        Teffarr = 3;
+
+    // Define color-range of stars in RGB spectrum 
+    var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+        hotColor = d3.rgb("white"), // hot color in the graph
+        coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+        coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
+
+    var designer = d3.rgb("#111");
 
     //Create the SVG Viewport
     var svgContainer = d3.select("body").append("svg")
@@ -180,25 +189,27 @@
 
     //Create an SVG group Element for the timeElapsed label, because it needs to be refreshed (emptied) often
     var timeElapsedGroup = svgContainer.append("g")
-                                       .attr("class", "timeelapsedgroup labels");
-    
-    var dataValueTemp = 1;
-    var dataValue;
+                                       .attr("class", "timeelapsedgroup labels");                          
 
-    var up = true;
-    var reachedMin = false,
-        reachedMax = false;
-
+    // Create a function to determine what happens when paused
     var pause = function () {
       if (paused === false) {
         paused = true;
         timeFactor = 0;
+        plusMinus = "";
+        speed = 500;
         document.getElementById("pause-button").value = "Resume";
         document.getElementById("slower-button").disabled = true;
         document.getElementById("faster-button").disabled = true;
       } else if (paused === true) {
         paused = false;
         timeFactor = 10000;
+        speed = 4;
+        if (up === true) {
+          plusMinus = "+";
+        } else {
+          plusMinus = "-";
+        }
         document.getElementById("pause-button").value = "Pause";
         if (reachedMin === false) {
           document.getElementById("slower-button").disabled = false;
@@ -209,16 +220,17 @@
       }
     };
  
+    // Spacebar => pause
     $(window).keyup(function(e) {
         if (e.keyCode == 0 || e.keyCode == 32) {
           pause();
         }
       });
 
+    // Function that determines what happens when slower
     var slower = function () {
       if (timeFactor >= 100) {
         timeFactor = timeFactor / 10;
-        console.log("timeFactor is " + timeFactor);
         document.getElementById("slower-button").disabled = false;
         document.getElementById("faster-button").disabled = false;
         reachedMin = false;
@@ -229,10 +241,10 @@
       }
     }
 
+    // Function that determines what happens when faster
     var faster = function () {
       if (timeFactor <= 10000000) {
         timeFactor = timeFactor * 10;
-        console.log("timeFactor is " + timeFactor);
         document.getElementById("faster-button").disabled = false;
         document.getElementById("slower-button").disabled = false;
         reachedMax = false;
@@ -243,64 +255,77 @@
       }
     }
 
-    //Update the value (dragger value)
-    window.setInterval(function valueChanger () {
+    //Update the time
 
-      if (dataValueTemp === ages.length) {
-        up = false; 
-      } else {
-        up = true;
-      }
+    function updateTime () {
+  
+        if (up === true) {
+          time = time + timeFactor;
+        } else {
+          time = time - timeFactor;
+        }
+  
+        // establish tIndex => initial value is 10000, this corresponds to first data file log(3.00)
+        tIndex = d3.round(Math.pow(10, (ages[age] / 100)));
+  
+        if (paused === false) {
+  
+          if (up === true && time >= tIndex) {
+  
+            if (dataValue < ages.length) {
+                dataValue ++;
+                age ++;
+                plusMinus = "+";
+            } else if (dataValue === ages.length) {
+              up = false;
+              dataValue --;
+              age --;
+              plusMinus = "-";
+            }  
+  
+            updateDiagram();
+          
+          } else if (up === false && time <= tIndex) {
+  
+            if (dataValue > 1) {
+              dataValue --;
+              age --;
+              plusMinus = "-";
+            } else if (dataValue === 1) { 
+              up = true;
+              dataValue ++;
+              age ++;
+              plusMinus = "+";
+            }
+  
+            updateDiagram();
+  
+          } // if (up === false) 
+  
+  
+        } // if (paused === false)
+  
+  
+        //Remove previous timeElapsed value
+        $(".timeelapsedgroup").empty();
+  
+        //Create timeElapsed label
+        var timeElapsed = timeElapsedGroup.append("text")
+                                          .attr("class", "label timeelapsed")
+                                          .attr("x", w-padding)
+                                          .attr("y", padding*1.5)
+                                          .attr("text-anchor", "end")
+                                          .text("Time elapsed = " + time + " years (" + plusMinus + timeFactor + " every " + speed + " milliseconds)");
+  
+        timeout = setTimeout(updateTime, speed);    
+    };
+    var timeout = setTimeout(updateTime, speed);
 
-      console.log(dataValueTemp);
-      console.log(ages.length);
-
-      if (up === true) {
-        time = time + timeFactor;
-      } else if (up === false) {
-        time = time - timeFactor;
-      }
-
-      tIndex = d3.round(Math.pow(10, (ages[ageIndex] / 100)));
-      //Remove previous timeElapsed value
-      $(".timeelapsedgroup").empty();
-
-      //Create timeElapsed label
-      var timeElapsed = timeElapsedGroup.append("text")
-                                        .attr("class", "label timeelapsed")
-                                        .attr("x", w-padding)
-                                        .attr("y", padding*1.5)
-                                        .attr("text-anchor", "end")
-                                        .text("Time elapsed = " + time + " years (+" + timeFactor + " every " + speed + " milliseconds)");
-
-      if (time >= tIndex && paused === false) {
-
-
-        if (dataValueTemp < ages.length) {
-          if (up === true) {
-            dataValueTemp ++;
-            ageIndex ++;
-          } else if (up === false) {
-            dataValueTemp --;
-            ageIndex --;
-          }
-        } else if (dataValueTemp === (ages.length) && up === true) {
-          up = false;
-        } else if (dataValueTemp > 1 && up === false) {
-          dataValueTemp --;
-          ageIndex --;
-        } else { 
-          up = true;
-        };
-        handleClick();
-
-      }
-    }, speed);
 
 
     //Function that does the magic
-    function handleClick(event){
-      age = Math.round(dataValueTemp) - 1;
+    function updateDiagram(event){
+      // age = Math.round(dataValue) - 1;
       t = ages[age];
 
       drawDiagram(); //fill svgContainer with stellar goodness
@@ -313,175 +338,138 @@
     function drawDiagram (){
 
 
-    var dataset = [],
-        datasetTemp = [];
-
-    var M = [],
-        L = [],
-        Teff = [],
-        R = [],
-        BV = [];
-
-    // Import dataset from csv and parse it to array called dataset
-    d3.text("data/iso_c020_0" + t + ".UBVRIJHKLM.csv", function(text) {
-      var data = d3.csv.parseRows(text).map(function(row) {
-        return row.map(function(value) {
-          return +value;
+      var dataset = [],
+          datasetTemp = [];
+  
+      var n = []
+          M = [],
+          L = [],
+          Teff = [],
+          R = [];
+  
+      // Import dataset from csv and parse it to array called dataset
+      d3.text("data/iso_c020_0" + t + ".UBVRIJHKLM.csv", function(text) {
+        var data = d3.csv.parseRows(text).map(function(row) {
+          return row.map(function(value) {
+            return +value;
+          });
         });
-      });
-
-      dataset = data;
-    
-    // Push values of dataset to arrays for each property (M, L, Teff)
-    for (i = 0; i < dataset.length; i++) { 
-      var temp = dataset[i];
-      for (j = 0; j < dataset[i].length; j = j+21) {
-        if (temp[Marr] <= 30) { // stars more massive than 30 solar masses are neglected
-             M.push(parseFloat(temp[Marr]));
-             L.push(parseFloat(temp[Larr]));
-          Teff.push(parseFloat(temp[Teffarr]));
-          if (temp[Marr] < 2) { // get R out of values through formula: R is proportional to M^0.9 for M < 2 Msol
-            R.push(parseFloat(Math.pow(temp[Marr], 0.9))); 
-          } else { // R is proportional to M^15/19 for 2 Msol < M < 20 Msol
-            R.push(parseFloat(Math.pow(temp[Marr], 15/19)));
+  
+        dataset = data;
+      
+        // Push values of dataset to arrays for each property (M, L, Teff)
+        for (i = 0; i < dataset.length; i++) { 
+          var temp = dataset[i];
+          for (j = 0; j < dataset[i].length; j = j+21) {
+            if (temp[Marr] <= 30) { // stars more massive than 30 solar masses are neglected
+                 n.push(parseFloat(temp[narr]));
+                 M.push(parseFloat(temp[Marr]));
+                 L.push(parseFloat(temp[Larr]));
+              Teff.push(parseFloat(temp[Teffarr]));
+              if (temp[Marr] < 2) { // get R out of values through formula: R is proportional to M^0.9 for M < 2 Msol
+                R.push(parseFloat(Math.pow(temp[Marr], 0.9))); 
+              } else { // R is proportional to M^15/19 for 2 Msol < M < 20 Msol
+                R.push(parseFloat(Math.pow(temp[Marr], 15/19)));
+              };
+            };
           };
-           BV.push(parseFloat(temp[BVarr]));
         };
-      };
+    
+    
+        // push each property back into array in right order
+        for (i = 0; i < M.length; i++) {
+          var datasetTempArray = [n[i], M[i], L[i], Teff[i], R[i]]; // n = 0, M = 1, L = 2, Teff = 3, R = 4
+          var datasetTempArraySlice = datasetTempArray.slice();
+          datasetTemp.push(datasetTempArraySlice);
+        };
+    
+        dataset = datasetTemp;
+    
+    
+        //Get max/min values of data
+        var max_M = d3.max(M),
+            min_M = d3.min(M),
+            max_Teff = d3.max(Teff),
+            min_Teff = d3.min(Teff),
+            max_L = d3.max(L),
+            min_L = d3.min(L),
+            max_R = d3.max(R),
+            min_R = d3.min(R);
+        
+    
+        //Round min/max values 
+        var maxRound_Teff = d3.round(max_Teff),
+            minRound_Teff = d3.round(min_Teff),
+            maxRound_L = d3.round(max_L)
+            minRound_L = d3.round(min_L);
+    
+    
+        //Define the Scale for R (size circles)
+        var RScale = d3.scale.linear()
+                             .domain([max_R, min_R])
+                             .range([5,1]);
+    
+        //Define scale for the colors of stars
+        var cScale = d3.scale.linear()
+                             .domain([3.529, 3.882, 4.120, 4.599])
+                             .range([coldestColor, coldColor, hotColor, hottestColor]);
+    
+        $(".circlesgroup").empty(); //make svg groups empty
+        $(".labelgroup").empty();   //
+    
+        var circles = circlesGroup.selectAll("circle")
+                                  .data(dataset)
+                                  .enter()
+                                  .append("circle")
+                                  .attr("class", "star")
+                                  .attr("cx", function(d) {return TeffAxisScale(d[3]); })
+                                  .attr("cy", function(d) {return LAxisScale(d[2]); })
+                                  .attr("r", function(d) {return RScale(d[4]); })
+                                  .attr("fill", function(d) {return cScale(d[3]); })
+                                  .attr("id", function(d) {return d[0]; })
+                                  .on("click", function(){
+                                    
+                                    d3.select(this).attr("r", function(d) {return RScale(d[4]) * 20; })
+                                                   .attr("cx", w/2)
+                                                   .attr("cy", h/2)
+                                                   .attr("class", "selected");
+
+                                    svgContainer.append("text")
+                                                .attr("class", "selected-text")
+                                                .attr("cx", w/2)
+                                                .attr("cy", h/2)
+                                                .attr("text-anchor", "middle")
+                                                .text("Hello there");
+                                  });
+         
+        //Create age label
+        var timeStamp = labelGroup.append("text")
+                                  .attr("class", "label timestamp")
+                                  .attr("x", w-padding)
+                                  .attr("y", padding)
+                                  .attr("text-anchor", "end")
+                                  .text("log(age) = " + t / 100 + " (these stars are " + d3.round(Math.pow(10, t/100)) + " years old)");
+    
+        //Label for most massive
+        var mostMassive = labelGroup.append("text")
+                                    .attr("class", "label masstext")
+                                    .attr("x", w-padding)
+                                    .attr("y", padding*2)
+                                    .attr("text-anchor", "end")
+                                    .text("Most massive = " + max_M + " Msol");
+    
+        //Label  for least massive
+        var leastMassive = labelGroup.append("text")
+                                     .attr("class", "label masstext")
+                                     .attr("x", w-padding)
+                                     .attr("y", padding*2.5)
+                                     .attr("text-anchor", "end")
+                                     .text("Least massive = " + min_M + " Msol");
+  
+      });
     };
 
-    
-
-    // //convert Teff to RGB spectrum
-    // function TeffToRGB (TeffIndex) {
-      
-    //   // TeffIndex to xyY
-    //   var x, y = 0;
-      
-    //   if (TeffIndex >= 1667 && TeffIndex<=4000) {
-    //     x = ((-0.2661239 * Math.pow(10,9)) / Math.pow(TeffIndex,3)) + ((-0.2343580 * Math.pow(10,6)) / Math.pow(TeffIndex,2)) + ((0.8776956 * Math.pow(10,3)) / TeffIndex) + 0.179910;
-    //   } else if (TeffIndex > 4000 && TeffIndex <= 25000) {
-    //     x = ((-3.0258469 * Math.pow(10,9)) / Math.pow(TeffIndex,3)) + ((2.1070379 * Math.pow(10,6)) / Math.pow(TeffIndex,2)) + ((0.2226347 * Math.pow(10,3)) / TeffIndex) + 0.240390;
-    //   }
-      
-    //   if (TeffIndex >= 1667 && TeffIndex <= 2222) {
-    //     y = -1.1063814 * Math.pow(x,3) - 1.34811020 * Math.pow(x,2) + 2.18555832 * x - 0.20219683;
-    //   } else if (TeffIndex > 2222 && TeffIndex <= 4000) {
-    //     y = -0.9549476 * Math.pow(x,3) - 1.37418593 * Math.pow(x,2) + 2.09137015 * x - 0.16748867;
-    //   } else if (TeffIndex > 4000 && TeffIndex <= 25000) {
-    //     y = 3.0817580 * Math.pow(x,3) - 5.87338670 * Math.pow(x,2) + 3.75112997 * x - 0.37001483;
-    //   }
-    
-    //   // xyY to XYZ, Y = 1
-    //   var Y = 1.0
-    //   var X = (y == 0)? 0 : (x * Y) / y
-    //   var Z = (y == 0)? 0 : ((1 - x - y) * Y) / y
-    
-    //   //XYZ to rgb
-    //   var r = 3.2406 * X - 1.5372 * Y - 0.4986 * Z
-    //   var g = -0.9689 * X + 1.8758 * Y + 0.0415 * Z
-    //   var b = 0.0557 * X - 0.2040 * Y + 1.0570 * Z
-      
-    //   //linear RGB to sRGB
-    //   var R = (r <= 0.0031308)? 12.92*r : 1.055*Math.pow(r,1/2.4)-0.055
-    //   var G = (g <= 0.0031308)? 12.92*g : 1.055*Math.pow(g,1/2.4)-0.055
-    //   var B = (b <= 0.0031308)? 12.92*b : 1.055*Math.pow(b,1/2.4)-0.055
-    
-    //   console.log("R is " + R*255)
-    //   console.log("G is " + G*255)
-    //   console.log("B is " + B*255)
-    //   return [Math.round(R*255),Math.round(G*255),Math.round(B*255)]
-    // } 
-
-    // for (i = 0; i < Teff.length; i++) {
-    //   console.log(TeffToRGB[i]);
-    //   var c = TeffToRGB(i);
-    // }
-
-
-    // push each property back into array in right order
-    for (i = 0; i < M.length; i++) {
-      var datasetTempArray = [M[i], L[i], Teff[i], R[i], BV[i]]; // M = 0, L = 1, Teff = 2, R = 3, BV = 4
-      var datasetTempArraySlice = datasetTempArray.slice();
-      datasetTemp.push(datasetTempArraySlice);
-    };
-
-    dataset = datasetTemp;
-
-
-    //Get max/min values of data
-    var max_M = d3.max(M),
-        min_M = d3.min(M),
-        max_Teff = d3.max(Teff),
-        min_Teff = d3.min(Teff),
-        max_L = d3.max(L),
-        min_L = d3.min(L),
-        max_R = d3.max(R),
-        min_R = d3.min(R),
-        max_BV = d3.max(BV),
-        min_BV = d3.min(BV),
-        mean_BV = d3.mean(BV);
-    
-
-    //Round min/max values 
-    var maxRound_Teff = d3.round(max_Teff),
-        minRound_Teff = d3.round(min_Teff),
-        maxRound_L = d3.round(max_L)
-        minRound_L = d3.round(min_L);
-
-
-    //Define the Scale for R (size circles)
-    var RScale = d3.scale.linear()
-                         .domain([max_R, min_R])
-                         .range([5,1]);
-
-    //Define scale for the colors of stars, c
-    var cScale = d3.scale.linear()
-                         .domain([max_BV, mean_BV, min_BV])
-                         .range([coldestColor, middleColor, hottestColor]);
-
-    $(".circlesgroup").empty(); //make svg groups empty
-    $(".labelgroup").empty();   //
-
-    var circles = circlesGroup.selectAll("circle.shape")
-                              .data(dataset)
-                              .enter()
-                              .append("circle")
-                              .attr("class", "shape")
-                              .attr("cx", function(d) {return TeffAxisScale(d[2]); })
-                              .attr("cy", function(d) {return LAxisScale(d[1]); })
-                              .attr("r", function(d) {return RScale(d[3]); })
-                              .attr("fill", function(d) {return cScale(d[4]); });
-     
-    //Create age label
-    var timeStamp = labelGroup.append("text")
-                              .attr("class", "label timestamp")
-                              .attr("x", w-padding)
-                              .attr("y", padding)
-                              .attr("text-anchor", "end")
-                              .text("log(age) = " + t / 100 + " (these stars are about " + d3.round(Math.pow(10, t/100)) + " years old)");
-
-    //Label for most massive
-    var mostMassive = labelGroup.append("text")
-                                .attr("class", "label masstext")
-                                .attr("x", w-padding)
-                                .attr("y", padding*2)
-                                .attr("text-anchor", "end")
-                                .text("Most massive = " + max_M + " Msol");
-
-    //Label  for least massive
-    var leastMassive = labelGroup.append("text")
-                                 .attr("class", "label masstext")
-                                 .attr("x", w-padding)
-                                 .attr("y", padding*2.5)
-                                 .attr("text-anchor", "end")
-                                 .text("Least massive = " + min_M + " Msol");
-
-    
-    });
-    };
-
-    handleClick();
+    updateDiagram();
     
   </script>
 </body>
