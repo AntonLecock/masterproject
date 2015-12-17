@@ -35,8 +35,6 @@
   }
 
   circle {
-    stroke-width:0;
-    box-shadow: 0 0 2px #DDD;
   }
 
   circle.blur {
@@ -438,10 +436,18 @@
                                   .attr("cy", function(d) {return LAxisScale(d[2]); })
                                   .attr("r", function(d) {return RScale(d[4]); })
                                   .attr("fill", function(d) {return cScale(d[3]); })
+                                  .attr("stroke-width", 0)
+                                  .attr("stroke", designer)
                                   .attr("radius", function(d) {return d[4]; })
                                   .attr("Teff", function(d) {return d[3]; })
                                   .attr("L", function(d) {return d[2]; })
                                   .attr("mass", function(d) {return d[1]; })
+                                  .on("mouseenter", function() {
+                                    d3.select(this).attr("stroke-width", 0.5);
+                                  })
+                                  .on("mouseleave", function() {
+                                    d3.select(this).attr("stroke-width", 0);
+                                  })
                                   .on("click", function(){ // when a star is clicked...
 
                                     if (paused === false ) {
@@ -476,7 +482,11 @@
                                     d3.select(this).attr("r", function(d) {return RScale(d[4]) * 25; })
                                                    .attr("cx", w/3)
                                                    .attr("cy", h/2)
-                                                   .attr("class", "selected");
+                                                   .attr("class", "selected")
+                                                   .style("opacity", 0)
+                                                   .transition()
+                                                   .duration(500)
+                                                   .style("opacity", 1);;
 
                                     // Create a new group element for the selected star + sun we will draw later
                                     var selectedGroup = labelGroup.append("g")
@@ -526,7 +536,11 @@
                                                               .attr("class", "sun selected")
                                                               .attr("id", "sun")
                                                               .attr("r", RScale(1) * 25)
-                                                              .attr("fill", cScale(3.763));
+                                                              .attr("fill", cScale(3.763))
+                                                              .style("opacity", 0)
+                                                              .transition()
+                                                              .duration(500)
+                                                              .style("opacity", 1);
 
                                     // Give the sun a nice label
                                     selectedGroup.append("text")
