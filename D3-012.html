@@ -116,7 +116,10 @@
         coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
     var designer = d3.rgb("#111"); // Define a nice black color for the background, store it as var
 
-    var clicked = false; // is there a star selected? initial is set to false
+    var clicked = false, // is there a star selected? initial is set to false
+        idClicked = "";
+    var sunIsGlowing = false, // is the sun glowing? initial is set to false
+        baseGlow = 100; // base radius of stellar glow
 
 
     // Create the SVG Viewport
@@ -417,7 +420,7 @@
     
     
         // push each property back into array in right order
-        for (i = 0; i < M.length; i++) {
+        for (i = 0; i < M.length; i = i + 2) {
           var datasetTempArray = [n[i],    // n = d[0]
                                   M[i],    // M = d[1]
                                   L[i],    // L = d[2]
@@ -450,16 +453,23 @@
     
         //Define the Scale for R (size circles)
         var RScale = d3.scale.linear()
-                             .domain([max_R, min_R])
-                             .range([5,1]);
+                             .domain([15, 0.800])
+                             .range([10,1]);
     
         //Define scale for the colors of stars
         var cScale = d3.scale.linear()
                              .domain([3.529, 3.882, 4.120, 4.599])
                              .range([coldestColor, coldColor, hotColor, hottestColor]);
     
-        $(".circlesgroup").empty(); //make svg groups empty
-        $(".labelgroup").empty();   //
+        d3.selectAll(".circlesgroup").html(""); //make svg groups empty
+        d3.selectAll(".labelgroup").html("");   //
+        d3.selectAll(".glow").style("opacity","1")
+                                   .transition().duration(100)
+                                   .attr("r", 10)
+                                   .style("opacity","0")
+                                   .remove();
+
+        sunIsGlowing = false;
     
         // draw circles with proper data, and create function when clicked
         var circles = circlesGroup.selectAll("circle")
@@ -478,178 +488,157 @@
                                   .attr("Teff", function(d) {return d[3]; })
                                   .attr("L", function(d) {return d[2]; })
                                   .attr("mass", function(d) {return d[1]; })
-                                  .on("mouseenter", function() {
-                                    d3.select(this).attr("stroke-width", 0.5);
-                                  })
-                                  .on("mouseleave", function() {
-                                    d3.select(this).attr("stroke-width", 0);
-                                  })
+                                  // .on("mouseenter", function() {
+                                  //   d3.select(this).attr("stroke-width", 0.5);
+                                  // })
+                                  // .on("mouseleave", function() {
+                                  //   d3.select(this).attr("stroke-width", 0);
+                                  // })
                                   .on("click", function(){ // when a star is clicked...
 
-                                    if (paused === false ) {
-                                      pause();
-                                    }
-
-                                    if (clicked === true) {
-                                      d3.select("#" + idClicked).transition()
-                                                          .duration(1000)
-                                                          .attr("r", rClicked)
-                                                          .attr("cx", cxClicked)
-                                                          .attr("cy", cyClicked)
-                                                          .attr("class", "star");
-                                      d3.selectAll(".starinfo").style("opacity", 1)
-                                                               .transition()
-                                                               .duration(500)
-                                                               .style("opacity","0")
-                                                               .remove();
-                                      d3.select("#sun").remove();
-                                      d3.selectAll(".glow").remove();
-
-                                      clicked = false;
-                                    }
-
-                                    idClicked = d3.select(this).attr("id"),
-                                    cxClicked = d3.select(this).attr("cx"),
-                                    cyClicked = d3.select(this).attr("cy"),
-                                    rClicked = d3.select(this).attr("r");
-
-
-                                    clicked = true;
-
-                                    var mass = d3.select(this).attr("mass"),
-                                        radius = d3.select(this).attr("radius"),
-                                        Teff = d3.select(this).attr("Teff"),
-                                        L = d3.select(this).attr("L");
-
-                                    // Make selected star bigger, place it in middle of screen
-                                    d3.select(this).attr("class", "selected")
+                                    if (d3.select(this).attr("id") != idClicked) {
+                                      if (paused === false ) {
+                                        pause();
+                                      }
+  
+                                      if (clicked === true) {
+                                        d3.select("#" + idClicked).transition().duration(1000)
+                                                                  .attr("r", rClicked)
+                                                                  .attr("cx", cxClicked)
+                                                                  .attr("cy", cyClicked)
+                                                                  .attr("class", "star");
+                                        d3.selectAll(".starinfo").style("opacity", 1)
+                                                                 .transition().duration(1000)
+                                                                 .style("opacity","0")
+                                                                 .remove();
+                                        d3.select("#sun").style("opacity", 1)
+                                                         .transition()
+                                                         .duration(1000)
+                                                         .style("opacity","0")
+                                                         .remove();
+                                        d3.selectAll(".starglow").style("opacity", 1)
+                                                             .transition().duration(1000)
+                                                             .attr("cx", cxClicked)
+                                                             .attr("cy", cyClicked)
+                                                             .attr("r", rClicked)
+                                                             .style("opacity","0")
+                                                             .remove();
+  
+  
+  
+                                        clicked = false;
+                                      }
+  
+                                      idClicked = d3.select(this).attr("id"),
+                                      cxClicked = d3.select(this).attr("cx"),
+                                      cyClicked = d3.select(this).attr("cy"),
+                                      rClicked = d3.select(this).attr("r");
+  
+  
+                                      clicked = true;
+  
+                                      var mass = d3.select(this).attr("mass"),
+                                          radius = d3.select(this).attr("radius"),
+                                          temperature = d3.select(this).attr("Teff"),
+                                          luminosity = d3.select(this).attr("L");
+  
+                                      // Make selected star bigger, place it in middle of screen
+                                      d3.select(this).attr("class", "selected")
+                                                     .transition().duration(1000)
+                                                     .attr("r", function(d) {return RScale(d[4]) * 25; })
+                                                     .attr("cx", w/3)
+                                                     .attr("cy", h/2);
+  
+                                      // Draw glow behind the selected star
+                                      var drawStarGlow = fxGroup.append("circle")
+                                                                .attr("id", "starglow")
+                                                                .attr("class", "fx starglow glow gradient")
+                                                                .attr("cx", cxClicked)
+                                                                .attr("cy", cyClicked)
+                                                                .attr("r", rClicked)
+                                                                .style("fill", "url(#radial-gradient)")
+                                                                .style("opacity", 1)
+                                                                .transition()
+                                                                .duration(1000)
+                                                                .attr("cx", w/3)
+                                                                .attr("cy", h/2)
+                                                                .attr("r", luminosity*100 + baseGlow)
+                                                                .style("opacity", 1);
+  
+                console.log(luminosity);
+                                      // Create a new group element for the selected star + sun we will draw later
+                                      var selectedGroup = labelGroup.append("g")
+                                                                    .attr("class", "selectedgroup");
+  
+                                      // Give the selected star a nice label
+                                      var properties = ["title", "r", "teff", "l", "m"];
+                                      var SentencesOne = ["Properties of the star you selected ( ~", "Radius of ", "Effective temperature of ", "Luminosity of ", "Mass of "];
+                                      var functions = [d3.round(Math.pow(10, t/100)), d3.round(radius, 3), d3.round(Math.pow(10, temperature)), d3.round(Math.pow(10, luminosity), 2), d3.round(mass, 2)]
+                                      var SentencesTwo = [" years old):", " Rsol", "K", " Lsol", " Msol"];
+  
+                                      // Put every line in a new text element
+                                      for (i = 0; i < properties.length; i++){
+                                        selectedGroup.append("text")
+                                                   .attr("x", w/3)
+                                                   .attr("y", h/2 + padding*(5+i/2))
+                                                   .attr("id", "starinfo-" + properties[i])
+                                                   .attr("class", "label starinfo selected-text " + properties[i])
+                                                   .attr("text-anchor", "middle")
+                                                   .style("opacity",0)
                                                    .transition()
-                                                   .duration(1000)
-                                                   .attr("r", function(d) {return RScale(d[4]) * 25; })
-                                                   .attr("cx", w/3)
-                                                   .attr("cy", h/2);
-
-                                    // Draw glow behind the selected star
-                                    var drawStarGlow = fxGroup.append("circle")
-                                                              .attr("id", "starglow")
-                                                              .attr("class", "fx starglow glow gradient")
-                                                              .attr("cx", cxClicked)
-                                                              .attr("cy", cyClicked)
-                                                              .attr("r", rClicked)
-                                                              .style("fill", "url(#radial-gradient)")
-                                                              .style("opacity", 1)
-                                                              .transition()
-                                                              .duration(1000)
-                                                              .attr("cx", w/3)
-                                                              .attr("cy", h/2)
-                                                              .attr("r", d3.select(this).attr("r")*50)
-                                                              .style("opacity", 1);
-
-                                    // Create a new group element for the selected star + sun we will draw later
-                                    var selectedGroup = labelGroup.append("g")
-                                                                  .attr("class", "selectedgroup");
-
-                                    // Give the selected star a nice label
-                                    var properties = ["title", "r", "teff", "l", "m"];
-                                    var SentencesOne = ["Properties of the star you selected ( ~", "Radius of ", "Effective temperature of ", "Luminosity of ", "Mass of "];
-                                    var functions = [d3.round(Math.pow(10, t/100)), d3.round(radius, 3), d3.round(Math.pow(10, Teff)), d3.round(Math.pow(10, L)), d3.round(mass, 3)]
-                                    var SentencesTwo = [" years old):", " Rsol", "K", " Lsol", " Msol"];
-
-                                    // Put every line in a new text element
-                                    for (i = 0; i < properties.length; i++){
-                                      selectedGroup.append("text")
-                                                 .attr("x", w/3)
-                                                 .attr("y", h/2 + padding*(5+i/2))
-                                                 .attr("id", "starinfo-" + properties[i])
-                                                 .attr("class", "label starinfo selected-text " + properties[i])
-                                                 .attr("text-anchor", "middle")
-                                                 .style("opacity",0)
-                                                 .transition()
-                                                 .delay(500)
-                                                 .duration(500)
-                                                 .style("opacity", 1)
-                                                 .text(SentencesOne[i] + functions[i] + SentencesTwo[i]);
+                                                   .delay(500)
+                                                   .duration(500)
+                                                   .style("opacity", 1)
+                                                   .text(SentencesOne[i] + functions[i] + SentencesTwo[i]);
+                                      };
+  
+                                      // Draw a sun as reference, next to the selected star
+                                      var drawSun = circlesGroup.append("circle")
+                                                                .attr("class", "sun selected")
+                                                                .attr("id", "sun")
+                                                                .attr("cx", w/3*2)
+                                                                .attr("cy", h/2)
+                                                                .attr("r", RScale(1) * 25)
+                                                                .attr("fill", cScale(3.763))
+                                                                .style("opacity", 0)
+                                                                .transition()
+                                                                .duration(500)
+                                                                .style("opacity", 1);
+  
+                                      if (sunIsGlowing === false) {
+                                        // Draw the sunglow behind the sun, but only if there is none yet.
+                                        var drawSunGlow = fxGroup.append("circle")
+                                                                      .attr("id", "sunglow")
+                                                                      .attr("class", "fx sunglow glow gradient")
+                                                                      .attr("cx", d3.select("#sun").attr("cx"))
+                                                                      .attr("cy", d3.select("#sun").attr("cy"))
+                                                                      .attr("r", 1 + baseGlow)
+                                                                      .style("fill", "url(#radial-gradient)")
+                                                                      .style("opacity", 0)
+                                                                      .transition()
+                                                                      .duration(1000)
+                                                                      .style("opacity", 1);
+                                        sunIsGlowing = true;
+                                      };
+  
+                                      var SentencesSun = ["Properties of the sun (~4600000000 years old):", "Radius of 1 Rsol", "Effective temperature of 5800K", "Luminosity of 1 Lsol", "Mass of 1 Msol"];
+  
+                                      // Give the sun a nice label
+                                      for (i = 0; i < properties.length; i++){
+                                        selectedGroup.append("text")
+                                                   .attr("x", w/3*2)
+                                                   .attr("y", h/2 + padding*(5+i/2))
+                                                   .attr("id", "suninfo-" + properties[i])
+                                                   .attr("class", "label starinfo suninfo " + properties[i])
+                                                   .attr("text-anchor", "middle")
+                                                   .style("opacity",0)
+                                                   .transition()
+                                                   .delay(500)
+                                                   .duration(500)
+                                                   .style("opacity", 1)
+                                                   .text(SentencesSun[i]);
+                                      };
                                     };
-
-                                    // Draw a sun as reference, next to the selected star
-                                    var drawSun = circlesGroup.append("circle")
-                                                              .attr("class", "sun selected")
-                                                              .attr("id", "sun")
-                                                              .attr("cx", w/3*2)
-                                                              .attr("cy", h/2)
-                                                              .attr("r", RScale(1) * 25)
-                                                              .attr("fill", cScale(3.763))
-                                                              .style("opacity", 0)
-                                                              .transition()
-                                                              .duration(500)
-                                                              .style("opacity", 1);
-
-                                    // Draw the sunglow behind the sun
-                                    var drawSunGlow = fxGroup.append("circle")
-                                                                  .attr("id", "sunglow")
-                                                                  .attr("class", "fx sunglow glow gradient")
-                                                                  .attr("cx", d3.select("#sun").attr("cx"))
-                                                                  .attr("cy", d3.select("#sun").attr("cy"))
-                                                                  .attr("r", d3.select("#sun").attr("r")*3)
-                                                                  .style("fill", "url(#radial-gradient)")
-                                                                  .style("opacity", 0)
-                                                                  .transition()
-                                                                  .duration(1000)
-                                                                  .style("opacity", 1);
-
-                                    var SentencesSun = ["Properties of the sun (~4600000000 years old):", "Radius of 1 Rsol", "Effective temperature of 5800K", "Luminosity of 1 Lsol", "Mass of 1 Msol"];
-
-                                    // Give the sun a nice label
-                                    for (i = 0; i < properties.length; i++){
-                                      selectedGroup.append("text")
-                                                 .attr("x", w/3*2)
-                                                 .attr("y", h/2 + padding*(5+i/2))
-                                                 .attr("id", "suninfo-" + properties[i])
-                                                 .attr("class", "label starinfo suninfo " + properties[i])
-                                                 .attr("text-anchor", "middle")
-                                                 .style("opacity",0)
-                                                 .transition()
-                                                 .delay(500)
-                                                 .duration(500)
-                                                 .style("opacity", 1)
-                                                 .text(SentencesSun[i]);
-                                    };
-                                    // selectedGroup.append("text")
-                                    //              .attr("x", w/3*2)
-                                    //              .attr("y", h/2 + padding*5)
-                                    //              .attr("class", "label starinfo suninfo title")
-                                    //              .attr("id", "suninfo-title")
-                                    //              .attr("text-anchor", "middle")
-                                    //              .text("Properties of the sun (~4600000000 years old):");
-                                    // selectedGroup.append("text") // Radius
-                                    //              .attr("x", w/3*2)
-                                    //              .attr("y", h/2 + padding*5.5)
-                                    //              .attr("id", "suninfo-radius")
-                                    //              .attr("class", "label starinfo suninfo selected-text")
-                                    //              .attr("text-anchor", "middle")
-                                    //              .text("Radius of 1 Rsol");
-                                    // selectedGroup.append("text") // Effective Temperature
-                                    //              .attr("x", w/3*2)
-                                    //              .attr("y", h/2 + padding*6)
-                                    //              .attr("id", "suninfo-teff")
-                                    //              .attr("class", "label starinfo suninfo selected-text")
-                                    //              .attr("text-anchor", "middle")
-                                    //              .text("Effective temperature of 5800K");
-                                    // selectedGroup.append("text") // Luminosity
-                                    //              .attr("x", w/3*2)
-                                    //              .attr("y", h/2 + padding*6.5)
-                                    //              .attr("id", "suninfo-l")
-                                    //              .attr("class", "label starinfo suninfo selected-text")
-                                    //              .attr("text-anchor", "middle")
-                                    //              .text("Luminosity of 1 Lsol");
-                                    // selectedGroup.append("text") // Mass
-                                    //              .attr("x", w/3*2)
-                                    //              .attr("y", h/2 + padding*7)
-                                    //              .attr("id", "suninfo-m")
-                                    //              .attr("class", "label starinfo suninfo selected-text")
-                                    //              .attr("text-anchor", "middle")
-                                    //              .text("Mass of 1 Msol");
-
                                   });
          
         //Create age label
