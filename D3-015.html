@@ -34,7 +34,9 @@
     font-weight:700;
   }
 
-  circle {
+  text.planetlabel {
+    text-transform: capitalize;
+    fill: #888;
   }
 
   .grid {
@@ -53,10 +55,6 @@
     font-size: 11px;
   }
 
-  .dragger-input {
-    display:none;
-  }
-
   </style>
 </head>
 
@@ -69,6 +67,12 @@
   <input id="faster-button" value="10x Faster" type="button" onClick="faster();"/>
   <label>  </label>
   <input id="ghosts-button" value="Hide previous isochrones" type="button" onClick="ghosts();">
+</form>
+
+<form>
+  <label>Browse through stars</label>
+  <input id="nextstar-button" value="Previous" type="button" onClick="previousStar();"/>
+  <input id="nextstar-button" value="Next" type="button" onClick="nextStar();"/>
 </form>
 
   <script type="text/javascript">
@@ -97,11 +101,12 @@
 
     var dataValue = 1; // 1 -> 86
 
-    var sparsity = 3; // renders every x'th row in the dataset array (for example: sparsity = 2 results in 0, 2, 4, 6, ...) 
+    var sparsity = 1; // renders every x'th row in the dataset array (for example: sparsity = 2 results in 0, 2, 4, 6, ...) 
                       // This produces more / less stars but equal amount of isochrones!!
     var enlargement = 3; // How many times larger a star gets when you click on it
+    var smallRadius = true; // The selected star has a radius smaller dan 50 Rsol starts true
 
-    var sol = 1;            // The mean radius of the sun, expressed in solar radii
+    var sol = 1; // The mean radius of the sun, expressed in solar radii
 
     // All values below are in solar radii
     var mercuryMaj = 83.163158333, // Mercury Semi-major axis
@@ -109,25 +114,41 @@
         mercuryPer = 66.059493754, // Mercury Perihelion
 
         venusMaj = 155.397778678, // Venus Semi-major axis
-        venusMin = 155.39429074, // Venus Semi-minor axis
+        venusMin = 155.394290740, // Venus Semi-minor axis
         venusPer = 154.349443233, // Venus Perihelion
 
         earthMaj = 214.836962297, // Earth Semi-major axis
-        earthMin = 214.80700227, // Earth Semi-minor axis
-        earthPer = 211.23241166, // Earth Perihelion
+        earthMin = 214.807002270, // Earth Semi-minor axis
+        earthPer = 211.232411660, // Earth Perihelion
 
         marsMaj = 327.310430794, // Mars Semi-major axis
-        marsMin = 325.87657533, // Mars Semi-minor axis
+        marsMin = 325.876575330, // Mars Semi-minor axis
         marsPer = 296.722013034, // Mars Perihelion
 
-        jupiterMaj = 1118.08565331, // Mars Semi-major axis
-        jupiterMin = 1113.18763273, // Mars Semi-minor axis
-        jupiterPer = 1062.69620387; // Mars Perihelion
+        jupiterMaj = 1118.08565331, // Jupiter Semi-major axis
+        jupiterMin = 1116.74806442, // Jupiter Semi-minor axis
+        jupiterPer = 1062.69620387; // Jupiter Perihelion
 
-    var planetMaj = [mercuryMaj, venusMaj, earthMaj, marsMaj, jupiterMaj],
-        planetMin = [mercuryMin, venusMin, earthMin, marsMin, jupiterMin],
-        planetPer = [mercuryPer, venusPer, earthPer, marsPer, jupiterPer],
-        planetName = ["mercury", "venus", "earth", "mars", "jupiter"];
+        saturnMaj = 2058.65795830, // Saturn Semi-major axis
+        saturnMin = 2055.36945634, // Saturn Semi-minor axis
+        saturnPer = 1942.36452777; // Saturn Perihelion
+
+        uranusMaj = 4125.07072674, // Uranus Semi-major axis
+        uranusMin = 4120.76089082, // Uranus Semi-minor axis
+        uranusPer = 3936.71500498; // Uranus Perihelion
+
+        neptuneMaj = 6455.24756513, // Neptune Semi-major axis
+        neptuneMin = 6454.83541669, // Neptune Semi-minor axis
+        neptunePer = 6382.56776124; // Neptune Perihelion
+
+        plutoMaj = 8482.01027656, // Pluto Semi-major axis
+        plutoMin = 8215.29246496, // Pluto Semi-minor axis
+        plutoPer = 6371.61050174; // Pluto Perihelion
+
+    var planetMaj = [mercuryMaj, venusMaj, earthMaj, marsMaj, jupiterMaj, saturnMaj, uranusMaj, neptuneMaj, plutoMaj],
+        planetMin = [mercuryMin, venusMin, earthMin, marsMin, jupiterMin, saturnMin, uranusMin, neptuneMin, plutoMin],
+        planetPer = [mercuryPer, venusPer, earthPer, marsPer, jupiterPer, saturnPer, uranusPer, neptunePer, plutoPer],
+        planetName = ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
 
     var n = [],   // Identifier of star, "id"
         M = [],    // Mass or star, in solar mass
@@ -157,7 +178,7 @@
         cyClicked = undefined,
          rClicked = undefined; 
 
-    var sunIsGlowing = false, // is the sun glowing? initial is set to false
+    var detailView = false, // is the detailview on? initial is set to false
         baseGlow = 100; // base radius of stellar glow
 
 
@@ -173,12 +194,12 @@
 
     // Define the Scale for Teff (x)
     var TeffAxisScale = d3.scale.linear()
-                                .domain([4.7, 3.5])
+                                .domain([4.7, 3.4])
                                 .range([padding, w-padding]);
 
     // Define the Scale for L (y)
     var LAxisScale = d3.scale.linear()
-                             .domain([6.5, -3])
+                             .domain([6.5, -2])
                              .range([padding, h-padding]);
 
     //Define the Scale for R (size circles)
@@ -193,7 +214,7 @@
 
     var enlargementScale = d3.scale.linear()
                                    .domain([1200, 100, 0.800])
-                                   .range([3, 20, 100]);
+                                   .range([3, 30, 300]);
 
     // Create the TeffAxis (x)
     var TeffAxis = d3.svg.axis()
@@ -278,6 +299,10 @@
     // Create an SVG group Element for the age / mass labels
     var labelGroup = svgContainer.append("g")
                                  .attr("class", "labelgroup labels");
+
+    // Create a new group element for the selected star + sun we will draw later
+    var selectedGroup = svgContainer.append("g")
+                                  .attr("class", "selectedgroup");
 
     // Create an SVG group Element for the timeElapsed label, because it needs to be refreshed (emptied) often
     var timeElapsedGroup = svgContainer.append("g")
@@ -490,7 +515,7 @@
         };
     
         // push each property back into array in right order
-        for (i = n.length; i >= 0; i = i - sparsity) {
+        for (i = n.length - 1; i > -1 + 1; i = i - sparsity) {
           var datasetTempArray = [n[i],    // n = d[0]
                                   M[i],    // M = d[1]
                                   L[i],    // L = d[2]
@@ -549,6 +574,11 @@
                          .duration(250)
                          .style("opacity","0")
                          .remove();
+        d3.selectAll(".starinfo").style("opacity", 1)
+                                 .transition()
+                                 .duration(250)
+                                 .style("opacity","0")
+                                 .remove();
 
         // remove the glow when a new isochrone is added if it isn't removed already
         d3.selectAll(".glow").style("opacity","1")
@@ -563,9 +593,12 @@
                                .style("opacity","0")
                                .remove();
 
-        console.log("Stars added");
-        sunIsGlowing = false; // if an isochrone is added, that must mean there is no sun, so sunIsGlowing must be false.
+        detailView = false; // if an isochrone is added, that must mean there is no comparative sun, so detailView must be false.
   
+        var sunX = w/2, // The initial position of the sun in the diagram
+            sunFill = cScale(3.763), // The initial color of the sun in the diagram
+            starX = w/2;
+
         // draw isochrone with proper data, and create function when clicked
         var isochrone = d3.select("#g" + t).selectAll("circle")
                                   .data(dataset)
@@ -577,18 +610,20 @@
                                   .attr("cy", function(d) {return LAxisScale(d[2]); })
                                   .attr("r", function(d) {return RScale(d[4]); })
                                   .attr("fill", function(d) {return cScale(d[3]); })
-                                  .attr("stroke-width", .5)
+                                  .attr("stroke-width", 0)
                                   .attr("stroke", designer)
                                   .attr("radius", function(d) {return d[4]; })
                                   .attr("Teff", function(d) {return d[3]; })
                                   .attr("L", function(d) {return d[2]; })
                                   .attr("mass", function(d) {return d[1]; })
-                                  // .on("mouseenter", function() {
-                                  //   d3.select(this).attr("stroke-width", 0.5);
-                                  // })
-                                  // .on("mouseleave", function() {
-                                  //   d3.select(this).attr("stroke-width", 0);
-                                  // })
+                                  .on("mouseenter", function() {
+                                    if (d3.select(this).attr("id") != idClicked) {
+                                      d3.select(this).attr("stroke-width", 0.5);
+                                    }
+                                  })
+                                  .on("mouseleave", function() {
+                                      d3.select(this).attr("stroke-width", 0);
+                                  })
                                   .on("click", function(){ // when a star is clicked...
 
                                     // only function if: the star is not already selected && the star is active (member of the last added isochrone)
@@ -603,15 +638,11 @@
                                                                   .attr("cx", cxClicked)
                                                                   .attr("cy", cyClicked)
                                                                   .attr("class", "star");
-                                        d3.selectAll(".starinfo").style("opacity", 1)
+                                        d3.selectAll(".selected-text").style("opacity", 1)
                                                                  .transition().duration(1000)
                                                                  .style("opacity","0")
                                                                  .remove();
-                                        d3.select("#sun").style("opacity", 1)
-                                                         .transition()
-                                                         .duration(1000)
-                                                         .style("opacity","0")
-                                                         .remove();
+
                                         d3.selectAll(".starglow").style("opacity", 1)
                                                              .transition().duration(1000)
                                                              .attr("cx", cxClicked)
@@ -619,12 +650,16 @@
                                                              .attr("r", rClicked)
                                                              .style("opacity","0")
                                                              .remove();
-                                        d3.selectAll(".planet").style("opacity","1")
-                                                               .transition().duration(250)
-                                                               .attr("r", 10)
-                                                               .style("opacity","0")
-                                                               .remove();
-                                        sunIsGlowing = false;
+                                        // d3.select("#sun").style("opacity", 1)
+                                        //                  .transition()
+                                        //                  .duration(250)
+                                        //                  .style("opacity","0")
+                                        //                  .remove();
+                                        // d3.selectAll(".planet").style("opacity","1")
+                                        //                        .transition().duration(250)
+                                        //                        .attr("r", 10)
+                                        //                        .style("opacity","0")
+                                        //                        .remove();
                                         clicked = false;
                                       }
   
@@ -633,13 +668,20 @@
                                       cyClicked = d3.select(this).attr("cy"),
                                       rClicked = d3.select(this).attr("r");
   
-  
-                                      clicked = true;
-  
                                       var mass = d3.select(this).attr("mass"),
                                           radius = d3.select(this).attr("radius"),
                                           temperature = d3.select(this).attr("Teff"),
                                           luminosity = d3.select(this).attr("L");
+
+                                      if (d3.select('#' + idClicked).attr("radius") < 30) {
+                                        smallRadius = true;
+                                        sunX = w/5*3;
+                                        starX = w/5*2
+                                      } else {
+                                        smallRadius = false;
+                                        sunX = w/2;
+                                        starX = w/2;
+                                      }
   
                                       // Change enlargement depending on the size of the clicked star
                                       enlargement = enlargementScale(radius);
@@ -649,7 +691,7 @@
                                       d3.select(this).attr("class", "selected")
                                                      .transition().duration(1000)
                                                      .attr("r", RScale(radius * enlargement))
-                                                     .attr("cx", w/2)
+                                                     .attr("cx", starX)
                                                      .attr("cy", h/2);
   
                                       // Draw glow behind the selected star
@@ -663,25 +705,21 @@
                                                                 .style("opacity", 1)
                                                                 .transition()
                                                                 .duration(1000)
-                                                                .attr("cx", w/2)
+                                                                .attr("cx", starX)
                                                                 .attr("cy", h/2)
                                                                 .attr("r", luminosity*100 + baseGlow)
                                                                 .style("opacity", 1);
   
-                                      // Create a new group element for the selected star + sun we will draw later
-                                      var selectedGroup = labelGroup.append("g")
-                                                                    .attr("class", "selectedgroup");
-  
                                       // Give the selected star a nice label
                                       var properties = ["title", "r", "teff", "l", "m"];
-                                      var SentencesOne = ["Properties of the star you selected ( ~", "Radius of ", "Effective temperature of ", "Luminosity of ", "Mass of "];
+                                      var SentencesOne = ["This star (", "Radius of ", "Effective temperature of ", "Luminosity of ", "Mass of "];
                                       var functions = [d3.round(Math.pow(10, t/100)), d3.round(radius, 3), d3.round(Math.pow(10, temperature)), d3.round(Math.pow(10, luminosity), 2), d3.round(mass, 2)]
                                       var SentencesTwo = [" years old):", " Rsol", "K", " Lsol", " Msol"];
   
                                       // Put every line in a new text element
                                       for (i = 0; i < properties.length; i++){
                                         selectedGroup.append("text")
-                                                   .attr("x", w/3)
+                                                   .attr("x", starX)
                                                    .attr("y", h/2 + padding*(5+i/2))
                                                    .attr("id", "starinfo-" + properties[i])
                                                    .attr("class", "label starinfo selected-text " + properties[i])
@@ -694,67 +732,135 @@
                                                    .text(SentencesOne[i] + functions[i] + SentencesTwo[i]);
                                       };
                                       
-                                      if (sunIsGlowing === false) {
+                                      if (detailView === false) {
+
                                         // Draw a sun as reference, next to the selected star
                                         var drawSun = circlesGroup.append("circle")
                                                                   .attr("class", "sun selected")
                                                                   .attr("id", "sun")
-                                                                  .attr("cx", w/2)
-                                                                  .attr("cy", h/2)
                                                                   .attr("r", RScale(sol * enlargement))
-                                                                  .attr("fill", cScale(3.763))
                                                                   .attr("stroke-width", .5)
-                                                                  .attr("stroke", designer)
+                                                                  .attr("stroke", "#888")
                                                                   .style("opacity", 0)
                                                                   .transition()
                                                                   .duration(500)
+                                                                  .attr("cx", sunX)
+                                                                  .attr("fill", cScale(3.763))
+                                                                  .attr("cy", h/2)
                                                                   .style("opacity", 1);
 
-                                        for (i = 0; i < planetMaj.length; i++) {
-                                          var drawPlanetSun = selectedGroup.append("ellipse")
-                                                                           .attr("class", planetName[i] + " planet")
-                                                                           .attr("id", planetName[i])
-                                                                           .attr("cx", w/2)
-                                                                           .attr("cy", h/2)
-                                                                           .attr("rx", RScale(planetMaj[i] * enlargement))
-                                                                           .attr("ry", RScale(planetMin[i] * enlargement))
-                                                                           .attr("fill", "none")
-                                                                           .attr("stroke-width", .2)
-                                                                           .attr("stroke", "#888")
-                                                                           .style("opacity", 0)
-                                                                           .transition()
-                                                                           .duration(500)
-                                                                           .style("opacity", 1);
-  
-                                          var calculateFocus = d3.select("#" + planetName[i]).attr("cx", d3.select("#" + planetName[i]).attr("cx") - (RScale(planetMaj[i]) - RScale(planetMin[i])));
-  
-                                          console.log(planetName[i] + " has been drawn")
+                                        var SentencesSun = ["The sun (4.600.000.000 years old):", "Radius of 1 Rsol", "Effective temperature of 5800K", "Luminosity of 1 Lsol", "Mass of 1 Msol"];
+
+                                        // Give the sun a nice label with properties (text)
+
+                                        for (i = 0; i < properties.length; i++){
+                                          selectedGroup.append("text")
+                                                       .attr("x", sunX)
+                                                       .attr("y", h/2 + padding*(5+i/2))
+                                                       .attr("id", "suninfo-" + properties[i])
+                                                       .attr("class", "label suninfo starinfo " + properties[i])
+                                                       .attr("text-anchor", "middle")
+                                                       // .style("opacity",0)
+                                                       // .transition()
+                                                       // .delay(500)
+                                                       // .duration(500)
+                                                       .style("opacity", 1)
+                                                       .text(SentencesSun[i]);
+                                        }; // end for loop
+                                        
+                                        if (smallRadius === false) {
+                                          for (i = 0; i < properties.length; i++){
+                                            d3.select("#suninfo-" + properties[i]).transition()
+                                                                                  .duration(1000)
+                                                                                  .attr("y", h/3*2 + padding*(5+i/2));
+                                          }
                                         }
 
-                                        sunIsGlowing = true;
-                                      };
+                                        // Draw the planets and their orbits
+                                        for (i = 0; i < planetName.length; i++) {
+                                          var drawPlanets = selectedGroup.append("ellipse")
+                                                                         .attr("class", planetName[i] + " planet")
+                                                                         .attr("id", planetName[i])
+                                                                         .attr("cx", sunX + (RScale(planetMaj[i] - planetMin[i])))
+                                                                         .attr("cy", h/2)
+                                                                         .attr("rx", RScale(planetMaj[i] * enlargement))
+                                                                         .attr("ry", RScale(planetMin[i] * enlargement))
+                                                                         .attr("fill", "none")
+                                                                         .attr("stroke-width", .5)
+                                                                         .attr("stroke", "#888")
+                                                                         .style("opacity", 0)
+                                                                         .transition()
+                                                                         .duration(500)
+                                                                         .style("opacity", 1);
+                                          
+                                          // Draw the planet labels                                          
+                                          var planetLabels = selectedGroup.append("text")
+                                                                          .attr("class", planetName[i] + "label label planetlabel")
+                                                                          .attr("id", planetName[i] + "label")
+                                                                          // .attr("transform", "matrix(1,2,3,4,5,6)")
+                                                                          // .attr("transform", "rotate(90 " + (sunX - RScale(planetMaj[i] * enlargement)) + " " + h/2 + ")")
+                                                                          .attr("x", sunX - (RScale(planetMaj[i] * enlargement) + enlargement/2))
+                                                                          .attr("y", h/2 - (padding*[i])/2)
+                                                                          .attr("text-anchor", "middle")
+                                                                          .attr("dominant-baseline", "central")
+                                                                          .style("text-color", "#888")
+                                                                          .text("Orbit of " + planetName[i])
+                                                                          .style("opacity", 0)
+                                                                          .transition()
+                                                                          .duration(500)
+                                                                          .style("opacity", 1);
+                                                                        
+                                        }; // end for loop
+
+                                      detailView = true;
+                                      // end if detailView is false
+                                      } else if (detailView === true) {
+                                        d3.select("#sun").transition()
+                                                         .duration(1000)
+                                                         .attr("cx", sunX)
+                                                         .attr("r", RScale(sol * enlargement));
+
+                                        if (smallRadius === true) {
+                                          for (i = 0; i < properties.length; i++){
+                                            // move the suninfo labels to middle bottom of the screen if star has small radius
+                                            d3.select("#suninfo-" + properties[i]).transition()
+                                                                                  .duration(1000)
+                                                                                  .attr("y", h/2 + padding*(5+i/2))
+                                                                                  .attr("x", sunX);
+                                          }
+                                                                
+                                        } else {
+                                          for (i = 0; i < properties.length; i++){
+                                            //move the suninfo labels to right of the screen if star has large radius
+                                            d3.select("#suninfo-" + properties[i]).transition()
+                                                                                  .duration(1000)
+                                                                                  .attr("y", h/3*2 + padding*(5+i/2))
+                                                                                  .attr("x", sunX);
+                                          }
+                                        }
+
+                                        for (i = 0; i < planetName.length; i++) {
+                                          // move planetorbit to the updated position
+                                          d3.select("#" + planetName[i]).transition()
+                                                                 .duration(1000)
+                                                                 .attr("cx", sunX + (RScale(planetMaj[i] - planetMin[i])))
+                                                                 .attr("rx", RScale(planetMaj[i] * enlargement))
+                                                                 .attr("ry", RScale(planetMin[i] * enlargement));
   
-                                      var SentencesSun = ["Properties of the sun (~4600000000 years old):", "Radius of 1 Rsol", "Effective temperature of 5800K", "Luminosity of 1 Lsol", "Mass of 1 Msol"];
-  
-                                      // Give the sun a nice label
-                                      for (i = 0; i < properties.length; i++){
-                                        selectedGroup.append("text")
-                                                   .attr("x", w/3*2)
-                                                   .attr("y", h/2 + padding*(5+i/2))
-                                                   .attr("id", "suninfo-" + properties[i])
-                                                   .attr("class", "label starinfo suninfo " + properties[i])
-                                                   .attr("text-anchor", "middle")
-                                                   .style("opacity",0)
-                                                   .transition()
-                                                   .delay(500)
-                                                   .duration(500)
-                                                   .style("opacity", 1)
-                                                   .text(SentencesSun[i]);
+                                          // move planet name to the updated position
+                                          d3.select("#" + planetName[i] + "label").transition()
+                                                                      .duration(1000)
+                                                                      .attr("x", sunX - (RScale(planetMaj[i] * enlargement) + enlargement/2))
+                                                                      .attr("y", h/2 - (padding*[i])/2);
+                                        };
                                       };
-                                    };
-                                  });
+
+                                      clicked = true;
+
+                                    }; // end if isn't same star selected yet?
+
+                                  }); // end function onClick
                                                         
-         
         //Create age label
         var timeStamp = labelGroup.append("text")
                                   .attr("class", "label timestamp")
