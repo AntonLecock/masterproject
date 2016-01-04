@@ -88,42 +88,6 @@
     var age = 0, // initial age is 0 (ages[0] => 300)
         t = ages[age], // age, time as log, so 10^t (example: t = ages[1] => t = 300)
         tIndex = ages[age];
-    
-    // for (i = 0; i < ages.length; i++) {
-    //   getData("data/iso_c020_0" + ages[age] + ".UBVRIJHKLM.csv", writeData);
-    //   age++;
-    //   console.log(age);
-    //   console.log(t);
-    // };
-    
-    // d3.select("body").append("p")
-    //                      .attr("id", "isloading")
-    //                      .style("position", "fixed")
-    //                      .text("loading...");
-    
-    // function getData (dataURI, myCallback) {
-    //   var myData = getSomeData(dataURI);
-    //   myCallback(myData, dataURI);
-    // }
-    
-    // function writeData (myData, dataURO) { 
-    //   console.log(dataURO + " has been loaded");
-    //   d3.select("body").append("p").style("position", "fixed", "top", padding*i)
-    //                                .text(dataURO + " has been loaded");
-    // }
-    
-    // function getSomeData(dataURL) {
-    //   d3.text(dataURL, function(text) {
-    //     var data = d3.csv.parseRows(text)
-    //     d3.select("body").selectAll("p")
-    //                      .data(data)
-    //                      .enter()
-    //                      .append("p")
-    //                      .style("position", "fixed", "top", padding*i)
-    //                      .text( function (d) {return d[300]} );
-    //     return data;
-    //   });
-    // }
 
     var padding = 30,
         w = window.innerWidth,
@@ -142,7 +106,7 @@
 
     var dataValue = 0; // 1 -> 91
 
-    var sparsity = 3; // renders every x'th row in the dataset array (for example: sparsity = 2 results in 0, 2, 4, 6, ...) 
+    var sparsity = 5; // renders every x'th row in the dataset array (for example: sparsity = 2 results in 0, 2, 4, 6, ...) 
                       // This produces more / less stars but equal amount of isochrones!!
     var enlargement = 3; // How many times larger a star gets when you click on it
     var smallRadius = true; // The selected star has a radius smaller dan 50 Rsol starts true
@@ -272,6 +236,11 @@
                                 .domain([1200, 100, 0.800])
                                 .range([20, 50, 100]);
 
+    //Define scale for the timeline
+    var timeScale = d3.scale.log()
+                            .domain([Math.pow(10, 3), Math.pow(10, 10.19)])
+                            .range([3*padding, w-3*padding]);
+
     // Create the TeffAxis (x)
     var TeffAxis = d3.svg.axis()
                          .scale(TeffAxisScale)
@@ -298,6 +267,20 @@
                            .attr("x", padding*2 + 10)
                            .attr("y", padding + 5)
                            .text("Luminosity (L☉)");
+
+    // Create the timescale axis (on x)
+    var timeAxis = d3.svg.axis()
+                         .scale(timeScale)
+                         .orient("top")
+                         .tickFormat(function (d) { return LAxisScale.tickFormat(10,d3.format(",")) (d) });
+
+    // Create label on timescale axis (on x)
+    var timeAxisLabel = svgContainer.append("text")
+                           .attr("class", "time-label label")
+                           .attr("x", padding*3)
+                           .attr("y", h-(3*padding + 25))
+                           .text("Time elapsed (years)");
+
     
     // Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
     var TeffAxisGroup = svgContainer.append("g")
@@ -305,11 +288,30 @@
                                     .attr("transform", "translate(0," + (h - padding) + ")")
                                     .call(TeffAxis);
 
-    // Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    // Create an SVG group Element for the LAxis elements and call the LAxis function (y)
     var LAxisGroup = svgContainer.append("g")
                                     .attr("class", "text l-axis axis")
                                     .attr("transform", "translate(" + 2*padding + ", 0)")
                                     .call(LAxis);
+
+    // Create an SVG group Element for the timeAxis elements and call the timeAxis function (on x)
+    var timeAxisGroup = svgContainer.append("g")
+                                    .attr("class", "text time-axis axis")
+                                    .attr("transform", "translate(0," + (h - 3*padding) + ")")
+                                    .call(timeAxis);
+
+    // Create a circle that indicates the time in the timeScale
+     var timeIndicator = timeAxisGroup.append("circle")
+                                         .attr("id", "time-indicator")
+                                         .attr("class", "time-indicator")
+                                         .attr("fill", "red")
+                                         .attr("r", 5)
+                                         .attr("cx", 3*padding)
+                                         .attr("cy", 0);
+
+    // Create an SVG group Element for the timeElapsed label, because it needs to be refreshed (emptied) often
+    var timeElapsedGroup = timeAxisGroup.append("g")
+                                        .attr("class", "timeelapsedgroup labels"); 
 
     // Create an SVG group Element for the circles/stars
     var circlesGroup = svgContainer.append("g")
@@ -374,11 +376,7 @@
 
     // Create a new group element for the selected star + sun we will draw later
     var selectedGroup = svgContainer.append("g")
-                                  .attr("class", "selectedgroup");
-
-    // Create an SVG group Element for the timeElapsed label, because it needs to be refreshed (emptied) often
-    var timeElapsedGroup = svgContainer.append("g")
-                                       .attr("class", "timeelapsedgroup labels");                          
+                                  .attr("class", "selectedgroup");                         
 
     // Create a function to determine what happens when paused
     var pause = function () {
@@ -387,7 +385,7 @@
         timeFactorTemp = timeFactor; // temporarily store the value of timefactor for when unpause happens
         timeFactor = 0;
         plusMinus = "";
-        speed = 500;
+        speed = 100;
         document.getElementById("pause-button").value = "Resume";
         document.getElementById("slower-button").disabled = true;
         document.getElementById("faster-button").disabled = true;
@@ -484,7 +482,9 @@
         } else {
           time = time - timeFactor;
         }
-  
+
+        d3.select("#time-indicator").attr("cx", timeScale(time));
+
         // establish tIndex => initial value is 10000, this corresponds to first data file log(3.00)
         tIndex = d3.round(Math.pow(10, (ages[age] / 100)));
   
@@ -532,10 +532,11 @@
         //Create timeElapsed label
         var timeElapsed = timeElapsedGroup.append("text")
                                           .attr("class", "label timeelapsed")
-                                          .attr("x", w-padding)
-                                          .attr("y", padding*1.5)
-                                          .attr("text-anchor", "end")
-                                          .text("Time elapsed = " + numberSeparator(time) + " years (" + plusMinus + numberSeparator(timeFactor) + " every " + speed + " milliseconds)");
+                                          .attr("text-anchor", "middle")
+                                          .attr("x", timeScale(time))
+                                          .attr("y", padding)
+                                          .text(numberSeparator(time) + " years");
+                                          // .text("Time elapsed = " + numberSeparator(time) + " years (" + plusMinus + numberSeparator(timeFactor) + " every " + speed + " milliseconds)");
   
         timeout = setTimeout(updateTime, speed);    
     };
@@ -550,11 +551,22 @@
 
       drawDiagram(); //fill svgContainer with stellar goodness
 
+      // Create a circle that indicates the time in the timeScale
+      var someThingHappened = timeAxisGroup.append("circle")
+                                           .attr("class", "time-indicator")
+                                           .attr("id", "time-indicator-" + t)
+                                           .style("fill", "red")
+                                           .style("opacity", .5)
+                                           .attr("r", 3)
+                                           .attr("cx", timeScale(time))
+                                           .attr("cy", 5);
+
     };
 
     //the function that draws the diagram
     function drawDiagram (){
 
+      pause();
 
       var dataset = [],
           datasetTemp = [];
@@ -678,7 +690,7 @@
 
         starColorGradient.append("stop")
                          .attr("offset", "0%")
-                         .style("stop-color", function(d) {return d3.rgb(cScale(d[3])).brighter(.6); });
+                         .style("stop-color", function(d) {return d3.rgb(cScale(d[3])).brighter(1); });              
 
         starColorGradient.append("stop")
                          .attr("offset", function(d) {return gradientScale(d[4]) + "%"; }) // "blurred" contour is based on the radius of the star
@@ -686,9 +698,8 @@
 
         starColorGradient.append("stop")
                          .attr("offset", "100%")
-                         .style("stop-color", function(d) {return d3.rgb(cScale(d[3])).darker(.2); })
+                         .style("stop-color", function(d) {return d3.rgb(cScale(d[3])); })
                          .style("stop-opacity", 0);
-
 
         // draw isochrone with proper data, and create function when clicked
         var isochrone = d3.select("#g" + t).selectAll("circle")
@@ -1065,6 +1076,7 @@
                                     // What should happen when user clicks on getMasses button?
                                     getMasses = function () {
                                       
+                                      // Get a deviation of the clicked star 
                                       allStars = d3.selectAll(".star");
                                       var massMin = parseFloat(mass) - parseFloat(mass)/100;
                                       var massMax = parseFloat(mass) + parseFloat(mass)/100;
@@ -1120,7 +1132,7 @@
         var mostMassive = labelGroup.append("text")
                                     .attr("class", "label masstext")
                                     .attr("x", w-padding)
-                                    .attr("y", padding*2)
+                                    .attr("y", padding*1.5)
                                     .attr("text-anchor", "end")
                                     .text("Most massive = " + max_M + " Msol");
     
@@ -1128,11 +1140,13 @@
         var leastMassive = labelGroup.append("text")
                                      .attr("class", "label masstext")
                                      .attr("x", w-padding)
-                                     .attr("y", padding*2.5)
+                                     .attr("y", padding*2)
                                      .attr("text-anchor", "end")
                                      .text("Least massive = " + min_M + " Msol");
   
+      pause();
       });
+
     };
 
 
