@@ -4,7 +4,7 @@ Masterproject of Anton Lecock 2015–2016
 
 *Initiated on: 1st of december, 2015*
 
-Latest working plot: [D3-019.html](http://antonlecock.github.io/masterproject/D3-019.html) (4th of january, 2016)
+Latest working plot: [D3-020.html](http://antonlecock.github.io/masterproject/D3-020.html) (6th of january, 2016)
 
 ---
 
@@ -27,7 +27,7 @@ It is the goal of this project to research how astronomical data (information ba
 
 ### MOTIVATIE/RELEVANTIE:
 
-Publicaties in het academische circuit, meer bepaald in de sterrenkunde, bereiken moeilijk het grote publiek. ’Outreach’ naar de buitenwereld is echter een belangrijke aspect van van de academische wereld, aangezien een breder bereik ook meer geld kan opleveren voor toekomstige projecten. Onderzoek doen vergt financiering, en hoe breder het aangesproken publiek na het onderzoek is, hoe meer kansen gemaakt worden op financiering voor een nieuw onderzoek.
+Publicaties in het academische circuit, meer bepaald in de sterrenkunde, bereiken moeilijk het grote publiek. ’Outreach’ naar de buitenwereld is echter een belangrijk aspect van de academische wereld, aangezien een breder bereik ook meer geld kan opleveren voor toekomstige projecten. Onderzoek doen vergt financiering, en hoe breder het aangesproken publiek na het onderzoek is, hoe meer kansen gemaakt worden op financiering voor een nieuw onderzoek.
 
 Opdat informatie gemakkelijker leesbaar en begrijpbaar zou zijn, gaan publicaties dikwijls gepaard met datavisualisaties, of artistieke impressies. De gevisualiseerde informatie verliest echter veel aan kracht wanneer zij door het publiek buiten de academische gemeenschap geïnterpreteerd wordt, omdat de visualisaties dikwijls op een zeer theoretische, utilitaire manier worden uitgewerkt en in vele gevallen berusten op een aanzienlijke voorkennis van het thema. 
 
