@@ -2,7 +2,23 @@ var stars_six_json = {
 "type":"FeatureCollection",
 
 "features":[
-
+	{
+		"type":"Feature",
+		"id":0,
+		"properties":
+		{
+			"name":"Sol",
+			"desig":"⊙",
+			"con":"",
+			"mag":-26.74,
+			"bv":0.656
+		},
+		"geometry":
+		{
+			"type":"Point",
+			"coordinates":[90.0, 0.0]
+		}
+	},
 {"type":"Feature","id":88,"properties":{"name":"","desig":"τ","con":"Phe","mag":5.869,"bv":0.911},"geometry":{"type":"Point","coordinates":[0.2691,-48.8099]}},
 {"type":"Feature","id":107,"properties":{"name":"","desig":"HD224865","con":"","mag":5.6243,"bv":1.615},"geometry":{"type":"Point","coordinates":[0.3338,-50.3374]}},
 {"type":"Feature","id":122,"properties":{"name":"","desig":"θ","con":"Oct","mag":4.9354,"bv":1.254},"geometry":{"type":"Point","coordinates":[0.3988,-77.0657]}},
