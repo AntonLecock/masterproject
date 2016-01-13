@@ -70,16 +70,19 @@
   // Define starglow gradient structure in defs
   var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
 
-  starGlowGradient.append("stop").attr("offset", "000%").style("stop-color", "#ffe9d2").style("stop-opacity", "1");
-  starGlowGradient.append("stop").attr("offset", "010%").style("stop-color", "#ffe9d2").style("stop-opacity", ".8");
-  starGlowGradient.append("stop").attr("offset", "020%").style("stop-color", "#ffe9d2").style("stop-opacity", ".2");
-  starGlowGradient.append("stop").attr("offset", "030%").style("stop-color", "#ffe9d2").style("stop-opacity", ".1");
-  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#ffe9d2").style("stop-opacity", ".0");
+  starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "white").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.058%").style("stop-color", "#FAFAE6").style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "1.060%").style("stop-color", "#FBF2D6").style("stop-opacity", ".97");
+  starGlowGradient.append("stop").attr("offset", "1.56%").style("stop-color", "#FDE4B9").style("stop-opacity", ".9");
+    starGlowGradient.append("stop").attr("offset", "5.56%").style("stop-color", "#FDE4B9").style("stop-opacity", ".3");
+  // starGlowGradient.append("stop").attr("offset", "1.87%").style("stop-color", "#FFDBA6").style("stop-opacity", ".84");
+  // starGlowGradient.append("stop").attr("offset", "2.08%").style("stop-color", "#FFD8A0").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
 
 
   var rScale = d3.scale.sqrt()
-                       .domain([-1.2, 6])
-                       .range([5.5, .4])
+                       .domain([-1.2, 1, 6])
+                       .range([20, 10, 2])
 
   // Create the projection
   var projection = d3.geo.stereographic()
@@ -97,11 +100,9 @@ starsGroup.selectAll( "path" )
   .enter()
   .append( "path" )
   .attr("class", function(d) { return "star star-" + d.id})
-  .attr( "fill", designerWhite )
-  .style("opacity", 0)
+  .attr( "fill", "url(#radial-gradient)" )
+  .style("opacity", 1)
   .attr( "d", path )
-  .transition().duration( function() { return Math.random() * (5000 - 2000) + 2000})
-  .style("opacity", 1);
 
 // starsGroup.selectAll( "path" )
 //   .data( stars_eight_json.features )
@@ -118,14 +119,23 @@ starsGroup.selectAll( "path" )
       .domain([0, h])
       .range([90, -90]);
   
-  svg.on("mousemove", function() {
-    var p = d3.mouse(this);
-    projection.rotate([λ(p[0]), φ(p[1])]);
-    svg.selectAll("path").attr("d", path);
-  });
+  // svg.on("mousemove", function() {
+  //   var p = d3.mouse(this);
+  //   projection.rotate([λ(p[0]), φ(p[1])]);
+  //   svg.selectAll("path").attr("d", path);
+  // });
   
   d3.select(".star-0").remove();
 
+  var velocity = 0.004,
+      then = Date.now();
+
+  d3.timer(function() {
+    var movement = velocity * (Date.now() - then);
+
+    projection.rotate([-movement, movement/80]);
+    starsGroup.selectAll("path").attr("d", path);
+  });
 
   // // Draw some big stars
   // for (i = 0; i <= 45; i++) {
@@ -185,10 +195,22 @@ starsGroup.selectAll( "path" )
                     .attr("id", "suntext")
                     .attr("class", "label suntext")
                     .attr("text-anchor", "middle")
-                    .text("These are the brightest stars in the sky.")
+                    .text("These are the brightest stars in our night sky.")
                     .style("fill", "white")
                     .style("opacity", 0)
                     .transition().delay(1000).duration(2000)
+                    .style("opacity", 1);
+
+      var drawText = svg.append("text")
+                    .attr("x", w/2)
+                    .attr("y", h - paddingH + paddingH/3)
+                    .attr("id", "suntext")
+                    .attr("class", "label suntext")
+                    .attr("text-anchor", "middle")
+                    .text("The constellation of Orion is entering the screen from the right.")
+                    .style("fill", "white")
+                    .style("opacity", 0)
+                    .transition().delay(3000).duration(2000)
                     .style("opacity", 1);
 
   </script>
