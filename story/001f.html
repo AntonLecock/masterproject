@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+</head>
+<body>
+
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  // COLORS    
+  var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerRed = d3.rgb("#c83c46");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  // Define starglow gradient structure in defs
+  var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "000%").style("stop-color", designerWhite).style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "010%").style("stop-color", designerWhite).style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "020%").style("stop-color", designerWhite).style("stop-opacity", ".2");
+  starGlowGradient.append("stop").attr("offset", "030%").style("stop-color", designerWhite).style("stop-opacity", ".1");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", designerWhite).style("stop-opacity", ".0");
+
+  // var flarePattern = defs.append("pattern")
+  //                        .attr("id", "flare-pattern")
+  //                        .attr("x", 0)
+  //                        .attr("y", 0)
+  //                        .attr("patternUnits", "objectBoundingBox")
+  //                        .attr("height", 1)
+  //                        .attr("width", 1);
+
+  // var flarePatternImage = flarePattern.append("image")
+  //                                     .attr("x", 0)
+  //                                     .attr("y", 0)
+  //                                     .attr("height", 512)
+  //                                     .attr("width", 512)
+  //                                     .attr("xlink:href", "../img/lensflare0-b.png")
+
+
+
+  // Draw some big stars
+  function drawStars () {
+    for (i = 0; i <= 65; i++) {
+      var drawBigStar = starsGroup.append("circle")
+                               .attr("class", "background-star")
+                               .attr("cx", Math.random() * (w - 0) + 0)
+                               .attr("cy", Math.random() * (h - 0) + 0)
+                               .attr("r", Math.random() * (2 - .8) + .8)
+                               .style("fill", designerWhite)
+                               .style("opacity", 0)
+                               .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+                               .style("opacity", 1);
+    }
+  
+    // Draw a lot of small stars
+    for (i = 0; i <= 2000; i++) {
+      var drawSmallStar = starsGroup.append("circle")
+                               .attr("class", "background-star background-star-" + i)
+                               .attr("cx", Math.random() * (w - 0) + 0)
+                               .attr("cy", Math.random() * (h - 0) + 0)
+                               .attr("r", Math.random() * (.8 - .3) + .3)
+                               .style("fill", designerWhite)
+                               .style("opacity", 0)
+                               .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (4000 - 200) + 200)
+                               .style("opacity", Math.random() * (1 - .1) + .1);
+    }
+  };
+
+  function drawVenusBack() {
+    var venusBackTranslate = sunGroup.append("g").attr("id", "venus-back-translate");
+
+    venusBackTranslate.append("circle")
+                        .attr("id", "venus-back")
+                        .attr("class", "venus planet")
+                        .attr("cx", -100)
+                        .attr("cy", h/2)
+                        .attr("r", 2)
+                        .style("fill", designerWhite)
+                        .style("opacity", 0);
+  };
+
+  function drawSun() {
+    // Draw a sun as reference, next to the selected star
+    sunGroup.append("circle")
+       .attr("class", "sun")
+       .attr("id", "sun")
+       .attr("cx", w/2)
+       .attr("cy", h/2)
+       .attr("r", 180)
+       .style("fill", designerWhite)
+       .style("opacity", 0)
+       .transition().duration(2000)
+       .attr("r", 200)
+       .style("opacity", 1);
+  };
+
+  function drawSunGlow() {
+    // Draw glow behind the sun
+    sunGroup.append("circle")
+            .attr("id", "sunglow")
+            .attr("class", "fx sunglow glow gradient")
+            .attr("cx", w/2)
+            .attr("cy", h/2)
+            .attr("r", 400)
+            .style("fill", "url(#radial-gradient)")
+            .style("opacity", 0)
+            .transition().delay(2000).duration(4000)
+            .attr("r", 600)
+            .style("opacity", .8);
+  };
+
+  function drawVenusFront() {
+    var venusFrontTranslate = sunGroup.append("g").attr("id", "venus-front-translate");
+    
+    venusFrontTranslate.append("circle")
+                       .attr("id", "venus-front")
+                       .attr("class", "venus planet")
+                       .attr("cx", w+100)
+                       .attr("cy", h/2)
+                       .attr("r", 2)
+                       .style("fill", designerBlack)
+                       .style("opacity", 0);
+  };
+
+    function drawTextSun() {
+    svg.append("text")
+       .attr("id", "suntext")
+       .attr("class", "label suntext")
+       .attr("x", w/2)
+       .attr("y", h - paddingH)
+       .attr("text-anchor", "middle")
+       .text("This is the Sun.")
+       .style("fill", designerWhite)
+       .style("opacity", 0)
+       .transition().delay(1000).duration(2000)
+       .style("opacity", 1);
+  };
+
+  function drawTextVenus() {
+    svg.append("text")
+       .attr("id", "suntext")
+       .attr("class", "label venustext")
+       .attr("x", w/2)
+       .attr("y", h - paddingH + paddingH/3 )
+       .attr("text-anchor", "middle")
+       .text("That small black dot is Venus.")
+       .style("fill", designerWhite)
+       .style("opacity", 0)
+       .transition().delay(10000).duration(2000)
+       .style("opacity", 1)
+  };
+
+  // Venus moving behind the sun
+  function translateVenusBack(back) {
+    console.log("translateVenusBack");
+    d3.select("#venus-back-translate").attr("transform", "translate(" + (w+200) + ", 0)")
+      .transition().delay(back).duration(back)
+      .attr("transform", "translate(" + (-100) + ", 0)");
+  };
+
+  // Venus moving in front of the sun
+  function translateVenusFront(front) {
+    console.log("translateVenusFront");
+    d3.select("#venus-front-translate").attr("transform", "translate(" + (-w-200) + ", 0)")
+      .transition().duration(front)
+      .attr("transform", "translate(" + (100) + ", 0)");
+  };
+
+  // Venus front is scaling up
+  function scaleUpVenusFront(front) {
+    console.log("scaleUpVenusFront");
+    d3.select("#venus-front")
+      .style("opacity", 1)
+      .transition().duration(front)
+      .attr("r", 3);
+  };
+
+  // Venus back is scaling up
+  function scaleUpVenusBack(back) {
+    console.log("scaleUpVenusBack");
+    d3.select("#venus-back")
+      .transition().delay(back*2).duration(back)
+      .attr("r", 2);
+
+    setTimeout( function() {
+      d3.select("#venus-back").style("opacity", 0);
+    }, back*3)
+  };
+
+    // Venus front in scaling down
+  function scaleDownVenusFront(front) {
+    console.log("scaleDownVenusFront");
+    d3.select("#venus-front")
+      .transition().duration(front)
+      .attr("r", 2);
+
+    setTimeout( function() {
+      d3.select("#venus-front").style("opacity", 0);
+    }, front)
+  };
+
+  // Venus back is scaling down
+  function scaleDownVenusBack(back) {
+    d3.select("#venus-back")
+      .transition().delay(back).duration(back)
+      .attr("r", 1);
+    setTimeout( function() {
+      d3.select("#venus-back").style("opacity", 1);
+    }, back)
+  };
+
+  // Playtime!
+  function play (delay) {
+
+    var venusOrbit = 70000; // The time it takes Venus to complete its orbit
+    // Wait a brief 2 seconds before putting everything on the screen
+    // setTimeout(function() {
+
+      // Call initial functions, set up the scene
+      drawStars();
+      drawVenusBack();
+      drawSun();
+      drawSunGlow();
+      drawVenusFront();
+      drawTextSun();
+      drawTextVenus();
+
+      // Start the animations, but wait 7000ms
+      setTimeout( function () {
+        setInterval(animateVenus(), venusOrbit);
+        function animateVenus() {
+          scaleUpVenusFront(venusOrbit/2/2 - 20);
+          translateVenusFront(venusOrbit/2 - 20);
+          translateVenusBack(venusOrbit/2 - 20);
+          setTimeout( function() {
+            scaleDownVenusFront(venusOrbit/2/2 - 20);
+            scaleDownVenusBack(venusOrbit/2/2 - 20);
+            scaleUpVenusBack(venusOrbit/2/2 - 20);
+          }, venusOrbit/2/2-20); 
+        };       
+      }, 0);
+      
+    // }, 2000);
+  }
+
+  play(2000); // Playtime! But wait 2000 ms
+
+  </script>
+
+</body>
+</html>

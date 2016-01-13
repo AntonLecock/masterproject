@@ -121,7 +121,7 @@
                              .style("opacity", Math.random() * (1 - .1) + .1);
   }
 
-  // Draw some big stars in the milky way
+  // Draw some big stars in the cluster
   for (i = 0; i <= 200; i++) {
     var drawBigClusterStar = starsGroup.append("circle")
                                      .attr("class", "background-star")
@@ -134,7 +134,7 @@
                                      .style("opacity", 1);
   }
 
-  // Draw some small stars in the milky way
+  // Draw some small stars in the cluster
   for (i = 0; i <=10000; i++) {
     var drawSmallClusterStar = starsGroup.append("circle")
                              .attr("class", "background-star")
@@ -147,13 +147,39 @@
                              .style("opacity", 1);
   }
 
-  // Draw some small stars in the milky way
-  for (i = 0; i <=2000; i++) {
+  // Draw some small stars in the cluster
+  for (i = 0; i <=5000; i++) {
     var drawSmallClusterStar = starsGroup.append("circle")
                              .attr("class", "background-star")
                              .attr("cx", d3.random.normal(w/2, 40))
                              .attr("cy", d3.random.normal(h/2, 40))
                              .attr("r", Math.random() * (2 - .4) + .4)
+                             .style("fill", "white")
+                             .style("opacity", 0)
+                             .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+                             .style("opacity", 1);
+  }
+
+  // Draw some big foreground stars
+  for (i = 0; i <=3; i++) {
+    var drawSmallClusterStar = starsGroup.append("circle")
+                             .attr("class", "background-star")
+                             .attr("cx", d3.random.normal(w/2, 300))
+                             .attr("cy", d3.random.normal(h/2, 300))
+                             .attr("r", Math.random() * (5 - 2) + 2)
+                             .style("fill", "white")
+                             .style("opacity", 0)
+                             .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+                             .style("opacity", 1);
+  }
+
+  // Draw some medium foreground stars
+  for (i = 0; i <=20; i++) {
+    var drawSmallClusterStar = starsGroup.append("circle")
+                             .attr("class", "background-star")
+                             .attr("cx", d3.random.normal(w/2, 200))
+                             .attr("cy", d3.random.normal(h/2, 200))
+                             .attr("r", Math.random() * (3 - 1) + 1)
                              .style("fill", "white")
                              .style("opacity", 0)
                              .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
@@ -186,8 +212,8 @@
   //                  .attr("r", 200)
   //                  .style("opacity", 1);
 
-  // Draw glow behind the sun
-  var drawSunGlow = sunGroup.append("circle")
+  // Draw glow
+  var drawStarsGlow = sunGroup.append("circle")
                             .attr("id", "sunglow")
                             .attr("class", "fx sunglow glow gradient")
                             .attr("cx", w/2)
@@ -205,7 +231,7 @@
                     .attr("id", "suntext")
                     .attr("class", "label suntext")
                     .attr("text-anchor", "middle")
-                    .text("This is a cluster.")
+                    .text("This is an open cluster.")
                     .style("fill", "white")
                     .style("opacity", 0)
                     .transition().delay(1000).duration(2000)
