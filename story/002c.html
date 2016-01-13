@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/stars.6.js" charset="utf-8"></script>
+  <script src="data/stars.8.js" charset="utf-8"></script>
+  <script src="data/half.js" charset="utf-8"></script>
+
+
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = 100;
+
+  // COLORS    
+  var designerBlack = d3.rgb("#9B678C").darker(5),
+
+      // designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerBlue = d3.rgb("#696fc4"),
+      designerGreen = d3.rgb("#99bb98");
+
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+  var sunGroup = svg.append("g").attr("id","sun-group");
+  var planetGroup = svg.append("g").attr("id", "planet-group");
+  var planetLightGroup = planetGroup.append("g").attr("id", "planet-light-group");
+  var planetShadeGroup = planetGroup.append("g").attr("id", "planet-shade-group");
+
+
+  // Define starglow gradient structure in defs
+  var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "white").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.058%").style("stop-color", "#FAFAE6").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.060%").style("stop-color", "#FBF2D6").style("stop-opacity", ".97");
+  starGlowGradient.append("stop").attr("offset", "1.56%").style("stop-color", "#FDE4B9").style("stop-opacity", ".9");
+  // starGlowGradient.append("stop").attr("offset", "1.87%").style("stop-color", "#FFDBA6").style("stop-opacity", ".84");
+  // starGlowGradient.append("stop").attr("offset", "2.08%").style("stop-color", "#FFD8A0").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+  var rScale = d3.scale.linear()
+                       .domain([-26.74, -2, 6])
+                       .range([1000, 2, .1])
+
+  // Create the projection for the backdrop of stars
+  var skyProjection = d3.geo.stereographic()
+                         .clipAngle(90)
+                         .scale(1100)
+                         .translate([w / 2, h / 2])
+                         .precision(.1);
+
+  var skyPath = d3.geo.path()
+                   .projection(skyProjection)
+                   .pointRadius(function(d) { return rScale(d.properties.mag);})
+
+  var durator = 1000;
+  // Call the stars into the backdrop
+  starsGroup.selectAll( "path" )
+    .data( stars_six_json.features )
+    .enter()
+    .append( "path" )
+    .attr("class", function(d) { return "star star-" + d.id})
+    .attr( "fill", designerWhite )
+    .attr( "d", skyPath )
+    // .transition().delay( function() { return Math.random() * (5000 - 2000) + 2000 durator = durator + .2})
+    // .style("opacity", 1);
+
+  // Create the projection for the sphere
+  var sphereProjection = d3.geo.orthographic()
+                         .clipAngle(90)
+                         .scale(100)
+                         .translate([w / 2, h / 2])
+                         .precision(.1);
+
+  var sphereLightPath = d3.geo.path()
+                 .projection(sphereProjection)
+
+  var sphereShadePath = d3.geo.path()
+                 .projection(sphereProjection)
+
+  // Call the path for the lit half of the sphere
+  planetLightGroup.selectAll( "path" )
+    .data( half_light_json.features )
+    .enter()
+    .append( "path" )
+    .attr( "fill", d3.rgb("#FDE4B9").brighter(1.5) )
+    .attr( "d", sphereLightPath )
+    .style("opacity", 0)
+    .transition().delay(500).duration(500)
+    .style("opacity", 1);
+
+  // Call the path for the shaded half of the sphere
+  planetShadeGroup.selectAll( "path" )
+    .data( half_shade_json.features )
+    .enter()
+    .append( "path" )
+    .attr( "fill", d3.rgb("#9B678C").darker(4))
+    .attr( "d", sphereShadePath )
+    .style("opacity", 0)
+    .transition().delay(500).duration(500)
+    .style("opacity", 1);
+
+  var λ = d3.scale.linear()
+    .domain([0, w])
+    .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+      .domain([0, h])
+      .range([90, -90]);
+  
+  // svg.on("mousemove", function() {
+  //   var p = d3.mouse(this);
+  //   console.log(p);
+  //   skyProjection.rotate([λ(p[0]), φ(p[1])]);
+  //   starsGroup.selectAll("path").attr("d", skyPath);
+  //   sphereProjection.rotate([-λ(p[0]), -φ(p[1])]);
+  //   planetLightGroup.selectAll("path").attr("d", sphereLightPath);
+  //   planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
+  // });
+
+  var velocity = 0.012,
+      then = Date.now();
+
+  d3.timer(function() {
+    var movement = velocity * (Date.now() - then);
+
+    skyProjection.rotate([-movement, movement/80]);
+    starsGroup.selectAll("path").attr("d", skyPath);
+
+    sphereProjection.rotate([movement, -movement/80]);
+    planetLightGroup.selectAll("path").attr("d", sphereLightPath);
+    planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
+  });
+
+  
+  // Draw glow behind the sun
+  d3.select(".star-0").style("fill", "url(#radial-gradient)")
+                      // .attr("transform", "scale(10,10)");
+
+  
+  var drawText = svg.append("text")
+                    .attr("x", w/2)
+                    .attr("y", h - paddingH)
+                    .attr("id", "suntext")
+                    .attr("class", "label suntext")
+                    .attr("text-anchor", "middle")
+                    .text("Say hello to earth.")
+                    .style("fill", "white")
+                    .style("opacity", 0)
+                    .transition().delay(1000).duration(2000)
+                    .style("opacity", 1);
+
+    var drawText = svg.append("text")
+                    .attr("x", w/2)
+                    .attr("y", h - paddingH + paddingH/3)
+                    .attr("id", "suntext")
+                    .attr("class", "label suntext")
+                    .attr("text-anchor", "middle")
+                    .text("Half of its surface is lit by the sun.")
+                    .style("fill", "white")
+                    .style("opacity", 0)
+                    .transition().delay(3000).duration(2000)
+                    .style("opacity", 1);
+
+  </script>
+</body>
+</html>
