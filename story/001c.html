@@ -97,13 +97,13 @@
   ////////////
 
   // Draw some big stars
-  for (i = 0; i <= 45; i++) {
+  for (i = 0; i <= 100; i++) {
     var drawBigStar = starsGroup.append("circle")
                              .attr("class", "background-star")
                              .attr("cx", Math.random() * (w - 0) + 0)
                              .attr("cy", Math.random() * (h - 0) + 0)
-                             .attr("r", Math.random() * (2.5 - .8) + .8)
-                             .style("fill", "url(#flare-pattern)")
+                             .attr("r", Math.random() * (2 - .4) + .8)
+                             .style("fill", designerWhite)
                              .style("opacity", 0)
                              .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
                              .style("opacity", 1);
@@ -118,7 +118,7 @@
                              .attr("r", Math.random() * (.8 - .3) + .3)
                              .style("fill", designerWhite)
                              .style("opacity", 0)
-                             .transition().delay(Math.random() * (1000 - 200) + 200).duration(Math.random() * (4000 - 200) + 200)
+                             .transition().delay(Math.random() * (2000 - 200) + 200).duration(Math.random() * (4000 - 2000) + 2000)
                              .style("opacity", Math.random() * (1 - .1) + .1);
   }
 

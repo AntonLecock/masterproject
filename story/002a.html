@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/stars.6.js" charset="utf-8"></script>
+  <script src="data/stars.8.js" charset="utf-8"></script>
+
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  // COLORS    
+  var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  // Define starglow gradient structure in defs
+  var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "000%").style("stop-color", "#ffe9d2").style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "010%").style("stop-color", "#ffe9d2").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "020%").style("stop-color", "#ffe9d2").style("stop-opacity", ".2");
+  starGlowGradient.append("stop").attr("offset", "030%").style("stop-color", "#ffe9d2").style("stop-opacity", ".1");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#ffe9d2").style("stop-opacity", ".0");
+
+
+  var rScale = d3.scale.sqrt()
+                       .domain([-1.2, 6])
+                       .range([5.5, .4])
+
+  // Create the projection
+  var projection = d3.geo.stereographic()
+                         .clipAngle(125)
+                         .scale(500)
+                         .translate([w / 2, h / 2])
+                         .precision(.1);
+
+  var path = d3.geo.path()
+                   .projection(projection)
+                   .pointRadius(function(d) { return rScale(d.properties.mag);})
+
+starsGroup.selectAll( "path" )
+  .data( stars_six_json.features )
+  .enter()
+  .append( "path" )
+  .attr("class", function(d) { return "star star-" + d.id})
+  .attr( "fill", designerWhite )
+  .style("opacity", 0)
+  .attr( "d", path )
+  .transition().duration( function() { return Math.random() * (5000 - 2000) + 2000})
+  .style("opacity", 1);
+
+// starsGroup.selectAll( "path" )
+//   .data( stars_eight_json.features )
+//   .enter()
+//   .append( "path" )
+//   .attr( "fill", designerWhite )
+//   .attr( "d", path );
+
+  var λ = d3.scale.linear()
+    .domain([0, w])
+    .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+      .domain([0, h])
+      .range([90, -90]);
+  
+  svg.on("mousemove", function() {
+    var p = d3.mouse(this);
+    projection.rotate([λ(p[0]), φ(p[1])]);
+    svg.selectAll("path").attr("d", path);
+  });
+  
+
+
+  // // Draw some big stars
+  // for (i = 0; i <= 45; i++) {
+  //   var drawBigStar = starsGroup.append("circle")
+  //                            .attr("class", "background-star")
+  //                            .attr("cx", Math.random() * (w - 0) + 0)
+  //                            .attr("cy", Math.random() * (h - 0) + 0)
+  //                            .attr("r", Math.random() * (2.5 - .8) + .8)
+  //                            .style("fill", "#ffe9d2")
+  //                            .style("opacity", 0)
+  //                            .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+  //                            .style("opacity", 1);
+  // }
+
+  // // Draw a lot of small stars
+  // for (i = 0; i <= 2000; i++) {
+  //   var drawSmallStar = starsGroup.append("circle")
+  //                            .attr("class", "background-star background-star-" + i)
+  //                            .attr("cx", Math.random() * (w - 0) + 0)
+  //                            .attr("cy", Math.random() * (h - 0) + 0)
+  //                            .attr("r", Math.random() * (.8 - .3) + .3)
+  //                            .style("fill", "#ffe9d2")
+  //                            .style("opacity", 0)
+  //                            .transition().delay(Math.random() * (1000 - 200) + 200).duration(Math.random() * (4000 - 200) + 200)
+  //                            .style("opacity", Math.random() * (1 - .1) + .1);
+  // }
+
+  // // Draw some big foreground stars
+  // for (i = 0; i <=3; i++) {
+  //   var drawSmallClusterStar = starsGroup.append("circle")
+  //                            .attr("class", "background-star")
+  //                            .attr("cx", Math.random() * (w - 0) + 0)
+  //                            .attr("cy", Math.random() * (h - 0) + 0)
+  //                            .attr("r", Math.random() * (5 - 2) + 2)
+  //                            .style("fill", "white")
+  //                            .style("opacity", 0)
+  //                            .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+  //                            .style("opacity", 1);
+  // }
+
+  // // Draw some medium foreground stars
+  // for (i = 0; i <=20; i++) {
+  //   var drawSmallClusterStar = starsGroup.append("circle")
+  //                            .attr("class", "background-star")
+  //                            .attr("cx", Math.random() * (w - 0) + 0)
+  //                            .attr("cy", Math.random() * (h - 0) + 0)
+  //                            .attr("r", Math.random() * (3 - 1) + 1)
+  //                            .style("fill", "white")
+  //                            .style("opacity", 0)
+  //                            .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+  //                            .style("opacity", 1);
+  // }
+
+  var drawText = svg.append("text")
+                    .attr("x", w/2)
+                    .attr("y", h - paddingH)
+                    .attr("id", "suntext")
+                    .attr("class", "label suntext")
+                    .attr("text-anchor", "middle")
+                    .text("These are the brightest stars in the sky.")
+                    .style("fill", "white")
+                    .style("opacity", 0)
+                    .transition().delay(1000).duration(2000)
+                    .style("opacity", 1);
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+</head>
+<body>
+
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  // COLORS    
+  var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerRed = d3.rgb("#c83c46"),
+      designerGreen = d3.rgb("#99B898");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+
+  // Create mask elemnt in the defs
+  var whiteMask = defs.append("mask").attr("id", "white-mask");
+  var blackMask = defs.append("mask").attr("id", "black-mask");
+  var greenMask = defs.append("mask").attr("id", "green-mask");
+
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  // Define starglow gradient structure in defs
+  var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "000%").style("stop-color", designerWhite).style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "010%").style("stop-color", designerWhite).style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "020%").style("stop-color", designerWhite).style("stop-opacity", ".2");
+  starGlowGradient.append("stop").attr("offset", "030%").style("stop-color", designerWhite).style("stop-opacity", ".1");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", designerWhite).style("stop-opacity", ".0");
+
+  // var flarePattern = defs.append("pattern")
+  //                        .attr("id", "flare-pattern")
+  //                        .attr("x", 0)
+  //                        .attr("y", 0)
+  //                        .attr("patternUnits", "objectBoundingBox")
+  //                        .attr("height", 1)
+  //                        .attr("width", 1);
+
+  // var flarePatternImage = flarePattern.append("image")
+  //                                     .attr("x", 0)
+  //                                     .attr("y", 0)
+  //                                     .attr("height", 512)
+  //                                     .attr("width", 512)
+  //                                     .attr("xlink:href", "../img/lensflare0-b.png")
+
+
+
+  // Draw some big stars
+  function drawStars () {
+    for (i = 0; i <= 65; i++) {
+      var drawBigStar = starsGroup.append("circle")
+                               .attr("class", "background-star")
+                               .attr("cx", Math.random() * (w - 0) + 0)
+                               .attr("cy", Math.random() * (h - 0) + 0)
+                               .attr("r", Math.random() * (2 - .8) + .8)
+                               .style("fill", designerWhite)
+                               .style("opacity", 0)
+                               .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+                               .style("opacity", 1);
+    }
+  
+    // Draw a lot of small stars
+    for (i = 0; i <= 2000; i++) {
+      var drawSmallStar = starsGroup.append("circle")
+                               .attr("class", "background-star background-star-" + i)
+                               .attr("cx", Math.random() * (w - 0) + 0)
+                               .attr("cy", Math.random() * (h - 0) + 0)
+                               .attr("r", Math.random() * (.8 - .3) + .3)
+                               .style("fill", designerWhite)
+                               .style("opacity", 0)
+                               .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (4000 - 200) + 200)
+                               .style("opacity", Math.random() * (1 - .1) + .1);
+    }
+  };
+
+  function animate(drtn) {
+
+    var cx = 100,
+        rx = 110, 
+        ry = 400;
+
+
+    var venusMaskLight = blackMask.append("ellipse")
+                                  .attr("class", "mask-shadow")
+                                  .attr("id", "mask-shadow")
+                                  .attr("cx", w/2 + 100)
+                                  .attr("cy", h/2)
+                                  .attr("rx", 110)
+                                  .attr("ry", 400)
+                                  .style("fill", "#fff");
+
+    var venusMaskShadow = whiteMask.append("ellipse")
+                                   .attr("class", "mask-light")
+                                   .attr("id", "mask-light")
+                                   .attr("cx", w/2 + cx)
+                                   .attr("cy", h/2)
+                                   .attr("rx", rx)
+                                   .attr("ry", ry)
+                                   .style("fill", "#fff");
+
+    var venusMaskGreen = greenMask.append("ellipse")
+                                  .attr("class", "mask-green")
+                                  .attr("id", "mask-green")
+                                  .attr("cx", w/2 + 320)
+                                  .attr("cy", h/2)
+                                  .attr("rx", 110)
+                                  .attr("ry", 250)
+                                  .style("fill", "#fff");
+
+    function stepOne() {
+      cx = 0, 
+      rx = 199, 
+      ry = 199;
+
+      d3.select("#mask-green")
+        .attr("cx", w/2 + 320)
+        .attr("rx", 110)
+        .attr("ry", 250)
+
+      d3.select("#mask-shadow").transition().duration(drtn).ease("linear")
+        .attr("cx",w/2 + cx)
+        .attr("rx", rx)
+        .attr("ry", ry);
+    }
+
+    function stepTwo() {
+      cx = -100, 
+      rx = 110, 
+      ry = 250;
+
+      // d3.select("#mask-shadow").transition().duration(drtn)
+      //   .attr("cx",w/2 + 0)
+      //   .attr("rx", 199)
+      //   .attr("ry", 199);
+      // cx = 0, 
+      // rx = 199, 
+      // ry = 199;
+
+      // d3.select("#mask-light").transition().duration(drtn)
+      //   .attr("cx",w/2 + 0)
+      //   .attr("rx", 199)
+      //   .attr("ry", 199);
+
+      d3.select("#mask-shadow").transition().duration(drtn).ease("linear")
+        .attr("cx",w/2 - 100)
+        .attr("rx", 110)
+        .attr("ry", 250);
+    }
+
+    function stepThree () {
+      // d3.select("#mask-light").transition().duration(drtn)
+      //   .attr("cx",w/2 - 100)
+      //   .attr("rx", 110)
+      //   .attr("ry", 400);
+
+      // d3.select("#mask-light").transition().delay(drtn).duration(0)
+      //   .style("opacity", 0);
+
+      // d3.select("#venus-white").transition().delay(drtn).duration(0)
+      //   .style("opacity", 0);
+  
+      d3.select("#mask-green")
+        .attr("cx", w/2 + 100)
+        .transition().duration(drtn).ease("linear")
+        .attr("cx",w/2 )
+        .attr("rx", 200)
+        .attr("ry", 200);
+
+        d3.select("#mask-shadow").transition().duration(drtn).ease("linear")
+        .attr("cx",w/2)
+        .attr("rx", 200)
+        .attr("ry", 200);
+    }
+
+    function stepFour() {
+      d3.select("#mask-green")
+        .transition().duration(drtn).ease("linear")
+        .attr("cx",w/2 - 100 )
+        .attr("rx", 110)
+        .attr("ry", 250);
+    }
+
+     
+    // setInterval(function() {
+    //   cx = 0, 
+    //   rx = 201, 
+    //   ry = 201;
+  
+    //   d3.select("#mask-shadow").transition().duration(10000)
+    //     .attr("cx",w/2 + cx)
+    //     .attr("cy",h/2)
+    //     .attr("rx", rx)
+    //     .attr("ry", ry);
+  
+    // }, 10000);
+    
+    function cycle() {
+      stepOne();
+      setTimeout( function () {stepTwo(); console.log("stepTwo starts!")}, drtn);
+      setTimeout( function () {stepThree(); console.log("stepThree starts!")}, drtn * 2);
+      setTimeout( function () {stepFour(); console.log("stepFour starts!")}, drtn * 3);
+    };
+    cycle();
+    setInterval(cycle(), drtn*4 + 10);
+
+  };
+
+
+  function drawVenusBackground() {
+    // Draw a sun as reference, next to the selected star
+    sunGroup.append("circle")
+            .attr("class", "venus-background-red")
+            .attr("id", "venus-background-red")
+            .attr("cx", w/2)
+            .attr("cy", h/2)
+            .attr("r", 180)
+            .style("fill", designerWhite)
+            .style("opacity", 1)
+            .transition().duration(2000)
+            .attr("r", 200)
+            .style("opacity", 1);
+  };
+
+  function drawVenusForeground() {
+    sunGroup.append("circle")
+            .attr("class", "venus-background-green")
+            .attr("id", "venus-background-green")
+            .attr("cx", w/2)
+            .attr("cy", h/2)
+            .attr("r", 180)
+            .attr("mask", "url(#green-mask)")
+            .style("fill", designerWhite)
+            .style("opacity", 1)
+            .transition().duration(2000)
+            .attr("r", 200)
+            .style("opacity", 1);
+  };
+
+  function drawVenusBlack() {
+    // Draw a sun as reference, next to the selected star
+    sunGroup.append("circle")
+       .attr("class", "venus-black")
+       .attr("id", "venus-black")
+       .attr("cx", w/2)
+       .attr("cy", h/2)
+       .attr("r", 180 + 1)
+       .attr("mask", "url(#black-mask)")
+       .style("fill", designerBlack)
+       .style("opacity", 1)
+       .transition().duration(2000)
+       .attr("r", 200 + 1);
+  };
+
+  function drawVenusWhite() {
+    // Draw a sun as reference, next to the selected star
+    sunGroup.append("circle")
+       .attr("class", "venus-white")
+       .attr("id", "venus-white")
+       .attr("cx", w/2)
+       .attr("cy", h/2)
+       .attr("r", 180)
+       .attr("mask", "url(#white-mask")
+       .style("fill", designerWhite)
+       .style("opacity", 1)
+       .transition().duration(2000)
+       .attr("r", 200)
+       .style("opacity", 1);
+  };
+
+  // Playtime!
+  function play (delay) {
+
+    var venusOrbit = 40000; // The time it takes Venus to complete its orbit
+    // Wait a brief 2 seconds before putting everything on the screen
+    // setTimeout(function() {
+
+      // Call initial functions, set up the scene
+      drawStars();
+      drawVenusBackground();
+      drawVenusWhite();
+      drawVenusBlack();
+      drawVenusForeground();
+      animate(2000);
+
+      
+    // }, 2000);
+  }
+
+  play(2000); // Playtime! But wait 2000 ms
+
+  </script>
+
+</body>
+</html>
