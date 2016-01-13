@@ -43,7 +43,10 @@
   // COLORS    
   var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
       designerRed = d3.rgb("#c83c46"),
-      designerWhite = d3.rgb("#ffe9d2");
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerBlue = d3.rgb("#696fc4"),
+      designerGreen = d3.rgb("#99bb98");
+
 
 
   var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
@@ -128,7 +131,7 @@
     .data( half_light_json.features )
     .enter()
     .append( "path" )
-    .attr( "fill", designerWhite )
+    .attr( "fill", designerRed )
     .attr( "d", sphereLightPath )
     .style("opacity", 0)
     .transition().delay(500).duration(500)
