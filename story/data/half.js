@@ -28,4 +28,30 @@ var half_shade_json = {
 		}
 	}
 ]
-} 
+}
+
+var full_json = {
+"type":"FeatureCollection",
+
+"features":[
+	{
+		"type":"Feature",
+		"geometry": {
+			"type":"Polygon",
+			"coordinates": [
+				[ [0.0, 90.0], [-180.0, 0.0], [0.0, -90.0], [0.0, 0.0], [0.0, 90.0] ]
+			]
+		}
+	},
+	{
+		"type":"Feature",
+		"geometry": {
+			"type":"Polygon",
+			"coordinates": [
+				[ [0.0, 90.0], [0.0, 0.0], [0.0, -90.0], [-180.0, 0.0], [0.0, 90.0] ]
+			],
+
+		}
+	}
+]
+}  
