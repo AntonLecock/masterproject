@@ -103,15 +103,13 @@
                        .range([1100, 2, .1])
 
   // Create the projection for the backdrop of stars
-  var skyProjection = d3.geo.stereographic()
-                         .clipAngle(90)
-                         .scale(1100)
+  var skyProjection = d3.geo.equirectangular()
+                         .scale(200)
                          .translate([w / 2, h / 2])
                          .precision(.1);
 
-  var sunProjection = d3.geo.stereographic()
-                         .clipAngle(90)
-                         .scale(1100)
+  var sunProjection = d3.geo.equirectangular()
+                         .scale(200)
                          .translate([w / 2, h / 2])
                          .precision(.1);
 
@@ -125,13 +123,13 @@
 
   var durator = 1000;
   // Call the stars into the backdrop
-  starsGroup.selectAll( "path" )
-    .data( stars_six_json.features )
-    .enter()
-    .append( "path" )
-    .attr("class", function(d) { return "star star-" + d.id})
-    .attr( "fill", designerWhite )
-    .attr( "d", skyPath )
+  // starsGroup.selectAll( "path" )
+  //   .data( stars_six_json.features )
+  //   .enter()
+  //   .append( "path" )
+  //   .attr("class", function(d) { return "star star-" + d.id})
+  //   .attr( "fill", designerWhite )
+  //   .attr( "d", skyPath )
 
   sunGroup.selectAll( "path" )
     .data( sun_json.features )
@@ -142,26 +140,23 @@
     .attr( "d", sunPath )
 
   // Create the projection for the sphere
-  var sphereProjection = d3.geo.orthographic()
-                         .clipAngle(90)
+  var sphereProjection = d3.geo.equirectangular()
                          .scale(200)
                          .translate([w / 2, h / 2])
                          .precision(.1);
 
-  var sphereGlowProjection = d3.geo.orthographic()
-                         .clipAngle(95)
-                         .scale(205)
+  var sphereGlowProjection = d3.geo.equirectangular()
+                         .scale(201)
                          .translate([w / 2, h / 2])
                          .precision(.1);
 
-  var worldProjection = d3.geo.orthographic()
-                         .clipAngle(85)
+  var worldProjection = d3.geo.equirectangular()
                          .scale(200)
                          .translate([w / 2, h / 2])
                          .precision(.1);
 
   var sphereSeaPath = d3.geo.path()
-                 .projection(sphereProjection);
+                 .projection(worldProjection);
 
   var sphereWorldPath = d3.geo.path()
                  .projection(worldProjection);
@@ -175,15 +170,15 @@
   var graticule = d3.geo.graticule();
 
   // Call the path for the bottom layer of the sphere
-  planetSeaGroup.selectAll( "path" )
-    .data( full_json.features )
-    .enter()
-    .append( "path" )
-    .attr( "fill", d3.rgb("#9B678C").darker(2))
-    .attr( "d", sphereSeaPath )
-    .style("opacity", 0)
-    .transition().delay(500).duration(2000)
-    .style("opacity", 1);
+  // planetSeaGroup.selectAll( "path" )
+  //   .data( full_json.features )
+  //   .enter()
+  //   .append( "path" )
+  //   .attr( "fill", d3.rgb("#9B678C").darker(2))
+  //   .attr( "d", sphereSeaPath )
+  //   .style("opacity", 0)
+  //   .transition().delay(500).duration(2000)
+  //   .style("opacity", 1);
 
   // Call the path for the landmasses on the sphere
   d3.json("data/world-110m.json", function(error, world) {
@@ -246,8 +241,10 @@
   //   planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
   // });
 
-  var velocityDay = 1/86400000,
-      velocityYear = 1/(3.1556926 * Math.pow(10,10)),
+  var speedup = 0;
+
+  var velocityDay = 1/86400000 * speedup,
+      velocityYear = 1/(3.1556926 * Math.pow(10,10)) * speedup,
       then = Date.now(),
       movementDay = 0,
       movementYear = 0;
@@ -271,19 +268,16 @@
     movementDay = velocityDay * (Date.now() - then) + ((360/24)*now.getUTCHours());
     movementYear = velocityYear * (Date.now() - then) + ((360/365.75)*(365.75+80+day));
 
-    console.log(movementDay);
-
     // skyProjection.rotate([-movementYear, 45]);
     // starsGroup.selectAll("path").attr("d", skyPath);
 
-    sunProjection.rotate([-movementYear, -23]);
+    sunProjection.rotate([movementYear, 23]);
     sunGroup.selectAll("path").attr("d", sunPath);
 
     sphereProjection.rotate([movementYear, 23]);
     planetLightGroup.selectAll("path").attr("d", sphereLightPath);
     planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
 
-    sphereProjection.rotate([movementYear, 23]);
     sphereGlowProjection.rotate([movementYear, 23]);
     planetLightGroup.selectAll("path").attr("d", sphereLightPath);
     planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
@@ -298,33 +292,33 @@
     }
   });
 
-  var drawText = svg.append("text")
-                    .attr("x", w/2)
-                    .attr("y", h - paddingH)
-                    .attr("id", "suntext")
-                    .attr("class", "label suntext")
-                    .attr("text-anchor", "middle")
-                    .text("This is planet Earth as it is right now.")
-                    .style("fill", "white")
-                    .style("opacity", 0)
-                    .transition().delay(1000).duration(2000)
-                    .style("opacity", 1);
+  // var rangeScale = 1100;
+
+  var rangeScale = d3.interpolateNumber(10, 120);
+
+  // d3.timer(function () {
+  //   if (movement >= 80 && movement < 97) {
+  //     rScale.range([rangeScale(0), 2, .1])
+  //   } else {
+  //     rScale.range([rangeScale(1), 2, .1])
+  //   }
+  // });
 
     var drawText = svg.append("text")
                     .attr("x", w/2)
-                    .attr("y", h - paddingH + paddingH/3)
+                    .attr("y", h - (paddingH/2))
                     .attr("id", "suntext-2")
                     .attr("class", "label suntext")
                     .attr("text-anchor", "middle")
                     .text("Right now is " + now +".")
                     .style("fill", "white")
                     .style("opacity", 0)
-                    .transition().delay(3000).duration(2000)
+                    .transition().delay(1000).duration(2000)
                     .style("opacity", 1);
 
   setTimeout(function() {
     textDrawn = true;
-  }, 5000);
+  }, 3000);
 
   </script>
 </body>
