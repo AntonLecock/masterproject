@@ -24,6 +24,13 @@
       width: 100%; 
       height: 100% 
     }
+    .graticule {
+      fill: none;
+      stroke: #777;
+      stroke-width: .2px;
+      stroke-opacity: .5;
+    }
+
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="//d3js.org/topojson.v1.min.js"></script>
@@ -155,7 +162,7 @@
                          .precision(.1);
 
   var worldProjection = d3.geo.orthographic()
-                         .clipAngle(85)
+                         .clipAngle(88)
                          .scale(200)
                          .translate([w / 2, h / 2])
                          .precision(.1);
@@ -173,6 +180,11 @@
                  .projection(sphereGlowProjection);
 
   var graticule = d3.geo.graticule();
+
+  var graticulePath = svg.append("path")
+                         .datum(graticule)
+                         .attr("class", "graticule")
+                         .attr("d", sphereWorldPath);
 
   // Call the path for the bottom layer of the sphere
   planetSeaGroup.selectAll( "path" )
@@ -246,8 +258,10 @@
   //   planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
   // });
 
-  var velocityDay = 1/86400000,
-      velocityYear = 1/(3.1556926 * Math.pow(10,10)),
+  var speedup = 1;
+
+  var velocityDay = 1/86400000 * speedup,
+      velocityYear = 1/(3.1556926 * Math.pow(10,10)) * speedup,
       then = Date.now(),
       movementDay = 0,
       movementYear = 0;
@@ -268,7 +282,7 @@
   // planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
 
   d3.timer(function() {
-    movementDay = velocityDay * (Date.now() - then) + ((360/24)*now.getUTCHours());
+    movementDay = velocityDay * (Date.now() - then) + ((360/24)*now.getUTCHours()) + (360/24/60)*now.getMinutes();
     movementYear = velocityYear * (Date.now() - then) + ((360/365.75)*(365.75+80+day));
 
     console.log(movementDay);
@@ -279,17 +293,19 @@
     sunProjection.rotate([-movementYear, -23]);
     sunGroup.selectAll("path").attr("d", sunPath);
 
-    sphereProjection.rotate([movementYear, 23]);
-    planetLightGroup.selectAll("path").attr("d", sphereLightPath);
-    planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
+    // sphereProjection.rotate([movementYear, 23.5]);
+    // planetLightGroup.selectAll("path").attr("d", sphereLightPath);
+    // planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
 
     sphereProjection.rotate([movementYear, 23]);
     sphereGlowProjection.rotate([movementYear, 23]);
     planetLightGroup.selectAll("path").attr("d", sphereLightPath);
     planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
 
-    worldProjection.rotate([movementDay, 0]);
+    worldProjection.rotate([movementDay, 0, 23]);
     planetWorldGroup.selectAll("path").attr("d", sphereWorldPath);
+    d3.selectAll(".graticule").attr("d", sphereWorldPath);
+
 
     var thisMoment = new Date();
 
