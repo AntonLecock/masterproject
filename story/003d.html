@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:white;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+
+<!--   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+   viewBox="0 0 1440 900" enable-background="new 0 0 1440 900" xml:space="preserve">
+   <defs>
+    <filter id="terrain" x="0" y="0" width="100%" height="100%">
+<feTurbulence baseFrequency=".01" numOctaves="2" seed="10" type="turbulence"/>
+<feColorMatrix type="luminanceToAlpha"/>
+<feComponentTransfer>
+ <feFuncA type="table" tableValues="1 0"/>
+</feComponentTransfer>
+</filter>
+   </defs>
+<radialGradient id="SVGID_1_" cx="719.8812" cy="450" r="327.1245" gradientUnits="userSpaceOnUse">
+  <stop  offset="0.1974" style="stop-color:#FFFFFF;stop-opacity:1"/>
+  <stop  offset="0.2241" style="stop-color:#AD82A0;stop-opacity:1"/>
+  <stop  offset="1" style="stop-color:#9B678C;stop-opacity:0"/>
+</radialGradient>
+<circle fill="url(#SVGID_1_)" filter="url(#terrain)" cx="719.9" cy="450" r="327.1"/>
+</svg> -->
+<svg id="svg-container">
+  <filter  filterUnits="objectBoundingBox" id="displacement">
+    <feTurbulence  type="fractalNoise" numOctaves="1" result="turb" stitchTiles="noStitch" baseFrequency=".1"></feTurbulence>
+    <feColorMatrix  type="hueRotate" result="huedturb" in="turb" values="1">
+        <animate  fill="remove" values="0;180;360" additive="replace" accumulate="none" restart="always" attributeName="values" calcMode="linear" dur="20" repeatCount="indefinite" attributeType="XML">
+        </animate>
+    </feColorMatrix>
+    <feDisplacementMap  result="displace" in="SourceGraphic" in2="huedturb" scale="15" xChannelSelector="B" yChannelSelector="A">
+      </feDisplacementMap>
+    <feOffset  result="unoffsetdisplace" in="displace" dy="0" dx="0"></feOffset>
+    <feGaussianBlur  result="displaceblur" stdDeviation="1" in="unoffsetdisplace"></feGaussianBlur>
+    <feComponentTransfer  result="displaceR" in="displaceblur">
+      <!--    <feFuncR type="discrete" tableValues="0 0"/>   -->
+    </feComponentTransfer>
+    <feComposite  operator="over" in="displaceR"></feComposite>
+  </filter>
+</svg>
+
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = 100;
+
+  // COLORS    
+  var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerRed = d3.rgb("#c83c46");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+  // Create the SVG Viewport
+  var svg = d3.select("#svg-container")
+              .attr("class","svg-container")
+              .attr("width", w)
+              .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  var dustGradient = defs.append("radialGradient").attr("id", "dust-gradient").attr("cx", "50%").attr("cy", "50%");
+      dustGradient.append("stop").attr("id", "grad-stop-1").attr("offset", 0.5).style("stop-color", d3.rgb("#FAFAE6").darker(5)).style("stop-opacity", ".8").transition().duration(50000).attr("offset", 0).style("stop-color", "#FAFAE6");
+      dustGradient.append("stop").attr("id", "grad-stop-2").attr("offset", 0.999).style("stop-color", d3.rgb("#FDE4B9").darker(4)).style("stop-opacity", ".5").transition().delay(25000).duration(25000).ease("circle-in").attr("offset", .001).style("stop-color", "#FDE4B9");
+      dustGradient.append("stop").attr("id", "grad-stop-3").attr("offset", 1).style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+  var starGlowGradient = defs.append("radialGradient").attr("id", "stargradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "white").style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "10.58%").style("stop-color", "#FAFAE6").style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "12.1%").style("stop-color", "#FBF2D6").style("stop-opacity", ".97");
+  starGlowGradient.append("stop").attr("offset", "15.6%").style("stop-color", "#FDE4B9").style("stop-opacity", ".9");
+  starGlowGradient.append("stop").attr("offset", "18.7%").style("stop-color", "#FFDBA6").style("stop-opacity", ".84");
+  starGlowGradient.append("stop").attr("offset", "20.8%").style("stop-color", "#FFD8A0").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+    // Draw some big stars
+  for (i = 0; i <= 45; i++) {
+    var drawBigStar = starsGroup.append("circle")
+                             .attr("class", "background-star")
+                             .attr("cx", Math.random() * (w - 0) + 0)
+                             .attr("cy", Math.random() * (h - 0) + 0)
+                             .attr("r", Math.random() * (1.5 - .8) + .8)
+                             .style("fill", "#ffe9d2")
+                             .style("opacity", 0)
+                             .transition().delay(Math.random() * (3000 - 2000) + 2000).duration(Math.random() * (5000 - 200) + 200)
+                             .style("opacity", 1);
+  }
+
+  // Draw a lot of small stars
+  for (i = 0; i <= 2000; i++) {
+    var drawSmallStar = starsGroup.append("circle")
+                             .attr("class", "background-star background-star-" + i)
+                             .attr("cx", Math.random() * (w - 0) + 0)
+                             .attr("cy", Math.random() * (h - 0) + 0)
+                             .attr("r", Math.random() * (.8 - .3) + .3)
+                             .style("fill", "#ffe9d2")
+                             .style("opacity", 0)
+                             .transition().delay(Math.random() * (1000 - 200) + 200).duration(Math.random() * (4000 - 200) + 200)
+                             .style("opacity", Math.random() * (1 - .1) + .1);
+  }
+
+  // Draw beginnings of a star
+  var square = svg.append("rect")
+                  .attr("x", 0)
+                  .attr("y", -(w-h)/2)
+                  .attr("width", w)
+                  .attr("height", w)
+                  .attr("id", "square")
+                  .style("fill", "url(#dust-gradient)");
+
+  // var drawText = svg.append("text")
+  //                   .attr("x", w/2)
+  //                   .attr("y", h - paddingH)
+  //                   .attr("id", "suntext1")
+  //                   .attr("class", "label suntext")
+  //                   .attr("text-anchor", "middle")
+  //                   .text("Welcome to space.")
+  //                   .style("fill", designerWhite)
+  //                   .style("opacity", 0)
+  //                   .transition().delay(1000).duration(2000)
+  //                   .style("opacity", 1);
+
+  // var drawText = svg.append("text")
+  //                   .attr("x", w/2)
+  //                   .attr("y", h - paddingH + paddingH/3)
+  //                   .attr("id", "suntext2")
+  //                   .attr("class", "label suntext")
+  //                   .attr("text-anchor", "middle")
+  //                   .text("It's not as empty here as it seems: a star is being formed.")
+  //                   .style("fill", designerWhite)
+  //                   .style("opacity", 0)
+  //                   .transition().delay(4000).duration(2000)
+  //                   .style("opacity", 1);
+
+  var drawStar = svg.append("circle")
+                    .attr("cx", w/2)
+                    .attr("cy", h/2)
+                    .attr("r", 0.5)
+                    .attr("id", "star")
+                    .style("fill", designerWhite)
+                    .style("opacity", 0)
+                    .transition().delay(45000).duration(5000).ease("circle-in")
+                    .attr("r", 2)
+                    .style("opacity", 1);
+
+  // setTimeout(function() { 
+  //   d3.selectAll(".suntext").transition().duration(2500).style("opacity", 0);
+  //   setTimeout(function() {
+  //     d3.selectAll(".suntext").attr("text","");
+  //   }, 2500);
+  // }, 10000);
+
+  // setTimeout(function() { 
+  //   d3.select("#suntext1").text("A vast cloud of dust clumps together because of gravity.").transition().duration(2000).style("opacity", 1);
+  //   d3.select("#suntext2").text("As it gets concentrated more and more, the center starts to heat up and glow.").transition().delay(3000).duration(2000).style("opacity", 1);
+  // }, 15000);
+
+  // setTimeout(function() { 
+  //   d3.selectAll(".suntext").transition().duration(2500).style("opacity", 0);
+  //   setTimeout(function() {
+  //     d3.selectAll(".suntext").attr("text","");
+  //   }, 2500);
+  // }, 20000);
+
+  // setTimeout(function() { 
+  //   d3.select("#suntext1").text("The core heats up and the internal energy creates a stable environment.").transition().duration(2000).style("opacity", 1);
+  //   d3.select("#suntext2").text("The radial energy going outwards prevents the gigantic mass of matter from falling into itself.").transition().delay(3000).duration(2000).style("opacity", 1);
+  // }, 25000);
+
+  setTimeout(function() { 
+    svg.append("g")
+       .attr("id", "jets")
+       .attr("filter", "url(#displacement)")
+
+
+    d3.select("#jets").append("polygon")
+                      .attr("points",  w/2 + "," + h/2 + " " + w/2 + "," +  h/2 + " " + w/2 + "," + h/2 + " " + w/2 + "," + h/2 + " " + w/2 + "," +  h/2 + " " + w/2 + "," + h/2)
+                      .style("fill", "url(#stargradient)")
+                      .transition().delay(0).duration(500).ease("exp-in")
+                      .attr("points",  (w/2+190) + ",0 " + (w/2+220) + ",0 " + w/2 + "," + h/2 + " " + (w/2-220) + "," + h + " " + (w/2-190) + "," + h + " " + w/2 + "," + h/2);
+
+    // d3.select("#jets").append("polygon")
+    //                   .attr("points",  w/2 + "," + h/2 + " " + w/2 + "," +  h/2 + " " + w/2 + "," + h/2)
+    //                   .style("fill", "url(#stargradient)")
+    //                   .transition().duration(1000).ease("exp-in")
+    //                   .attr("points",  (w/2-180) + "," + h + " " + (w/2-140) + "," + h + " " + w/2 + "," + h/2);
+  }, 50000);
+
+
+  </script>
+</body>
+</html>

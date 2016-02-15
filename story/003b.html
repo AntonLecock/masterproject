@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+
+
+
+<svg width="100%" height="100%" viewBox="0 0 1000 650">
+<radialGradient id="SVGID_1_" cx="50%" cy="50%" r="90%" gradientUnits="userSpaceOnUse">
+    <stop  offset="3.044181e-02" style="stop-color:#AABBFF"/>
+  <stop  offset="0.1058" style="stop-color:#AABBFF"/>
+  <stop  offset="0.1217" style="stop-color:#AABBFF;stop-opacity:0.969"/>
+  <stop  offset="0.1568" style="stop-color:#AABBFF;stop-opacity:0.9008"/>
+  <stop  offset="0.2086" style="stop-color:#AABBFF;stop-opacity:0.8"/>
+  <stop  offset="1" style="stop-color:#AABBFF;stop-opacity:0"/>
+</radialGradient>
+<circle fill="url(#SVGID_1_)" cx="50%" cy="50%" r="100%"/>
+<script type="text/ecmascript" xlink:href="http://www.codedread.com/lib/smil.user.js"/>
+  
+  
+<defs>
+     
+  <filter id="displacement" filterUnits="objectBoundingBox">
+    
+    <feTurbulence type="fractalNoise" baseFrequency=".15" numOctaves="1"  result="turb"/>
+
+      <feColorMatrix in="turb" result="huedturb" type="hueRotate" values="10">
+            
+      <animate attributeType="XML" attributeName="values" values="0;180;360" dur="2" repeatCount="indefinite"/> 
+    </feColorMatrix>
+      
+    <feDisplacementMap in="SourceGraphic" in2="huedturb" scale="15" result="displace" xChannelSelector="B"/>
+    
+    <feOffset dx="-5" dy="-3" in="displace" result="unoffsetdisplace"/>
+    
+    <feGaussianBlur in="unoffsetdisplace" result="displaceblur" stdDeviation="2.5"/>
+       <feComponentTransfer in="displaceblur" result="displaceR">
+      <!-- <feFuncR type="discrete" tableValues="0 0"/>-->
+    </feComponentTransfer> 
+       <feComposite operator="over" in="displaceR"/>   
+    
+ </filter>
+
+</defs>
+      
+
+  
+  <circle cx="50%" cy="50%" r="15%" fill="#FFFFFF" filter="url(#displacement)" opacity=".5"></circle>
+  <circle cx="50%" cy="50%" r="14%" fill="#FFFFFF" filter="url(#displacement)" ></circle>
+
+      
+  
+  
+</svg>
+
+</body>
+</html>
