@@ -1,0 +1,604 @@
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>D3.js</title>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" charset="utf-8"></script>
+  <style type="text/css">
+  body {
+    padding:0;
+    margin:0;
+    background-color:#111;
+    font-family: BretzelGrotesk, sans-serif;
+    color:white;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: white;
+    shape-rendering: crispEdges;
+  }
+
+  .axis line {
+    length: 400px;
+    stroke:white;
+  }
+
+  text {
+    font-size: 12px;
+    fill:white;
+  }
+
+  text.title {
+    font-weight:700;
+  }
+
+  text.planetlabel {
+    text-transform: capitalize;
+    fill: #888;
+  }
+
+  .grid {
+    stroke-width:1;
+    stroke: black;
+    shape-rendering: crispEdges;
+    opacity: .2;
+  }
+
+  form {
+    position:fixed;
+    left:5;
+    top: 5px; 
+    z-index:2;
+    color:white;
+    font-size: 11px;
+  }
+
+  form#browse {
+    left:50%;
+  }
+
+  </style>
+</head>
+
+<body>
+
+  <script type="text/javascript">
+
+    var ages = ["0300", "0500", "0530", "0559", "0580", "0590", "0600", "0605", "0609", "0615", "0619", "0625", "0630", "0634", "0640", "0644", "0650", "0655", "0659", "0665", "0669", "0675", "0680", "0684", "0690", "0694", "0700", "0705", "0709", "0715", "0719", "0725", "0730", "0734", "0740", "0744", "0750", "0755", "0759", "0765", "0769", "0775", "0780", "0784", "0790", "0794", "0800", "0805", "0810", "0814", "0819", "0825", "0830", "0835", "0839", "0844", "0850", "0855", "0860", "0864", "0869", "0875", "0880", "0885", "0889", "0894", "0900", "0905", "0910", "0914", "0919", "0925", "0930", "0935", "0939", "0944", "0950", "0955", "0960", "0964", "0969", "0975", "0980", "0985", "0989", "0994", "1000", "1005", "1010", "1014", "1019"]; //91 data files
+
+    var age = 0, // initial age is 0 (ages[0] => 300)
+        t = ages[age], // age, time as log, so 10^t (example: t = ages[1] => t = 300)
+        tIndex = ages[age];
+
+    var padding = 30,
+        w = window.innerWidth,
+        h = window.innerHeight;
+
+    var y = 2*padding;
+    var x = 2*padding;
+
+    var speed = 4, // interval rate (in miliseconds)
+        time = 0, // time elapsed, counts the years that have passed, in years
+        timeFactor = 10000, // amount of years added, in years. Results in timeFactor/speed (eg. 10000 years for every 4 miliseconds)
+        up = true, // timerFactor starts by going up initially
+        reachedMin = false, // timerFactor has not reached Min initially
+        reachedMax = false, // timerFactor has not reached Max initially
+        ghostsOn = true; // ghosts are on initially
+
+    var plusMinus = "+"; // counter starts positive (because up === true)
+
+    var dataValue = 0; // 1 -> 91
+
+    var rPrev = 0;
+
+    var sparsity = 1; // renders every x'th row in the dataset array (for example: sparsity = 2 results in 0, 2, 4, 6, ...) 
+                      // This produces more / less stars but equal amount of isochrones!!
+    var enlargement = 3; // How many times larger a star gets when you click on it
+    var smallRadius = true; // The selected star has a radius smaller dan 50 Rsol starts true
+
+    var sol = 1, // The mean radius of the sun, expressed in solar radii
+        solColor = 3.763; // The color of the sun, needs to be pulled through cScale
+
+    var n = [],   // Identifier of star, "id"
+        M = [],    // Mass or star, in solar mass
+        L = [],    // Luminosity of star, in solar luminosity
+        Teff = [], // Effective Temperature of star, in K
+        R = [];    // Radius of star, in solar radii, calculated later: NOT found in data!
+
+    // Indicate index of values in the dataset[] array 
+    // For example, M is the 3rd column in the dataset, so that results in [2]
+    var narr = 0,
+        Marr = 2,
+        Larr = 5,
+        Teffarr = 3;
+
+    var max_M = 0,
+        min_M = 0,
+        max_Teff = 0, 
+        min_Teff = 0,
+        max_L = 0,
+        min_L = 0,
+        max_R = 0,
+        min_R = 0,
+        prevMax_R = max_R;
+        console.log(prevMax_R);
+
+    // Define color-range of stars in RGB spectrum 
+    var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+        hotColor = d3.rgb("white"), // hot color in the graph
+        midColor = d3.rgb("#ffe9d2")
+        coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+        coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+    var designer = d3.rgb("#111"); // Define a nice black color for the background, store it as var
+
+    var clicked = false, // is there a star selected? initial is set to false
+        idClicked = "";
+
+    var idClicked = undefined,
+        cxClicked = undefined,
+        cyClicked = undefined,
+         rClicked = undefined; 
+
+    var detailView = false, // is the detailview on? initial is set to false
+        baseGlow = 150; // base radius of stellar glow
+
+
+    // Create the SVG Viewport
+    var svgContainer = d3.select("body").append("svg")
+                                        .attr("id","svg-container")
+                                        .attr("class","svg-container")
+                                        .attr("width", w*2)
+                                        .attr("height", h*5);
+
+    var fxGroup = svgContainer.append("g")
+                              .attr("class", "fxgroup effects");
+
+    // Define the Scale for Teff (x)
+    var TeffAxisScale = d3.scale.log()
+                                .domain([60000, 2000])
+                                .range([2*padding, h-2*padding]);
+
+    // Define the Scale for L (y)
+    var LAxisScale = d3.scale.log()
+                             .domain([Math.pow(10, 7), Math.pow(10, -1)])
+                             .range([2*padding, h-2*padding]);
+
+    //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([1000, 0.800])
+                         .range([25, 1]);
+
+    var xScale = d3.scale.linear()
+                         .domain([100, 1])
+                         .range([w-2*padding, 2*padding])
+
+    //Define scale for the colors of stars
+    var cScale = d3.scale.linear()
+                         .domain([3.529, 3.882, 3.999, 4.120, 4.599])
+                         .range([coldestColor, coldColor, midColor, hotColor, hottestColor]);
+
+    var enlargementScale = d3.scale.linear()
+                                   .domain([1200, 600, 100, 30, 10, 2, 0.800])
+                                   .range([3, 10, 30, 100, 300, 500, 600]);
+
+    var gradientScale = d3.scale.linear()
+                                .domain([1200, 100, 0.800])
+                                .range([20, 50, 100]);
+
+    // //Define scale for the timeline
+    // var timeScale = d3.scale.log()
+    //                         .domain([Math.pow(10, 2), Math.pow(10, 10.3)])
+    //                         .range([2*padding, w-2*padding]);
+
+    // // Create the TeffAxis (x)
+    // var TeffAxis = d3.svg.axis()
+    //                      .scale(TeffAxisScale)
+    //                      .orient("left")
+    //                      .tickFormat(function (d) { return TeffAxisScale.tickFormat(20,d3.format(",d")) (d) });
+
+    // // Create the TeffAxis on right side (x)
+    // var TeffAxisTwo = d3.svg.axis()
+    //                      .scale(TeffAxisScale)
+    //                      .orient("right")
+    //                      .tickFormat(function (d) { return TeffAxisScale.tickFormat(20,d3.format(",d")) (d) });
+
+    // // Create label on TeffAxis (x)
+    // var TeffAxisLabel = svgContainer.append("text")
+    //                            .attr("class", "teff-label label")
+    //                            .attr("x", 0)
+    //                            .attr("y", 0)
+    //                            .text("Effective temperature (K)")
+    //                            .style("transform", "rotate(90deg) translate(" + 3*padding + "px, " + -2.4*padding + "px) ");                              
+
+    // // Create the LAxis (y)
+    // var LAxis = d3.svg.axis()
+    //                   .scale(LAxisScale)
+    //                   .orient("left")
+    //                   .ticks(1)
+    //                   .tickFormat(function (d) { return LAxisScale.tickFormat(1,d3.format("e")) (d) });
+
+    // // Create label on LAxis (y)
+    // var LAxisLabel = svgContainer.append("text")
+    //                        .attr("class", "l-label label")
+    //                        .attr("x", padding*2 + 10)
+    //                        .attr("y", padding*2)
+    //                        .text("Luminosity (L☉)");
+
+    // // Create the timescale axis (on x)
+    // var timeAxis = d3.svg.axis()
+    //                      .scale(timeScale)
+    //                      .orient("top")
+    //                      .tickFormat(function (d) { return LAxisScale.tickFormat(10,d3.format(",")) (d) });
+    // var timeAxisTwo = d3.svg.axis()
+    //                      .scale(timeScale)
+    //                      .orient("bottom")
+    //                      .tickFormat(function (d) { return LAxisScale.tickFormat(10,d3.format(",")) (d) });
+
+    // // Create label on timescale axis (on x)
+    // var timeAxisLabel = svgContainer.append("text")
+    //                        .attr("class", "time-label label")
+    //                        .attr("x", 3*padding)
+    //                        .attr("y", 2.6*padding)
+    //                        .text("Time (years)");
+    
+    // // Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    // var TeffAxisGroup = svgContainer.append("g")
+    //                                 .attr("class", "text teff-axis axis")
+    //                                 .attr("transform", "translate(" + 2*padding + ", 0)")
+    //                                 .call(TeffAxis)
+
+    // // Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    // var TeffAxisTwoGroup = svgContainer.append("g")
+    //                                    .attr("class", "text teff-axis-two axis")
+    //                                    .attr("transform", "translate(" + (w-2*padding) + ", 0)")
+    //                                    .call(TeffAxisTwo)
+
+    // // Create an SVG group Element for the timeAxis elements and call the timeAxis function (on x)
+    // var timeAxisGroup = svgContainer.append("g")
+    //                                 .attr("class", "text time-axis axis")
+    //                                 .attr("transform", "translate(0," + (2*padding) + ")")
+    //                                 .call(timeAxis);
+    // var timeAxisTwoGroup = svgContainer.append("g")
+    //                                    .attr("class", "text time-axis axis")
+    //                                    .attr("transform", "translate(0," + (h-2*padding) + ")")
+    //                                    .call(timeAxisTwo);
+
+    // Create an SVG group Element for the circles/stars
+    var circlesGroup = svgContainer.append("g")
+                                   .attr("class", "circlesgroup circles stars");
+
+    var circlesFilter = svgContainer.append("filter")
+                                    .attr("class", "circlesfilter")
+                                    .attr("id", "circlesfilter"); 
+
+    var circlesFilterBlur = circlesFilter.append("feGaussianBlur")
+                                         .attr("in", "SourceGraphic")
+                                         .attr("stdDeviation", "2");
+
+    // Create defs element for gradients
+    var defs = svgContainer.append("defs")
+
+    // Define starglow gradient structure
+    var starGlowGradient = defs.append("radialGradient")
+                                     .attr("id", "radial-gradient")
+                                     .attr("cx", "50%")
+                                     .attr("cy", "50%"); 
+
+                       starGlowGradient.append("stop")
+                                       .attr("offset", "0%")
+                                       .style("stop-color", "#FFF")
+                                       .style("stop-opacity", ".5");
+
+                        starGlowGradient.append("stop")
+                                       .attr("offset", "30%")
+                                       .style("stop-color", "#FFF")
+                                       .style("stop-opacity", ".2");
+
+                       starGlowGradient.append("stop")
+                                       .attr("offset", "50%")
+                                       .style("stop-color", "#FFF")
+                                       .style("stop-opacity", ".1");
+
+                       starGlowGradient.append("stop")
+                                       .attr("offset", "100%")
+                                       .style("stop-color", "#FFF")
+                                       .style("stop-opacity", "0");
+
+    // Create an SVG group Element for the age / mass labels
+    var labelGroup = svgContainer.append("g")
+                                 .attr("class", "labelgroup labels");
+
+    // Create a new group element for the selected star + sun we will draw later
+    var selectedGroup = svgContainer.append("g")
+                                  .attr("class", "selectedgroup");                         
+
+
+
+    //Function that does the magic
+    function updateDiagram(timeInput){
+
+      t = timeInput;
+
+      drawDiagram(); //fill svgContainer with stellar goodness
+
+    };
+
+    //the function that draws the diagram
+    function drawDiagram (){
+
+      var dataset = [],
+          datasetTemp = [];
+  
+      var n = []
+          M = [],
+          L = [],
+          Teff = [],
+          R = [];
+  
+      //remove all "extra" isochrones once they aren't viewed anymore
+      d3.selectAll(".extra-isochrone-group:not(#g" + t + "-extra)").remove();
+
+      // Import dataset from csv and parse it to array called dataset
+      d3.text("data/iso_c020_" + t + ".UBVRIJHKLM.csv", function(text) {
+        var data = d3.csv.parseRows(text).map(function(row) {
+          return row.map(function(value) {
+            return +value;
+          });
+        });
+  
+        dataset = data;
+      
+        // Push values of dataset to arrays for each property (M, L, Teff)
+        for (i = 0; i < dataset.length; i++) { 
+          var temp = dataset[i];
+          for (j = 0; j < dataset[i].length; j = j+21) {
+            if (temp[Marr] <= 100) { // stars more massive than 30 solar masses are neglected
+                 n.push(parseFloat(temp[narr]));
+                 M.push(parseFloat(temp[Marr]));
+                 L.push(parseFloat(temp[Larr]));
+              Teff.push(parseFloat(temp[Teffarr]));
+                 // Get R through the following formula: Rsol = (Teffsol/Teff)^2 * (L/Lsol)^1/2
+                 R.push(parseFloat((Math.pow(5800/(Math.pow(10, temp[Teffarr])), 2))*((Math.pow((Math.pow(10, temp[Larr])), 1/2)))));
+            };
+          };
+        };
+    
+        // push each property back into array in right order
+        for (i = n.length - 1; i > -1 + 1; i = i - sparsity) {
+          var datasetTempArray = [n[i],    // n = d[0]
+                                  M[i],    // M = d[1]
+                                  L[i],    // L = d[2]
+                                  Teff[i], // Teff = d[3]
+                                  R[i]];   // R = d[4] 
+          var datasetTempArraySlice = datasetTempArray.slice();
+          datasetTemp.push(datasetTempArraySlice);
+        };
+    
+        dataset = datasetTemp;
+    
+        prevMax_R = RScale(max_R);
+
+        //Get max/min values of data
+        max_M = d3.max(M),
+        min_M = d3.min(M),
+        max_Teff = d3.max(Teff),
+        min_Teff = d3.min(Teff),
+        max_L = d3.max(L),
+        min_L = d3.min(L),
+        max_R = d3.max(R),
+        min_R = d3.min(R);
+    
+        //Round min/max values 
+        var maxRound_Teff = d3.round(max_Teff),
+            minRound_Teff = d3.round(min_Teff),
+            maxRound_L = d3.round(max_L)
+            minRound_L = d3.round(min_L);
+    
+        // d3.selectAll(".labelgroup").html(""); // empty labelgroup so that it can be refilled with mass data etc
+
+        var isochronesGroup = d3.select(".circlesgroup").append("g") // give the currect isochrone a unique ID
+                                                        .attr("id", "g" + t)
+                                                        // .on("mouseenter", function() {
+                                                        //   svgContainer.append("text")
+                                                        //               .attr("id", d3.select(this).attr("id") + "-text")
+                                                        //               .attr("text-anchor", "middle")
+                                                        //               .attr("x", function(d) {
+                                                        //                 var bbox = this.getBBox(); 
+                                                        //                 console.log(bbox.x, bbox.width/2); 
+                                                        //                 return bbox.x + bbox.width/2;
+                                                        //               })
+                                                        //               .attr("y", padding)
+                                                        //               .text(d3.select(this).attr("id"))
+                                                        // });
+    
+
+        // if (ghostsOn === true) {
+        //   //make all isochrones except the current one lower opacity
+        //   d3.selectAll(".circlesgroup g:not(#g" + t + ") .star").style("opacity", .1); 
+        // } else { 
+        //   //give all isochrones except the current one opacity = 0 (invisible)
+        //   d3.selectAll(".circlesgroup g:not(#g" + t + ") .star").transition().duration(250)
+        //                                                   .style("opacity", .0); 
+        // }
+
+        // //remove all "extra" isochrones once they aren't viewed anymore
+        // // d3.selectAll(".extra-isochrone-group:not(#g" + t + "-extra)").remove();
+
+        // var fadeMeOut = function (fader) {
+        //   fader.transition()
+        //        .duration(250)
+        //        .style("opacity","0")
+        //        .remove();
+        // }
+
+        // // fade out these elements when new isochrones are added
+        // fadeMeOut(d3.select("#sun"));
+        // fadeMeOut(d3.selectAll(".starinfo"));
+        // fadeMeOut(d3.selectAll(".glow"));
+        // fadeMeOut(d3.selectAll(".planet"));
+        // fadeMeOut(d3.selectAll(".planetlabel"));
+        // fadeMeOut(d3.selectAll(".flare"));
+
+        // // move selected star back to their normal size and position
+        // d3.select("#" + idClicked).transition().duration(250)
+        //                           .attr("r", rClicked)
+        //                           .attr("cx", cxClicked)
+        //                           .attr("cy", cyClicked)
+        //                           .attr("class", "star");
+
+        // detailView = false; // if an isochrone is added, that must mean there is no comparative sun, so detailView must be false.
+  
+        // var sunX = w/2, // The initial position of the sun in the diagram
+        //     sunFill = cScale(3.763), // The initial color of the sun in the diagram
+        //     starX = w/2;
+
+        // var hoverNumber = 0; //number of hovered star, needed for unique identifiers
+
+        var starGroup = defs.append("g")
+                            .attr("id", "#g" + t)
+
+        var starColorGradient = starGroup.selectAll("radialGradient")
+                                         .data(dataset)
+                                         .enter()
+                                         .append("radialGradient")
+                                         .attr("id", function(d) {return "gradient-" + t + "-" + d[0]});
+
+        starColorGradient.append("stop")
+                         .attr("offset", "0%")
+                         .style("stop-color", function(d) {return d3.rgb(cScale(d[3])).brighter(1); });              
+
+        starColorGradient.append("stop")
+                         .attr("offset", "100%")
+                         .style("stop-color", function(d) {return cScale(d[3]); })
+
+        
+        y = 100;
+        x = x + RScale(max_R)+RScale(rPrev);
+
+        console.log(rPrev);
+
+
+        // draw isochrone with proper data, and create function when clicked
+        var isochrone = isochronesGroup.selectAll("circle")
+                                  .data(dataset)
+                                  .enter()
+                                  .append("circle")
+                                  .attr("class", "star")
+                                  .attr("id", function(d) {return "star-" + t + "-" + d[0]})
+                                  .attr("cx", x) 
+                                  .attr("cy", function(d,i) { if (i>0) { y = y + RScale(d[4])*2} else { y = y + RScale(d[4]);} ; return y})
+                                  // .attr("cy", function(d) {return LAxisScale(Math.pow(10, d[2])); })
+                                  .attr("r", function(d) {return RScale(d[4]); })
+                                  // .attr("fill", function(d) {return cScale(d[3]); })
+                                  .attr("fill", function(d) {return "url(#gradient-" + t + "-" + d[0] + ")"} )
+                                  .attr("stroke-width", 0)
+                                  .attr("stroke", designer)
+                                  .attr("radius", function(d) {return d[4]; })
+                                  .attr("Teff", function(d) {return d[3]; })
+                                  .attr("L", function(d) {return d[2]; })
+                                  .attr("mass", function(d) {return d[1]; })
+                                  /*.on("mouseenter", function() {
+
+                                    if (d3.select(this).attr("id") != idClicked && d3.select(this.parentNode).attr("id") === "g" + t) {
+                                      d3.select(this).attr("stroke-width", 0.5);
+
+                                    }
+
+                                    hoveredStar = this;
+                                    function enlargeStar () {
+                                      if (d3.select(hoveredStar).attr("id") != idClicked && d3.select(hoveredStar.parentNode).attr("id") === "g" + t && d3.select(hoveredStar).classed("hovered") === false) {
+  
+                                        idHovered = d3.select(hoveredStar).attr("id"),
+                                         rHovered = d3.select(hoveredStar).attr("r"),
+                                         rInitial = d3.select(hoveredStar).attr("r-initial", rHovered);
+  
+                                        d3.select("#" + idHovered).classed("hovered hovernumber" + hoverNumber , true)
+                                                                  .attr("r", rHovered * 3);
+
+                                        
+                                      }
+                                    };
+                                    enlargeStar();
+                                  })
+                                  .on("mouseleave", function() {
+
+                                    // if (d3.select(this).attr("id") === idClicked) {
+                                    //   d3.select(this).transition().duration(500)
+                                    //                  .style("opacity", 1)
+                                    // }
+
+                                    hoveredStar = this;
+
+                                    d3.select(this).attr("stroke-width", 0);
+
+                                    function shrinkStar() {
+                                      if (d3.select(hoveredStar).attr("id") != idClicked) {
+                                                                  
+                                        if (d3.select(hoveredStar).classed("hovernumber" + hoverNumber) === true) { 
+
+                                          d3.select("#" + idHovered).attr("r", rHovered);
+                                          d3.select(hoveredStar).classed("hovered hovernumber" + hoverNumber , false);
+                                          hoverNumber++;
+
+                                        }
+                                      }
+                                    };
+
+                                    shrinkStar();
+                                  })*/
+                                  
+                                                        
+        // //Create age label
+        // var timeStamp = labelGroup.append("text")
+        //                           .attr("class", "label timestamp")
+        //                           .attr("x", 3*padding)
+        //                           .attr("y", h-padding*2)
+        //                           .text("log(age) = " + t / 100 + " (these stars are " + numberSeparator(d3.round(Math.pow(10, t/100))) + " years old)");
+    
+        // //Label for most massive
+        // var mostMassive = labelGroup.append("text")
+        //                             .attr("class", "label masstext")
+        //                             .attr("x", 3*padding)
+        //                             .attr("y", h-padding*1.5)
+        //                             .text("Most massive = " + max_M + " Msol");
+    
+        // //Label  for least massive
+        // var leastMassive = labelGroup.append("text")
+        //                              .attr("class", "label masstext")
+        //                              .attr("x", 3*padding)
+        //                              .attr("y", h-padding)
+        //                              .text("Least massive = " + min_M + " Msol");
+
+      rPrev = max_R;
+
+      }); // end import data isochrone 
+
+    }; // end drawDiagram();
+
+
+    function numberSeparator(x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+  
+
+  function halt() {
+    clearInterval(repeat);
+  }
+
+  var repeat = setInterval(function () {
+    age++;
+    console.log(age)
+
+    if (age === ages.length) {
+      halt();
+    };
+    updateDiagram(ages[age-1]);
+  }, 500);
+
+
+
+
+  </script>
+</body>

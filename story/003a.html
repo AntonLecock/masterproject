@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#111;
+      background-color:white;
       font-family: BretzelGrotesk, sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -30,15 +30,24 @@
 
 <body>
 
-  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<!--   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
    viewBox="0 0 1440 900" enable-background="new 0 0 1440 900" xml:space="preserve">
+   <defs>
+    <filter id="terrain" x="0" y="0" width="100%" height="100%">
+<feTurbulence baseFrequency=".01" numOctaves="2" seed="10" type="turbulence"/>
+<feColorMatrix type="luminanceToAlpha"/>
+<feComponentTransfer>
+ <feFuncA type="table" tableValues="1 0"/>
+</feComponentTransfer>
+</filter>
+   </defs>
 <radialGradient id="SVGID_1_" cx="719.8812" cy="450" r="327.1245" gradientUnits="userSpaceOnUse">
   <stop  offset="0.1974" style="stop-color:#FFFFFF;stop-opacity:1"/>
   <stop  offset="0.2241" style="stop-color:#AD82A0;stop-opacity:1"/>
   <stop  offset="1" style="stop-color:#9B678C;stop-opacity:0"/>
 </radialGradient>
-<circle fill="url(#SVGID_1_)" cx="719.9" cy="450" r="327.1"/>
-</svg>
+<circle fill="url(#SVGID_1_)" filter="url(#terrain)" cx="719.9" cy="450" r="327.1"/>
+</svg> -->
 
 
   <script type="text/javascript">
@@ -58,7 +67,7 @@
       coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
       coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
 
-      d3.select("body").style("background-color", designerBlack);
+      d3.select("body").style("background-color", "white");
 
   // Create the SVG Viewport
   var svg = d3.select("body").append("svg")
@@ -88,6 +97,29 @@
   starGlowGradient.append("stop").attr("id", "grad-stop-3").attr("offset", "20%").style("stop-color", "#FFFFFF").style("stop-opacity", "1");
   starGlowGradient.append("stop").attr("id", "grad-stop-22").attr("offset", "25%").style("stop-color", "#AD82A0").style("stop-opacity", "1");
   starGlowGradient.append("stop").attr("id", "grad-stop-100").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+  var clouds = defs.append("filter")
+                   .attr("id", "clouds")
+                   .attr("x", 0)
+                   .attr("y", 0)
+                   .attr("width", "100%")
+                   .attr("height", "100%");
+
+  clouds.append("feTurbulence")
+        .attr("baseFrequency", .005)
+        .attr("numOctaves", 2)
+        .attr("seed", 10)
+        .attr("type", "turbulence");
+
+  clouds.append("feColorMatrix")
+        .attr("type", "luminanceToAlpha");
+
+  var gaussian = clouds.append("feGaussianBlur").attr("stdDeviation", 10);
+
+
+  clouds.append("feComponentTransfer").append("feFuncA")
+                                      .attr("type", "table")
+                                      .attr("tableValues", "1 0");
 
   var flarePattern = defs.append("pattern")
                          .attr("id", "flare-pattern")
@@ -119,13 +151,14 @@
 
 
   // Draw glow behind the sun
-  var drawSunGlow = sunGroup.append("circle")
+  var drawGlow = sunGroup.append("circle")
                             .attr("id", "sunglow")
                             .attr("class", "fx sunglow glow gradient")
                             .attr("cx", w/2)
                             .attr("cy", h/2)
                             .attr("r", w/2)
-                            .style("fill", "url(#radial-gradient)")
+                            .style("fill", "purple")
+                            .attr("filter", "url(#clouds)")
                             .style("opacity", 1)
                             .transition().delay(2000).duration(4000)
 
@@ -148,7 +181,7 @@
                     .attr("class", "label suntext")
                     .attr("text-anchor", "middle")
                     .text("It's not as empty here as it seems.")
-                    .style("fill", "white")
+                    .style("fill", designerWhite)
                     .style("opacity", 0)
                     .transition().delay(4000).duration(2000)
                     .style("opacity", 1);
