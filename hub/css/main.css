@@ -1,0 +1,316 @@
+/* --------------------------------------------------------------------------
+anton lecock
+antonlecock.be
+info@antonlecock.be
+-------------------------------------------------------------------------- */
+
+
+
+
+/* --------------------------------------------------------------------------
+   Base styles:
+-------------------------------------------------------------------------- */
+
+@font-face {
+	font-family: 'Anke';
+	src: url('font/anke-webfont.eot?#iefix') format('embedded-opentype'), 
+	     url('font/anke-webfont.woff') format('woff'), 
+	     url('font/anke-webfont.ttf')  format('truetype'),
+	     url('font/anke-webfont.svg#svganke-webfont') format('svg');
+}
+
+html {
+    color: #444; /*black*/
+    font-size: 22px;
+    line-height: 2;
+    font-family: "Butler", georgia, arial, sans-serif;
+    font-weight:300;	
+    letter-spacing: 1.1;
+
+    			   text-rendering: optimizeLegibility;
+			font-feature-settings: "kern";
+	-webkit-font-feature-settings: "kern";
+	   -moz-font-feature-settings: "kern";
+	   -moz-font-feature-settings: "kern=1";
+
+	-webkit-font-smoothing: antialiased;
+	   -moz-font-smoothing: antialiased;
+		 -o-font-smoothing: antialiased;
+		    font-smoothing: antialiased;
+}
+
+.yellow {
+	background-color:#f9df5d;
+}
+
+.blue {
+	background-color:#7fb1ff;
+}
+
+.purple {
+	background-color: #ad77b8;
+}
+
+.red {
+	background-color:#c97e78;
+}
+
+.green {
+	background-color: #7fffa2;
+}
+
+.orange {
+	background-color: #ffa27f;
+}
+
+.bgcolor {
+	transition: background-color .2s ease;
+}
+
+.color {
+	transition: color .2s ease;
+}
+
+
+ul, 
+ol,
+li {
+    list-style:none;
+    padding:0;
+}
+
+a {
+	text-decoration:none;
+    color:#444;
+    transition: color .15s ease, border-color .15s ease;
+    border-bottom: 2px dotted #444;
+    cursor:pointer;
+}
+
+p a:link,
+p a:visited {
+	border-bottom: 2px dotted #444;
+}
+
+p a:hover,
+p a:active {
+	border-color: #EEE;
+}
+
+a:link,
+a:visited {
+}
+
+a:hover,
+a:active {
+	color:#EEE;
+}
+
+button {
+	border:none;
+	transition: color .15s ease;
+	outline:none;
+	letter-spacing: 2px;
+	margin:0;
+	padding:0;
+	background:none;
+}
+
+.hidden {
+    display: none !important;
+    visibility: hidden;
+}
+
+.english, 
+.nederlands {
+}
+
+.browserupgrade {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000; 
+    padding: 0.2em 0;
+}
+
+@media screen and (max-width: 812px) {
+	html {
+		font-size:1.3em;
+	}
+}
+
+@media screen and (max-width: 568px) {
+	html {
+		font-size:1em;
+	}
+}
+
+@media screen and (max-width: 412px) {
+	html {
+		
+	}
+}
+
+.emphasis {
+	font-style: italic;
+	color: #E94D55;
+}
+
+
+/* --------------------------------------------------------------------------
+   Container styles:
+-------------------------------------------------------------------------- */
+
+body {
+	background-color: #222;
+}
+
+
+.main,
+.sub {
+	margin: 0 auto;
+	width:100%;
+}
+
+.about,
+.contact,
+.subitem,
+header {
+	max-width:1024px;
+	margin: 0 auto;
+}
+
+.list {
+	margin: 0 auto;
+	padding-top: 100px;
+}
+
+@media screen and (max-width: 1024px) {
+	.work {
+		width:100%;
+	}
+}
+
+@media screen and (max-width: 812px) {
+	.about,
+	.contact,
+	.subitem,
+	header {
+		max-width:512px;
+		margin: 0 auto;
+	}
+}
+
+@media screen and (max-width: 568px) {
+	.about,
+	.contact,
+	.subitem,
+	header {
+		max-width:384px;
+		margin: 0 auto;
+	}
+}
+
+@media screen and (max-width: 412px) {
+	.about,
+	.contact,
+	.subitem,
+	header {
+		max-width:320px;
+		margin: 0 auto;
+	}
+}
+
+
+/* --------------------------------------------------------------------------
+   Header styles:
+-------------------------------------------------------------------------- */
+
+h1 {
+	font-weight: 600;
+	font-size:4em;
+	line-height:1.1;
+	margin:1.2em auto .2em auto;
+	display:inline-block;
+	color:#FFF;
+/*	border-bottom: 2px solid #444;
+	padding-bottom:15px;
+*/	text-transform: none;
+}
+
+h3 {
+	font-family: helvetica, arial, sans-serif;
+	font-weight:200;
+	line-height:1.2;
+	color:#FFF;
+	font-size:.8em;
+}
+
+hr {
+	margin-bottom: 2em;
+	margin-right: 85%;
+	border:1px solid #444;
+}
+
+@media screen and (max-width: 568px) {
+	h1 {
+		margin-bottom: .1em;
+	}
+}
+
+
+/* --------------------------------------------------------------------------
+   Common styles:
+-------------------------------------------------------------------------- */
+
+p {
+	margin-bottom: .7em;
+	line-height: 1.5;
+}
+
+
+.item {
+	padding: 4em 0 0 0;
+}
+
+.bottom-edge-shadow {
+	-webkit-box-shadow: 0 8px 6px -6px rgba(0,0,0,.2);
+	   -moz-box-shadow: 0 8px 6px -6px rgba(0,0,0,.2);
+	        box-shadow: 0 8px 6px -6px rgba(0,0,0,.2);
+}
+
+.fixed {
+	position:fixed;
+	top:0;
+	-webkit-box-shadow: 0 8px 6px -6px rgba(0,0,0,.1);
+	   -moz-box-shadow: 0 8px 6px -6px rgba(0,0,0,.1);
+	        box-shadow: 0 8px 6px -6px rgba(0,0,0,.1);
+
+}
+
+img {
+	display:inline-block;
+	float: left;
+}
+
+
+/* --------------------------------------------------------------------------
+   List:
+-------------------------------------------------------------------------- */
+
+.list {
+	max-width: 1440px;
+}
+.list ol {
+	display:inline;
+}
+
+img.page-image {
+	max-width:480px;
+}
+
+}
+
+.list li:hover {
+	opacity:.10;
+	transition: opacity .2s ease;
+}

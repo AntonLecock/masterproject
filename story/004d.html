@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      font-family: "CMU Serif", sans-serif;
+      letter-spacing: .5px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 13px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+    svg {
+      cursor: none;
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+  var w = window.innerWidth, 
+      h = window.innerHeight,
+      paddingW = w/10,
+      paddingH = h/10;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#222"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerWhite);
+      d3.select("text").style("fill-color", designerBlack)
+
+  var size = 300,
+      sizeMin = 50,
+      sizeMax = 500;
+
+  var up = true;
+
+  var sol = 1, // The mean radius of the sun, expressed in solar radii
+      solColor = 3.763; // The color of the sun, needs to be pulled through cScale
+
+    // All values below are in solar radii
+    var mercuryMaj = 83.163158333, // Mercury Semi-major axis
+        mercuryMin = 81.384611297, // Mercury Semi-minor axis
+        mercuryPer = 66.059493754, // Mercury Perihelion
+        mercuryAph = 100.266822912, // Mercury Aphelion
+
+        venusMaj = 155.397778678, // Venus Semi-major axis
+        venusMin = 155.394290740, // Venus Semi-minor axis
+        venusPer = 154.349443233, // Venus Perihelion
+        venusAph = 156.446114122, // Venus Aphelion
+
+        earthMaj = 214.836962297, // Earth Semi-major axis
+        earthMin = 214.807002270, // Earth Semi-minor axis
+        earthPer = 211.232411660, // Earth Perihelion
+        earthAph = 218.427152175, // Earth Aphelion
+
+        marsMaj = 327.310430794, // Mars Semi-major axis
+        marsMin = 325.876575330, // Mars Semi-minor axis
+        marsPer = 296.722013034, // Mars Perihelion
+        marsAph = 357.913209314, // Mars Aphelion
+
+        jupiterMaj = 1118.08565331, // Jupiter Semi-major axis
+        jupiterMin = 1116.74806442, // Jupiter Semi-minor axis
+        jupiterPer = 1062.69620387, // Jupiter Perihelion
+        jupiterAph = 1171.83797616, // Jupiter Aphelion
+
+        saturnMaj = 2058.65795830, // Saturn Semi-major axis
+        saturnMin = 2055.36945634, // Saturn Semi-minor axis
+        saturnPer = 1942.36452777, // Saturn Perihelion
+        saturnAph = 2174.93702800, // Saturn Aphelion
+
+        uranusMaj = 4125.07072674, // Uranus Semi-major axis
+        uranusMin = 4120.76089082, // Uranus Semi-minor axis
+        uranusPer = 3936.71500498, // Uranus Perihelion
+        uranusAph = 4313.42644850, // Uranus Aphelion
+
+        neptuneMaj = 6455.24756513, // Neptune Semi-major axis
+        neptuneMin = 6454.83541669, // Neptune Semi-minor axis
+        neptunePer = 6382.56776124, // Neptune Perihelion
+        neptuneAph = 6527.92736902, // Neptune Aphelion
+
+        plutoMaj = 8482.01027656, // Pluto Semi-major axis
+        plutoMin = 8215.29246496, // Pluto Semi-minor axis
+        plutoPer = 6371.61050174, // Pluto Perihelion
+        plutoAph = 10592.3956906; // Pluto Aphelion
+
+    var planetMaj = [mercuryMaj, venusMaj, earthMaj, marsMaj, jupiterMaj, saturnMaj, uranusMaj, neptuneMaj, plutoMaj],
+        planetMin = [mercuryMin, venusMin, earthMin, marsMin, jupiterMin, saturnMin, uranusMin, neptuneMin, plutoMin],
+        planetPer = [mercuryPer, venusPer, earthPer, marsPer, jupiterPer, saturnPer, uranusPer, neptunePer, plutoPer],
+        planetAph = [mercuryAph, venusAph, earthAph, marsAph, jupiterAph, saturnAph, uranusAph, neptuneAph, plutoAph],
+        planetName = ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
+
+  //Create SVG viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var labelGroup = svg.append("g").attr("id", "label-group");
+  var starsGroup = svg.append("g").attr("id","stars-group");
+
+  // Define color-range of stars in RGB spectrum 
+    var colorwB = d3.rgb("#9eb5ff"), // hottest color in the graph
+        colorwA = d3.rgb("white"), // hot color in the graph
+        colorA = d3.rgb("#ffe9d2")
+        colorcA = d3.rgb("#ffd5a1"), // cold color in the graph
+        colorcB = d3.rgb("#ff5200"), // coldest color in the graph
+        colorcC = d3.rgb("#3C2929");
+
+  //Define scale for the colors of stars
+    var cScale = d3.scale.linear()
+                         .domain([3, 3.4, 3.882, 3.999, 4.120, 4.8])
+                         .range([colorcC, colorcB, colorcA, colorA, colorwA, colorwB]);
+
+  //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([5000, 1])
+                         .range([1000, 1]);
+
+  //Define the Scale for temperature, on X
+    var xScale = d3.scale.linear()
+                         .domain([0, w/2, w])
+                         .range([30000, 5778, 100]);
+
+  //Define the Scale for luminosity, on 
+    var yScale = d3.scale.sqrt()
+                         .domain([0, h/2, h])
+                         .range([Math.pow(10, 5.5), 1, Math.pow(10, -7)]);
+
+  var TeffSol = 5778;
+
+  var temperature = 5778,
+             Teff = Math.log10(TeffSol),
+       luminosity = 1,
+                R = RScale(Math.pow((TeffSol/temperature), 2) * (Math.pow(luminosity, 1/2)));
+
+// Define starglow gradient structure
+    var starGlowGradient = defs.append("radialGradient")
+                                     .attr("id", "star-glow-gradient")
+                                     .attr("cx", "50%")
+                                     .attr("cy", "50%"); 
+
+        starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "#FFF").style("stop-opacity", ".5");
+        starGlowGradient.append("stop").attr("offset", "30%").style("stop-color", "#FFF").style("stop-opacity", ".2");
+        starGlowGradient.append("stop").attr("offset", "50%").style("stop-color", "#FFF").style("stop-opacity", ".1");
+        starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#FFF").style("stop-opacity", "0");
+
+  // Define starglow gradient structure in defs
+  // var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  // starGlowGradient.append("stop").attr("offset",        ".1058").style("stop-color", "#9eb5ff").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset",        ".1217").style("stop-color", "#9eb5ff").style("stop-opacity", ".969");
+  // starGlowGradient.append("stop").attr("offset",        ".1568").style("stop-color", "#9eb5ff").style("stop-opacity", ".9008");
+  // starGlowGradient.append("stop").attr("offset",        ".2086").style("stop-color", "#9eb5ff").style("stop-opacity", ".8");
+  // starGlowGradient.append("stop").attr("offset",            "1").style("stop-color", "#9eb5ff").style("stop-opacity", "0");
+
+  // var star = starsGroup.append("circle")
+  //                      .attr("id", "star")
+  //                      .attr("cx", "50%")
+  //                      .attr("cy", "50%")
+  //                      .attr("r", "400")
+  //                      .style("fill", "url(#radial-gradient)")
+
+  // d3.timer(function() {
+  //   if (up === true) {
+  //     if (size < sizeMax && sizeMin <= size) {
+  //       size ++;
+  //       console.log(size);
+  //     } else {
+  //       up = false;
+  //       size --;
+  //       console.log(size);
+  //     }
+  //   } else if (up === false){
+  //     if (size < sizeMax && sizeMin <= size) {
+  //       size --;
+  //       console.log(size);
+  //     } else {
+  //       up = true;
+  //       size ++;
+  //       console.log(size);
+  //     }
+  //   }
+
+    // feDisplacementMap.attr("scale", 0.05 * size)
+
+    // feOffset.attr("dx", -.1 * size)
+    //         .attr("dy", -.006 * size)
+
+    // star.attr("r", size)
+
+  // });
+
+  var filter = defs.append("filter")
+    .attr("id", "displacement")
+    .attr("filterUnits", "objectBoundingBox");
+    
+  var feTurbulence = filter.append("feTurbulence")
+    .attr("type", "fractalNoise")
+    .attr("baseFrequency", ".15")
+    .attr("numOctaves", "1")
+    .attr("result", "turb");
+
+  var feColorMatrix = filter.append("feColorMatrix")
+    .attr("in", "turb")
+    .attr("result", "huedturb")
+    .attr("type", "hueRotate")
+    .attr("values", "10");
+
+  var animate = feColorMatrix.append("animate")
+    .attr("attributeType", "XML")
+    .attr("attributeName", "values")
+    .attr("values", "0;180;360")
+    .attr("dur", "2")
+    .attr("repeatCount","indefinite");
+
+  var feDisplacementMap = filter.append("feDisplacementMap")
+    .attr("in", "SourceGraphic")
+    .attr("in2", "huedturb")
+    .attr("scale", 0.05 * R)
+    .attr("result", "displace")
+    .attr("xChannelSelector", "B");
+
+  var feOffset = filter.append("feOffset")
+    .attr("dx", -.1 * R)
+    .attr("dy", -.006 * R)
+    .attr("in", "displace")
+    .attr("result", "unoffsetdisplace");
+
+  var feGaussianBlur = filter.append("feGaussianBlur")
+    .attr("in", "unoffsetdisplace")
+    .attr("result", "displaceblur")
+    .attr("stdDeviation", "2.5");
+
+  var feComponentTransfer = filter.append("feComponentTransfer")
+    .attr("in", "displaceblur")
+    .attr("result", "displaceR");
+
+  var feFuncR = feComponentTransfer.append("feFuncR")
+    .attr("type", "discrete")
+    .attr("tableValues", "0 1");
+
+  var feComposite = filter.append("feComposite")
+    .attr("operator", "over")
+    .attr("in", "displaceR");
+
+    labelGroup.append("line")
+              .attr("id", "temperature-marker")
+              .attr("class", "marker")
+              .style("stroke-width", .5)
+              .style("stroke", "#888")
+              .attr("x1", w/2)
+              .attr("x2", w/2)
+              .attr("y1", 0)
+              .attr("y2", h);
+
+   labelGroup.append("line")
+              .attr("id", "luminosity-marker")
+              .attr("class", "marker")
+              .style("stroke-width", .5)
+              .style("stroke", "#888")
+              .attr("x1", 0)
+              .attr("x2", w)
+              .attr("y1", h/2)
+              .attr("y2", h/2);
+
+
+  var star = starsGroup.append("circle")
+                       .attr("id", "star")
+                       .attr("cx", "50%")
+                       .attr("cy", "50%")
+                       .attr("r", R)
+                       .style("fill", cScale(Teff))
+                       .attr("filter", "url(#displacement)");
+
+  var starGlow = starsGroup.append("circle")
+                           .attr("id", "star-glow")
+                           .attr("cx", "50%")
+                           .attr("cy", "50%")
+                           .attr("r", R*5)
+                           .style("fill", "url(#star-glow-gradient)");
+
+  var textTemperature = labelGroup.append("text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*1.25)
+                           .attr("class", "info-text")
+                           .attr("text-anchor", "middle")
+                           .text("Surface temperature: " + temperature + " K");
+
+  var textLuminosity = labelGroup.append("text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*1)
+                           .attr("class", "info-text")
+                           .attr("text-anchor", "middle")
+                           .text("Luminosity: " + luminosity + " L☉");
+
+  var textRadius = labelGroup.append("text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*.75)
+                           .attr("class", "info-text")
+                           .attr("text-anchor", "middle")
+                           .text("Radius: " + R + " R☉");
+
+  var title = svg.append("text")
+                 .attr("x", "50%")
+                 .attr("y", "10%")
+                 .attr("class", "title")
+                 .attr("text-anchor", "middle")
+                 .style("font-size", "40px")
+                 .text("R = (Tsun/T)²(L/Lsun)½");
+
+  var subtitle = svg.append("text")
+                 .attr("x", "50%")
+                 .attr("y", "15%")
+                 .attr("class", "title")
+                 .attr("text-anchor", "middle")
+                 .style("font-size", "20px")
+                 .text("Where R is radius, T is effective temperature and L is luminosity of a star.");
+
+  var subtitleTwo = svg.append("text")
+                 .attr("x", "50%")
+                 .attr("y", "18%")
+                 .attr("class", "title")
+                 .attr("text-anchor", "middle")
+                 .style("font-size", "20px")
+                 .text("mouseX = temperature; mouseY = luminosity");
+
+  // // Draw the planets and their orbits
+  // for (i = 0; i < planetName.length; i++) {
+  //   var drawPlanets = starsGroup.append("ellipse")
+  //                                  .attr("class", planetName[i] + " planet")
+  //                                  .attr("id", planetName[i])
+  //                                  .attr("cx", w/2 + (RScale(planetAph[i]) - RScale(planetMaj[i])))
+  //                                  .attr("cy", h/2)
+  //                                  .attr("rx", RScale(planetMaj[i]))
+  //                                  .attr("ry", RScale(planetMin[i]))
+  //                                  .attr("fill", "none")
+  //                                  .attr("stroke-width", .5)
+  //                                  .attr("stroke", "#888")
+  //                                  .style("opacity", 0)
+  //                                  .transition()
+  //                                  .duration(500)
+  //                                  .style("opacity", 1);
+    
+  //   // Draw the planet labels                                          
+  //   var planetLabels = starsGroup.append("text")
+  //                                   .attr("class", planetName[i] + "label label planetlabel")
+  //                                   .attr("id", planetName[i] + "label")
+  //                                   // .attr("transform", "matrix(1,2,3,4,5,6)")
+  //                                   // .attr("transform", "rotate(90 " + (sunX - RScale(planetMaj[i] * enlargement)) + " " + h/2 + ")")
+  //                                   .attr("x", w/2 + (RScale(planetMaj[i]) + 30))
+  //                                   .attr("y", h/2 - (paddingH*[i])/3)
+  //                                   .attr("text-anchor", "middle")
+  //                                   .attr("dominant-baseline", "central")
+  //                                   .style("fill", "#888")
+  //                                   .style("font-size", 12)
+  //                                   .text("Orbit of " + planetName[i])
+  //                                   .style("opacity", 0)
+  //                                   .transition()
+  //                                   .duration(500)
+  //                                   .style("opacity", 1);
+                                  
+  // }; // end for loop
+
+
+
+  svg.on("mousemove", function () {
+
+    var mouseCoords = d3.mouse(this),
+        x = mouseCoords[0],
+        y = mouseCoords[1];
+
+    // temperature = document.getElementById('temperature-input').value;
+    // Teff = Math.log10(temperature);
+    // luminosity = document.getElementById('luminosity-input').value;
+    // R = RScale(Math.pow((TeffSol/temperature), 2) * (Math.pow(luminosity, 1/2)));
+
+    temperature = xScale(x);
+    Teff = Math.log10(temperature);
+    luminosity = yScale(y);
+    R = RScale(Math.pow((TeffSol/temperature), 2) * (Math.pow(luminosity, 1/2)));
+
+    feDisplacementMap.attr("scale", 0.1 * R);
+
+    feOffset.attr("dx", -.006 * R)
+            .attr("dy", -.006 * R);
+
+    feGaussianBlur.attr("stdDeviation", .01 * R);
+    
+    star.attr("r", R)
+        .style("fill", cScale(Teff))
+        .attr("cx", x)
+        .attr("cy", y);
+
+    starGlow.attr("r", R*5)
+            .attr("cx", x)
+            .attr("cy", y);
+
+    d3.select("#temperature-marker")
+              .attr("x1", x)
+              .attr("x2", x)
+              .attr("y1", "0")
+              .attr("y2", h);
+
+    d3.select("#luminosity-marker")
+              .attr("x1", "0")
+              .attr("x2", w)
+              .attr("y1", y)
+              .attr("y2", y);
+
+    d3.selectAll("#star-glow-gradient stop").style("stop-color", d3.rgb(cScale(Teff)).brighter(.5));
+
+    d3.selectAll(".info-text").remove();
+
+  var textTemperature = labelGroup.append("text")
+                           .attr("class", "info-text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*1.25)
+                           .attr("text-anchor", "middle")
+                           .text("Surface temperature: " + Math.floor(temperature) + " K");
+
+  var textLuminosity = labelGroup.append("text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*1)
+                           .attr("class", "info-text")
+                           .attr("text-anchor", "middle")
+                           .text("Luminosity: " + luminosity.toFixed(2) + " L☉");
+
+  var textRadius = labelGroup.append("text")
+                           .attr("x", "50%")
+                           .attr("y", h-paddingH*.75)
+                           .attr("class", "info-text")
+                           .attr("text-anchor", "middle")
+                           .text("Radius: " + R.toFixed(2) + " R☉");
+
+  // d3.selectAll(".planet")
+  //           .attr("cx", x)
+  //           .attr("cy", y);
+
+
+  });
+
+
+
+
+</script>
+
+</body>
+</html>
