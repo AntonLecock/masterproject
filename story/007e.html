@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <script>
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+      var centerX = 0;
+      var centerY = 0;
+      var radius = 50;
+
+      var scaleX = Math.random() + 1,
+          scaleY = 1;
+
+      var a = radius * scaleX,
+          b = radius * scaleY,
+          e = Math.sqrt(1 - (Math.pow(b, 2) / Math.pow(a, 2))),
+          F = Math.sqrt(Math.pow(a, 2) - Math.pow(b, 2));
+
+      // save context translation, rotation, scale state
+      context.save();
+
+      // translate context
+      context.translate(canvas.width/2, canvas.height/2);
+      context.rotate(Math.random()*360);
+      context.fillStyle = "none";
+      context.strokeStyle = 'rgba(46,210,123,1)';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.ellipse(-F, 0, a, b, 0, 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+      context.fillRect(0,0,1,1);
+
+      context.restore();
+      
+      console.log(a, b, e, F);
+
+      // // save state
+      // context.save();
+
+      // // translate context
+      // context.translate(canvas.width / 2, canvas.height / 2);
+      // context.rotate(Math.random()*360, centerX, centerY);
+
+      // // scale context horizontally
+      // context.scale(scaleX, scaleY);
+
+      // // draw circle which will be stretched into an oval
+      // context.beginPath();
+      // context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+      // context.translate(F, 0)
+
+      // // restore to original state
+      // context.restore();
+      // context.translate(canvas.width / 2, canvas.height / 2);
+
+      // context.rect(centerX, centerY, 1, 1);
+
+      // context.restore();
+
+      // // apply styling
+      // context.fillStyle = '#8ED6FF';
+      // context.fill();
+      // context.lineWidth = 5;
+      // context.strokeStyle = 'black';
+      // context.stroke();
+    </script>
+  </body>
+</html>      

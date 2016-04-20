@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed; 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"></script>
+</head>
+
+<body>
+
+    <script>
+
+      var container;
+      var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color, size;
+
+      var nodes, angles = [], angle, newAngle;
+      var x, y, z;
+
+      var initialEnlarge = 100;
+      var enlarge = initialEnlarge; //enlargement
+      var initialSpeed = initialEnlarge * 1;
+      var speed = initialSpeed; // speedment
+
+      var mouseX = 0, mouseY = 0;
+      var windowHalfX = window.innerWidth / 2;
+      var windowHalfY = window.innerHeight / 2;
+
+      var designerBlack = d3.rgb("#12151a"),
+            designerRed = d3.rgb("#c83c46"),
+          designerWhite = d3.rgb("#ffe9d2"),
+           designerBlue = d3.rgb("#696fc4"),
+          designerGreen = d3.rgb("#69c4be");
+
+      var cScale = d3.scale.linear()
+          .domain([0, 1])
+          .range([designerBlue, designerRed]);
+
+      init();
+      animate();
+
+      function init() {
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
+        camera.position.z = 1000;
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2( 0x12151a, 0.0007 );
+        geometry = new THREE.Geometry();
+
+        var detachedContainer = document.createElement("custom");
+        var dataContainer = d3.select(detachedContainer);
+
+        // ASTEROID DATA 
+        var asteroiddata = d3.csv("data/trojan2c.csv", function(error, rows) {
+          if (error) throw error;
+          
+          // create the ellipses on which the asteroids will be projected
+          // use path instead of ellipse, because otherwise next step won't work
+          var dataBinding = dataContainer.selectAll( "node" )
+            .data( rows )
+            .enter()
+            .append( "path" )
+            .attr("id", function(d, i){return "node-" + i})
+            .attr("class", function(d, i){return "node " + "node-" + i})
+            .attr("pdes", function(d, i){return d.full_name}) // name
+            .attr("a", function(d, i) {return d.a}) // semi-major axis
+            .attr("M", function(d, i) {return d.ma}) // mean anomaly
+            .attr("om", function(d, i) {return d.om}) // angle of the ascending node
+            .attr("w", function(d, i) {return d.w})
+            .attr("per", function (d, i) {return d.per_y})
+            .attr("incl", function(d, i) {return d.i})
+            .attr("e", function(d, i) {return d.e})
+            .attr("v", function(d, i) {
+              var M = +d.ma;
+              var e = d.e;
+              var E = M + (180 * Math.PI) * e * Math.sin(M) * (1 + e * Math.cos(M));
+              var counter = 0;
+              if (e > 0.06) {
+                function calcE (newE) { 
+                  var E0 = newE;
+                  var E1 = E0 - ( E0 - e*(180/Math.PI) * Math.sin(E0) - M ) / ( 1 - e * Math.cos(E0) )
+                  counter++;
+                  if (E1 - E0 >= 0 && E1 - E0 <= 0.02 || E0 - E1 >= 0 && E0 - E1 <= 0.02 ) {
+                    E = E1;
+                  } else {
+                    if (counter != 10) {
+                      calcE(E1);
+                    } else {
+                      E = E1;
+                    }
+                  }
+                }
+                calcE(E);
+              }
+              var xv = Math.cos(E) - e;
+              var yv = Math.sin(E) * Math.sqrt(1 - e*e);
+              var v = (Math.atan2(yv, xv));
+              return v;
+            })
+            .attr("stroke", function(d, i){
+              return cScale(d.e);
+            })
+
+          var getal = 1, t = 0, resolution = 10;
+          nodes = dataContainer.selectAll(".node"); // store all nodes in array
+          nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+  
+          dataBinding.each(function(d, i) {
+            var node = d3.select(this);
+            // angles.push(+node.attr("M") / 180*Math.PI) // initial angle of the asteroid on its orbit
+            angles.push(+node.attr("v"));
+            // angles.push(2);
+          });
+
+          // for ( i = 0; i < nodesAmount; i ++ ) {
+          dataBinding.each(function(d, i) {
+            var node = d3.select(this);
+
+            var M = node.attr("M");
+            var om = node.attr("om");
+            var a = node.attr("a");
+            var e = node.attr("e");
+            var per = node.attr("per") * speed;
+            var W = node.attr("w");
+
+            // compute other values
+            var b = (a * (Math.sqrt(1-e*e)));
+            var F = (Math.sqrt(a * a - b * b));
+
+            // enlarge values of length
+            a = a * enlarge;
+            b = b * enlarge;
+            F = F * enlarge;
+
+            // Initial position of point (angle = 0)
+            var x = a;
+            var y = 0;
+
+            t++;
+
+            var r = a + F;
+
+            angle = angles[i];
+
+            var k = 360 * a * b / (per * resolution);
+            
+            for (var j = 0; j < resolution; j++) {
+                angle += k / (r * r);
+                r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+            }
+
+            var newX = r * Math.cos(angle);
+            var newY = r * Math.sin(angle);
+
+            x = newX;
+            y = newY;
+
+          // }); 
+
+          // parameters = [
+          //   [ [1, 1, 0.5], 5 ],
+          //   [ [0.95, 1, 0.5], 4 ],
+          //   [ [0.90, 1, 0.5], 3 ],
+          //   [ [0.85, 1, 0.5], 2 ],
+          //   [ [0.80, 1, 0.5], 1 ]
+          // ];
+
+          // for ( i = 0; i < nodesAmount; i ++ ) {
+            var vertex = new THREE.Vector3();
+            // vertex.x = Math.random() * 2000 - 1000;
+            // vertex.y = Math.random() * 2000 - 1000;
+            // vertex.z = Math.random() * 2000 - 1000;
+
+            vertex.x = x;
+            vertex.y = y;
+            vertex.z = 0;
+            geometry.vertices.push( vertex );
+
+            // color = parameters[i][0];
+            // size  = parameters[i][1];
+          //   materials[i] = new THREE.PointsMaterial( { size: size } );
+            // particles = new THREE.Points( geometry, materials[i] );
+            
+            materials[i] = new THREE.PointsMaterial();
+            // materials[i].color = "0xffffff";
+            particles = new THREE.Points( geometry, materials[i] );
+            // particles.rotation.x = Math.random() * 6;
+            // particles.rotation.y = Math.random() * 6;
+            // particles.rotation.z = Math.random() * 6;
+            scene.add( particles );
+          }); // databinding.each
+
+          renderer = new THREE.WebGLRenderer();
+          renderer.setPixelRatio( window.devicePixelRatio );
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          container.appendChild( renderer.domElement );
+          document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+          document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+          document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+          //
+          window.addEventListener( 'resize', onWindowResize, false );
+        }); // data d3
+      }; // init
+
+      function onWindowResize() {
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+
+      function onDocumentMouseMove( event ) {
+        mouseX = event.clientX - windowHalfX;
+        mouseY = event.clientY - windowHalfY;
+      }
+
+      function onDocumentTouchStart( event ) {
+        if ( event.touches.length === 1 ) {
+          event.preventDefault();
+          mouseX = event.touches[ 0 ].pageX - windowHalfX;
+          mouseY = event.touches[ 0 ].pageY - windowHalfY;
+        }
+      }
+
+      function onDocumentTouchMove( event ) {
+        if ( event.touches.length === 1 ) {
+          event.preventDefault();
+          mouseX = event.touches[ 0 ].pageX - windowHalfX;
+          mouseY = event.touches[ 0 ].pageY - windowHalfY;
+        }
+      }
+
+      function animate() {
+        requestAnimationFrame( animate );
+        render();
+      }
+
+      // 
+      function render() {
+        var time = Date.now() * 0.00005;
+        camera.position.x += ( mouseX - camera.position.x );
+        camera.position.y += ( - mouseY - camera.position.y );
+        camera.lookAt( scene.position );
+        console.log("scene.children.length" + scene.children.length)
+        for ( i = 0; i < scene.children.length; i ++ ) {
+          var object = scene.children[ i ];
+          if ( object instanceof THREE.Points ) {
+            // object.rotation.z = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+            object.rotation.z = time*speed;
+          }
+        }
+        // for ( i = 0; i < materials.length; i ++ ) {
+        //   color = parameters[i][0];
+        //   h = ( 360 * ( color[0] + time ) % 360 ) / 360;
+        //   materials[i].color.setHSL( h, color[1], color[2] );
+        // }
+        renderer.render( scene, camera );
+      }
+
+
+    </script>
+  </body>
+</html>

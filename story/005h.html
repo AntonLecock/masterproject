@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 1000;
+  var n = 400;
+
+  var enlarge = 100;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#000000"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+      d3.select("body").style("background-color", designerBlack);
+
+  var canvas = d3.select("body").append("canvas")
+                             .attr("id","container")
+                             .attr("class","container")
+                             .attr("width", w*4)
+                             .attr("height", h*4);
+
+  var context = canvas.node().getContext('2d');
+
+  var detachedContainer = document.createElement("custom");
+  var dataContainer = d3.select(detachedContainer);
+
+  context.fillStyle = "none";
+  context.strokeStyle = designerWhite;
+
+d3.csv("data/1all_atira.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(150,150,150,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/2all_aten.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(160,160,160,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/3all_apollo.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(170,170,170,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/4all_amor.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(180,180,180,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/5all_mars-crossing_asteroid.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(190,190,190,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/6all_inner_main-belt_asteroid.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(200,200,200,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/7all_main-belt_asteroid.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(210,210,210,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/8all_outer_main-belt_asteroid.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(220,220,220,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/9all_jupiter_trojan.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(230,230,230,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/10all_centaur.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(240,240,240,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/11all_trans-neptunian_object.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .attr("stroke", "rgba(255,255,255,.25)");
+
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = node.attr("stroke");
+      context.lineWidth = .2;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), Math.floor(360 * Math.random()), 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+
+  });
+
+});
+
+d3.csv("data/planets.csv", function(error, rows) {
+  if (error) throw error;
+
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("id", function(d, i){return d.id})
+    .attr("class", function(d, i){return "node " + d.name})
+    .attr("cx", w/2)
+    .attr("cy", h*2)
+    .attr("rx", function(d, i){return d.semimaj * enlarge } )
+    .attr("ry", function(d, i){return (d.semimaj * Math.sqrt(1-(Math.pow(d.ecc,2)))) * enlarge } );
+  
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
+  
+      context.fillStyle = "none";
+      context.strokeStyle = 'rgba(250,250,250,1)';
+      context.lineWidth = 0;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), 0, 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+  });
+
+});
+
+// function counter() {
+//   number++;
+//   var total = "0000000" + number;
+//   return total.substr(total.length-7);
+// }
+
+// setTimeout( function() {
+//   for (i = 0; i<19999; i++) {
+//     d3.select("#a" + counter()).transition()
+//       .duration(0)
+//       .delay(2000 + number)
+//       .style("stroke-width", function () { return .25 });
+//   }
+
+// }, 2000);
+
+// function zoomed() {
+//   asteroidsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+//   // starsGroup.select(".county-border").style("stroke-width", .5 / d3.event.scale + "px");
+// }
+
+
+  </script>
+</body>
+</html>

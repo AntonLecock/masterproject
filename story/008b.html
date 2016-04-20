@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed; 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"></script>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/50,
+      paddingH = h/50;
+
+  var number  = 0;
+  var n = 0;
+
+  var nodes,
+      angles = [],
+      angle,
+      newAngle;
+
+  var notdone = true; 
+  var originalX, originalY;
+
+  var scaler = "big"; // only display labels if "big"
+
+  var initialEnlarge = 100;
+  var enlarge = initialEnlarge; //enlargement
+  var initialSpeed = initialEnlarge * 10;
+  var speed = initialSpeed; // speed in milliseconds, equals one year (eg. speed = 1000 means one earth year will be displayed as one second)
+  var initialPointRadius = 1; 
+  var pointRadius = initialPointRadius; // radius of asteroid point
+  var lineRadius = .2;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+  var designerBlack = d3.rgb("#000000"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerBlue = d3.rgb("#696fc4")
+      designerGreen = d3.rgb("#69c4be");
+
+  var cScale = d3.scale.linear()
+        .domain([0, 1])
+        .range([designerBlue, designerRed]); 
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  var detachedContainer = document.createElement("custom");
+  var dataContainer = d3.select(detachedContainer);
+
+  init();
+  animate();
+
+  function init() {
+
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+  
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.body.appendChild( renderer.domElement );
+
+  }
+
+  function animate() {
+        requestAnimationFrame( animate );
+        render();
+        stats.update();
+  
+  }
+
+  // ASTEROID DATA 
+  var asteroiddata = d3.csv("data/trojan2c.csv", function(error, rows) {
+    if (error) throw error;
+
+    // var X, Y, R, v, P, E, F;
+
+    
+    // create the ellipses on which the asteroids will be projected
+    // use path instead of ellipse, because otherwise next step won't work
+    var dataBinding = dataContainer.selectAll( "node" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "node-" + i})
+      .attr("class", function(d, i){return "node " + "node-" + i})
+      .attr("pdes", function(d, i){return d.full_name}) // name
+      .attr("a", function(d, i) {return d.a}) // semi-major axis
+      .attr("M", function(d, i) {return d.ma}) // mean anomaly
+      .attr("om", function(d, i) {return d.om}) // angle of the ascending node
+      .attr("w", function(d, i) {return d.w})
+      // .attr("W", function(d, i) {return d.w})
+      .attr("per", function (d, i) {return d.per_y})
+      .attr("incl", function(d, i) {return d.i})
+      .attr("e", function(d, i) {return d.e})
+      .attr("v", function(d, i) {
+        var M = +d.ma;
+        var e = d.e;
+        var E = M + (180 * Math.PI) * e * Math.sin(M) * (1 + e * Math.cos(M));
+        var counter = 0;
+        if (e > 0.06) {
+          function calcE (newE) { 
+            var E0 = newE;
+            var E1 = E0 - ( E0 - e*(180/Math.PI) * Math.sin(E0) - M ) / ( 1 - e * Math.cos(E0) )
+            counter++;
+            if (E1 - E0 >= 0 && E1 - E0 <= 0.02 || E0 - E1 >= 0 && E0 - E1 <= 0.02 ) {
+              E = E1;
+            } else {
+              if (counter != 10) {
+                calcE(E1);
+              } else {
+                E = E1;
+              }
+            }
+          }
+          calcE(E);
+        }
+        var xv = Math.cos(E) - e;
+        var yv = Math.sin(E) * Math.sqrt(1 - e*e);
+        var v = (Math.atan2(yv, xv));
+        return v;
+      })
+      .attr("stroke", function(d, i){
+        return cScale(d.e);
+      })
+
+    var getal = 1;          
+    var resolution = 10;
+    var oneTime = true;
+    var t = 0;
+
+    nodes = dataContainer.selectAll(".node"); // store all nodes in array
+    nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+
+    dataBinding.each(function(d, i) {
+      var node = d3.select(this);
+      // angles.push(+node.attr("M") / 180*Math.PI) // initial angle of the asteroid on its orbit
+      angles.push(+node.attr("v"));
+      // angles.push(2);
+    });
+    console.log(angles);
+    // for (i = 0; i < nodesAmount; i++) {
+    //   angles.push(d.M[i]); 
+    // }  
+
+    // Variables for storing previous positions
+    var oldPoints = [];
+    var pointInterval = 5;
+    var oldTime = 0;
+    var periodTime = false;
+
+    //d3.timer(step);
+    // step();
+
+    /*
+    function step() {
+
+      // "clear" canvas
+      context.fillStyle = gradient;
+      context.strokeStyle = "none"
+      context.fillRect(0,0,w,h);
+
+      // add sun and nametag, but only if zoom level isn't too far out
+      context.fillStyle = designerWhite;
+      context.beginPath();
+      context.arc(w/2, h/2, pointRadius, 0, 2 * Math.PI);
+      context.fill();
+
+
+      // if (scaler != "tiny") {
+      //   context.font = "12px BretzelGrotesk";
+      //   context.textAlign = "center";
+      //   context.fillText("Sun", w/2, h/2 - 9);
+      // };
+
+      // add title and text
+      context.font = "24px BretzelGrotesk";
+      context.textAlign = "center";
+      context.fillText("Jupiter's Trojans",  w/2, paddingH*5);
+      
+      calculateOrbit();
+
+    }
+    */
+        
+    function calculateOrbit() {
+        // console.log( getal++ );
+
+        dataBinding.each(function(d, i) {
+
+          var node = d3.select(this);
+
+          var M = node.attr("M");
+          var om = node.attr("om");
+          var a = node.attr("a");
+          var e = node.attr("e");
+          var per = node.attr("per") * speed;
+          var W = node.attr("w");
+
+          // compute other values
+          var b = (a * (Math.sqrt(1-e*e)));
+          var F = (Math.sqrt(a * a - b * b));
+
+          // enlarge values of length
+          a = a * enlarge;
+          b = b * enlarge;
+          F = F * enlarge;
+
+          // Initial position of point (angle = 0)
+          var x = a;
+          var y = 0;
+
+          t++;
+
+          var r = a + F;
+
+          angle = angles[0];
+
+          var k = 360 * a * b / (per * resolution);
+        
+          for (var j = 0; j < resolution; j++) {
+              angle += k / (r * r);
+              r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+          }
+
+          var newX = r * Math.cos(angle);
+          var newY = r * Math.sin(angle);
+
+          x = newX;
+          y = newY;
+
+          function once () {
+            if (notdone) {
+              originalX = x;
+              originalY = y;
+              notdone = false;
+            } 
+          }
+
+          once();
+
+          getal = getal + 1;
+
+        }); // dataBinding.each()
+
+          newAngle = angle;
+          angles.splice(0, 1);
+          angles.push(newAngle);  
+
+      }; // calculateOrbit()       
+
+
+  // THREE.JS
+
+  // var geometry = new THREE.BoxGeometry( 20, 20, 20 );
+  // var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+  // var cube = new THREE.Mesh( geometry, material );
+  // scene.add( cube );
+
+  var pointCount = nodesAmount,
+      points = new THREE.Geometry(),
+      pMaterial = new THREE.PointsMaterial({
+        color: 0xFFFFFF,
+        size: 20,
+        map: THREE.ImageUtils.loadTexture(
+          "../img/lensflare0-b.png"
+        ),
+        blending: THREE.AdditiveBlending,
+        transparent: true
+      });
+
+
+  // now create the individual particles
+  for (var p = 0; p < pointCount; p++) {
+
+    // create a particle with random
+    // position values, -250 -> 250
+    var pX = Math.random() * 500 - 250,
+        pY = Math.random() * 500 - 250,
+        pZ = Math.random() * 100 - 100,
+    // var pX = x, 
+    //     pY = y,
+    //     pZ = 0;
+        point = new THREE.Vector3(pX, pY, pZ);
+
+    // add it to the geometry
+    points.vertices.push(point);
+  }
+
+  // create the particle system
+  var pointSystem = new THREE.Points(
+      points,
+      pMaterial);
+
+  pointSystem.sortParticles = true;
+
+  // add it to the scene
+  scene.add(pointSystem);
+  
+  camera.position.z = 100;
+
+  function render() {
+    requestAnimationFrame( render );
+    // cube.rotation.x += 0.1;
+    // cube.rotation.y += 0.1;
+    renderer.render( scene, camera );
+  }
+  render()
+
+  // THREE.JS
+  
+  });
+
+
+
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#111;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 0;
+  var n = 0;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#000000"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var asteroidsGroup = svg.append("g").attr("id","asteroids-group");
+  var labelGroup = svg.append("g").attr("id", "label-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  // Define starglow gradient structure in defs
+  var starGlowGradient = defs.append("radialGradient").attr("id", "radial-gradient").attr("cx", "50%").attr("cy", "50%");
+
+  starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "#FFFFFF").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.058%").style("stop-color", "#FAFAE6").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.060%").style("stop-color", "#FBF2D6").style("stop-opacity", ".97");
+  // starGlowGradient.append("stop").attr("offset", "1.56%").style("stop-color", "#FDE4B9").style("stop-opacity", ".9");
+    starGlowGradient.append("stop").attr("offset", "2.56%").style("stop-color", "#FDE4B9").style("stop-opacity", "1");
+  starGlowGradient.append("stop").attr("offset", "5.87%").style("stop-color", "#FFDBA6").style("stop-opacity", ".2");
+  // starGlowGradient.append("stop").attr("offset", "2.08%").style("stop-color", "#FFD8A0").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+
+  var rScale = d3.scale.pow()
+                       .exponent(.3)
+                       .domain([-1.2, 8])
+                       .range([2, .05])
+
+  var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([.5, 4])
+    .on("zoom", zoomed);
+
+svg.call(zoom);
+
+// starsGroup.selectAll( "path" )
+//   .data( stars_six_json.features )
+//   .enter()
+//   .append( "path" )
+//   .attr("class", function(d) { return "star star-" + d.id})
+//   .attr( "fill", "url(#radial-gradient)" )
+//   .style("opacity", 1)
+//   .attr( "d", path )
+  // .transition().duration( function() { return Math.random() * (5000 - 2000) + 2000})
+  // .style("opacity", 1);
+
+asteroidsGroup.selectAll( "ellipse" )
+  .data( asteroids.features )
+  .enter()
+  .append( "ellipse" )
+  .attr("id", function(d, i){return d.id})
+  .attr("class", function(d, i){return d.full_name})
+  .style("stroke", "white")
+  .style("fill", "none")
+  .style("opacity", .1)
+  .style("stroke-width", 0)
+  .attr("cx", "50%")
+  .attr("cy", "50%")
+  .attr("rx", function(d, i){return d.semimajor_axis * 100 } )
+  .attr("ry", function(d, i){return (d.semimajor_axis * Math.sqrt(1-(Math.pow(d.eccentricity,2)))) * 100 } );
+
+function counter() {
+  number++;
+  var total = "0000000" + number;
+  return total.substr(total.length-7);
+}
+
+setTimeout( function() {
+  for (i = 0; i<19999; i++) {
+    d3.select("#a" + counter()).transition()
+      .duration(0)
+      .delay(2000 + number)
+      .style("stroke-width", function () { return .25 });
+  }
+
+}, 2000);
+
+function zoomed() {
+  asteroidsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+  // starsGroup.select(".county-border").style("stroke-width", .5 / d3.event.scale + "px");
+}
+
+
+  </script>
+</body>
+</html>

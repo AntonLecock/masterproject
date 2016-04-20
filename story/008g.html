@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: Circular Std, sans-serif;
+      text-transform: uppercase;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed;
+    }
+
+    .bold {
+      font-weight:900;
+      color:#;
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+<!-- <div style="position:fixed; top: 48%; width:100%; background: none;"> -->
+<!--     <h1 style=" position:fixed; top: 47.5%; width: 100%; margin: 0 auto; padding-left:100px; text-align: center; font-size: 36px; letter-spacing: 14px; font-weight:100;">
+      Exoplanets
+    </h1> -->
+<!--   </div> -->  
+  <div style="position: fixed; bottom:40px; left:50px; max-width:200px;">
+    <p style="width:220px; font-size: 12.5px; text-transform: none; line-height:1.5;">
+      These are <span class="bold">exoplanets</span>, planets orbiting around a star other than the sun. Exoplanets are very common in the universe. The average star has more than one planet orbiting around it, making our solar system the rule rather than the exception. 
+    </p>
+    <p style="width:220px; font-size: 12.5px; text-transform: none; line-height:1.5;">
+      These are all 1963 known and confirmed exoplanets, their size relative to that of it's host star. <span class="bold">Scroll down</span> to get the complete picture: orbits of the inner planets in our solar system are highlighted.
+    </p>
+  </div>
+  <canvas style=" position: fixed; z-index:-5" width="500" height="500"></canvas>
+<!--   <div class="kader" style="position:fixed; z-index: -6; width: 100%; height: 100%; background:none; box-sizing: border-box; border: 5px solid #c83c46;" >
+  </div> -->
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 0;
+  var n = 0;
+
+  var nodes,
+      angles = [],
+      angle,
+      newAngle;
+
+  var notdone = true;
+
+  var viewpointY = 1; // 1 = edge on, higher is more inclined
+  var viewpointX = 0;
+
+  var scaler = "big"; // only display labels if "big"
+
+  var mousePosX, mousePosY;
+
+
+  var initialEnlarge = 40000;
+  var enlarge = initialEnlarge; //enlargement
+  var initialSpeed = initialEnlarge * 40;
+  var speed = initialSpeed; // speed in milliseconds
+  var initialPointRadius = 150; 
+  var pointRadius = initialPointRadius; // radius of asteroid point
+
+  // COLORS    
+  var designerBlack = d3.rgb("#12151a"),
+        designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2"),
+       designerBlue = d3.rgb("#696fc4"),
+      designerGreen = d3.rgb("#69c4be");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+          hotColor = d3.rgb("#ffffff"), // hot color in the graph
+          midColor = d3.rgb("#ffe9d2"),
+         coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+
+  // CANVAS
+  var canvas = d3.select("canvas")
+               .attr("id", "canvas")
+               .attr("width", w)
+               .attr("height", h),
+    context = canvas.node().getContext("2d"),
+    width = canvas.width,
+    height = canvas.height;
+
+      d3.select("body").style("background-color", "#12151a");
+
+    var cScale = d3.scale.linear()
+        .domain([0, 1])
+        .range([designerBlue, designerRed]); 
+
+    var periodScale = d3.scale.pow()
+        .domain([0, 1])
+        .range([0, 100]);
+
+    // var cScale = d3.scale.linear()
+    //                      .domain([185, 2733])
+    //                      .range([coldestColor, hottestColor]);
+
+    var rScale = d3.scale.linear()
+                         .domain([0.00000000001, 1, 10000])
+                         .range([0.5, 1, 10000]);
+
+  // // Create the SVG Viewport
+  // var svg = d3.select("body").append("svg")
+  //                            .attr("id","svg-container")
+  //                            .attr("class","svg-container")
+  //                            .attr("width", w)
+  //                            .attr("height", h);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  var detachedContainer = document.createElement("custom");
+  var dataContainer = d3.select(detachedContainer);
+
+  // ASTEROID DATA 
+  var asteroiddata = d3.csv("data/keplerconfirmed4.csv", function(error, rows) {
+    if (error) throw error;
+
+    // var x, y, r, v, P, E, F;
+
+    
+    // create the ellipses on which the asteroids will be projected
+    // use path instead of ellipse, because otherwise next step won't work
+    var dataBinding = dataContainer.selectAll( "node" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "node-" + i})
+      .attr("realid", function(d, i){return d.id})
+      .attr("class", function(d, i){return "node " + "node-" + i})
+      .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
+      .attr("a", function(d, i) {return d.pl_orbsmax})
+      .attr("M", function(d, i) {return Math.random()*360})
+      // .attr("W", function(d, i) {return d.w})
+      .attr("per", function (d, i) {return d.pl_orbper / 365.25})
+      .attr("e", function(d, i) {return d.pl_orbeccen})
+      .attr("rad", function(d, i) {return d.pl_radj})
+      .attr("radstar", function(d, i) {return d.st_rad})
+      // .attr("mass", function(d, i) {return cScale(d.pl_bmassj)})
+      .attr("solar", function(d, i) {return d.pl_nnotes})
+      .attr("stroke", function(d, i){return cScale(d.pl_orbeccen)})
+      .attr("inclination", function(d, i) {return d.pl_orbincl})
+
+    var getal = 1;          
+    var resolution = 10;
+    var oneTime = true;
+    var t = 0;
+
+    nodes = dataContainer.selectAll(".node"); // store all nodes in array
+    nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+
+    dataBinding.each(function(d, i) {
+      var node = d3.select(this);
+      // angles.push(+node.attr("M")) // initial angle of the asteroid on its orbit
+      // angles.push(0);
+      angles.push(Math.random()*(Math.PI*2));
+    });
+    // for (i = 0; i < nodesAmount; i++) {
+    //   angles.push(d.M[i]); 
+    // }  
+
+    // Variables for storing previous positions
+    var oldPoints = [];
+    var pointInterval = 5;
+    var oldTime = 0;
+    var periodTime = false;
+
+
+    function getMousePos(canvas, evt) {
+      var rect = document.getElementById("canvas").getBoundingClientRect();
+      return {
+        x: (evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width,
+        y: (evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height
+      };
+    }
+    
+    document.body.addEventListener('mousemove', function(evt) {
+      var mousePos = getMousePos(document.getElementById("canvas"), evt);
+      mousePosX = mousePos.x,
+      mousePosY = mousePos.y;
+
+      var xPosScale = d3.scale.linear()
+          .domain([0, w/2, w])
+          .range([-Math.PI/20, 0, Math.PI/20])
+
+      var yPosScale = d3.scale.pow()
+          .exponent(.01)
+          .domain([0, h])
+          .range([5000, 2])
+
+      viewpointY = yPosScale(mousePosY);
+      viewpointX = xPosScale(mousePosX);
+      var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+      console.log(viewpointY);
+
+    }, false);
+
+    d3.timer(step);
+
+    function step() {
+
+      // "clear" canvas
+      var gradient=context.createRadialGradient(w/2,h/2,0,w/2,h/2,enlarge/150);
+        // gradient.addColorStop(0,"white");
+        // gradient.addColorStop(0.565, d3.rgb(designerBlue).darker(.5));
+        gradient.addColorStop(0,"rgba(88,91,96,1)");
+        gradient.addColorStop(1,"rgba(18,21,26,1)");
+
+      context.fillStyle = gradient;
+      context.strokeStyle = "none"
+      context.fillRect(0,0,w,h);
+
+      context.save();
+      context.translate(w/2, h/2);
+      context.rotate(viewpointX);
+
+      context.fillStyle = "white";
+      context.font = enlarge/105 + "px Larish Alte";
+      context.textAlign = "left";
+      context.fillText("1 9 6 3   E X O P L A N E T S", enlarge/40, enlarge/280);
+
+      context.restore();
+
+      // add sun and nametag, but only if zoom level isn't too far out
+      context.fillStyle = "rgba(255,255,255,1)";
+      context.beginPath();
+      context.arc(w/2, h/2, pointRadius, 0, 2 * Math.PI);
+      context.fill();
+
+      // function writeMessage(canvas, message) {
+      //   context.clearRect(0, 0, document.getElementById("canvas").width, document.getElementById("canvas").height);
+      //   context.fillText(message, 10, 25);
+      //   console.log(message);
+      // }
+      
+      drawOrbit();
+
+    }
+
+
+    function drawOrbit() {
+        
+        // console.log( getal++ );
+
+        dataBinding.each(function(d, i) {
+
+          var node = d3.select(this);
+
+          var M = node.attr("M");
+          var a = node.attr("a");
+          var e = node.attr("e");
+          var perNoSpeed = node.attr("per");
+          var per = node.attr("per") * speed;
+          var rad = node.attr("radstar")*10 / node.attr("rad");
+          var incl = node.attr("inclination");
+          // var W = node.attr("W");
+
+          // compute other values
+          var b = (a * (Math.sqrt(1-e*e)));
+          var F = (Math.sqrt(a * a - b * b));
+
+          // enlarge values of length
+          a = a * enlarge;
+          b = b * enlarge;
+          F = F * enlarge;
+
+          // Initial position of point (angle = 0)
+          var x = a;
+          var y = 0;
+
+          t++;
+          getal++;
+
+          var r = a + F;
+
+          angle = angles[0];
+
+          function once () {
+            if (notdone) {
+              angle = 0;
+              notdone = false;
+            }
+          }
+
+          if (node.attr("realid" === "earth")) {
+            once();
+          }
+
+          if (angle >= 2*Math.PI) {
+            var newAngle = angle - 2*Math.PI
+            angle = newAngle;
+          }
+
+          var k = 360 * a * b / (per * resolution);
+        
+          for (var j = 0; j < resolution; j++) {
+              angle += k / (r * r);
+              r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+          }
+
+          // angle += (360 * a * b / (r * r * per)); 
+          // r = a * (1 - e * e) / (1 - e * Math.cos(angle));
+
+          // if (angle > 360) {
+          //   angle -= 360;
+          //   if (oldTime) {
+          //       periodTime = t - oldTime;
+          //   }
+          //   oldTime = t;
+          // }
+
+          var newX = r * Math.cos(angle);
+          var newY = r * Math.sin(angle);
+
+          x = newX;
+          y = newY/viewpointY;
+          // y = newY/viewpointY - periodScale(perNoSpeed);
+          // y = 0 - periodScale(perNoSpeed);
+
+          context.save();
+          
+          context.translate(w/2, h/2);
+
+          // var rotation = +M + (((360+getal)/(per*10)));
+          // context.rotate(M);
+          // context.rotate(rotation);
+          context.rotate(viewpointX);
+
+          // add orbiting points
+          
+            context.fillStyle = "#12151a";
+            context.strokeStyle = "#696fc4";
+
+          // context.fillStyle = cScale(e);
+          context.lineWidth = .2;
+          context.beginPath();
+          // if (node.attr("rad") != undefined && node.attr("radstar" != undefined)) {
+          //   context.arc(x, y, rScale(pointRadius * ((node.attr("rad")/10) / node.attr("radstar"))), 0, 2 * Math.PI);
+          // } else {
+          //   context.arc(x, y, rScale(pointRadius/10), 0, 2 * Math.PI);
+          // }
+          context.arc(x, y, rScale(pointRadius / rad), 0, 2 * Math.PI);
+          // if (node.attr("eqtemp") != "") {
+          //   context.fill();
+          // } else {
+          //   context.stroke();
+          //   context.strokeStyle = "none";
+          // }
+          context.closePath();
+          if (angle <= Math.PI) {
+            context.fill();
+            context.stroke();
+          } else {
+            context.stroke();
+          }
+
+          // toggle radius!
+
+            context.moveTo(x,y-rScale(pointRadius / rad));
+            context.lineTo(x,y-(+node.attr("rad")*100));
+            context.stroke();
+
+
+
+          if (node.attr("realid") === "mercury" || node.attr("realid") === "venus" || node.attr("realid") === "earth" || node.attr("realid") === "mars") {
+            context.fillStyle = "none";
+            context.strokeStyle = designerBlue;
+            context.lineWidth = .4;
+
+            if (scaler === "big") {
+              context.beginPath();
+              context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
+              context.stroke();
+              context.closePath();
+            }
+
+            context.fillStyle = designerBlack;
+            context.beginPath();
+            context.arc(x, y, rScale(pointRadius * ((node.attr("rad")/10) / node.attr("radstar"))), 0, 2 * Math.PI);
+            context.fill();
+
+            context.fillStyle = "white";
+            context.font = enlarge/200 + "px Larish Alte";
+            context.textAlign = "left";
+            context.fillText(node.attr("pdes"), a/4 + enlarge/35.2, (b - 100)/viewpointY);
+          }
+
+          
+          // add label on fake hover
+          // context.fillStyle = node.attr("teff");
+          // if (x > mousePosX - w/2 - 20 
+          //  && x < mousePosX - w/2 + 20 
+          //  && y > mousePosY - h/2 - 20 
+          //  && y < mousePosY - h/2 + 20) {
+          //   if (node.attr("pdes") != undefined && scaler != "tiny") {
+          //     context.font = "14px BretzelGrotesk"
+          //     context.textAlign = "center";
+          //     context.fillText(node.attr("pdes"), x, y - (rad * pointRadius + 5));
+          //   }
+          
+
+            // add orbit paths
+            // context.fillStyle = "none";
+            // context.strokeStyle = cScale(e);
+            // context.lineWidth = .2;
+            // context.beginPath();
+            // context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
+            // context.stroke();
+            // context.closePath();
+          
+          // };
+          
+
+
+
+
+          context.restore();
+
+          // if (node.attr("realid") === "earth") {
+          //   context.font = "16px Circular Std";
+          //   context.textAlign = "left";
+          //   var earthAngle = angle*(180/Math.PI);
+          //   var earthTime = earthAngle/360*365.25*24; 
+          //   var earthTimeRounded = earthTime.toFixed(2)
+          //   context.fillText("Hours ellapsed: " + earthTimeRounded, 50, 50);
+          // }
+
+          newAngle = angle;
+          angles.splice(0, 1);
+          angles.push(newAngle);          
+        });
+      }
+  
+  });
+  
+
+  var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([0.001, 10])
+    .on("zoom", zoomed);
+
+  d3.select("body").call(zoom);
+
+  function zoomed() {
+
+    // speed = initialSpeed * d3.event.scale;
+    enlarge = initialEnlarge * d3.event.scale;
+    pointRadius = d3.event.scale * initialPointRadius;
+    // if (d3.event.scale < 1 && pointRadius >= 0.05) { 
+    //   pointRadius = initialPointRadius * (d3.event.scale);
+    // } else if (d3.event.scale > 1){
+    //   pointRadius = initialPointRadius
+    // } else if (d3.event.scale < 1 && pointRadius === 0.05) {
+    //   pointRadius += .01
+    // };
+    if (d3.event.scale < .01) {
+      scaler = "tiny";
+    } else {
+      scaler = "big";
+    }
+
+    // d3.select("canvas").style("-webkit-filter", "blur(" + 0 + (1-d3.event.scale) + "px)");
+
+    
+  }
+
+
+  // d3.select("canvas").style("-webkit-filter", "blur(" + 0 + "px)");
+
+  </script>
+</body>
+</html>
