@@ -1,10 +1,12 @@
 # masterproject
 
-Masterproject of Anton Lecock 2015–2016
-*Initiated on: 1st of december, 2015*
+Masterproject of Anton Lecock (2015–2016)
 
-Overview of all work: [here](http://antonlecock.github.io/masterproject/hub) (march 14th, 2016)
-Latest working Hertzsprung-Russell Diagram: [D3-020.html](http://antonlecock.github.io/masterproject/D3-020.html) (january 6th, 2016)
+*Initiated on: 1st of december, 2015*  
+
+Overview of all work: [here](http://antonlecock.github.io/masterproject/hub) (march 14th, 2016)  
+
+Latest working Hertzsprung-Russell Diagram: [D3-020.html](http://antonlecock.github.io/masterproject/D3-020.html) (january 6th, 2016)  
 
 ---
 
