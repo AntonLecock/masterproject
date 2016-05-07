@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+	<script type="text/javascript">
+
+	var dataset = ["383", "950", "1000", "532", "10973", "9140", "3981", "3865", "110000"];
+
+	var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+        hotColor = d3.rgb("white"), // hot color in the graph
+        coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+        coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
+
+    //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([0, 1])
+                         .range([0, 500]);
+
+    var sizeScale = d3.scale.linear()
+    						.domain([0, 1])
+    						.range([0, 500])
+    
+    var svg = d3.select("body").append("svg")
+                               .attr("id","svg")
+                               .attr("class","svg")
+                               .attr("width", 1200)
+                               .attr("height", 1200);
+
+    var RAxis = d3.svg.axis()
+                      .scale(sizeScale)
+                      .orient("bottom")
+                      // .tickFormat(function (d) { return RScale.tickFormat(20,d3.format(",d")) (d) });
+
+    var RAxisLabel = svg.append("text")
+                           .attr("class", "r-label label")
+                           .attr("x", 600)
+                           .attr("y", 1150)
+                           .attr("text-anchor", "left")
+                           .text("Size (Solar Radii)");
+
+    var RAxisGroup = svg.append("g")
+                           .attr("class", "text r-axis axis")
+                           .attr("transform", "translate(" + 600 + "," + 1101 + ")")
+                           .call(RAxis);
+
+
+    for (i = 0; i < dataset.length; i++) {
+	    d3.select("svg").selectAll("circle")
+	    				.data(dataset)
+	    				.enter()
+	    				.append("circle")
+	    				.attr("class", "circle")
+	    				.attr("id", "circle")
+	    				.attr("cx", 600)
+	    				.attr("cy", function (d) {return 1100 - RScale(+d/110000)})
+	    				.attr("r", function(d) {return RScale(+d/110000)})
+	    				.style("stroke", "black")
+	    				.style("fill", "none")
+	}
+	</script>
+
+</body>
+</html>
