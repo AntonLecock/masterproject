@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+	<script type="text/javascript">
+	var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+        hotColor = d3.rgb("white"), // hot color in the graph
+        coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+        coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
+
+    //Define the Scale for R (size circles)
+    var RScale = d3.scale.linear()
+                         .domain([1, 1000])
+                         .range([0.5, 500]);
+
+    var sizeScale = d3.scale.linear()
+    						.domain([0, 1000])
+    						.range([0, 500])
+    
+    var svg = d3.select("body").append("svg")
+                               .attr("id","svg")
+                               .attr("class","svg")
+                               .attr("width", 1200)
+                               .attr("height", 1200);
+
+    var RAxis = d3.svg.axis()
+                      .scale(sizeScale)
+                      .orient("bottom")
+                      .tickFormat(function (d) { return RScale.tickFormat(20,d3.format(",d")) (d) });
+
+    var RAxisLabel = svg.append("text")
+                           .attr("class", "r-label label")
+                           .attr("x", 600)
+                           .attr("y", 1150)
+                           .attr("text-anchor", "left")
+                           .text("Size (Solar Radii)");
+
+    var RAxisGroup = svg.append("g")
+                           .attr("class", "text r-axis axis")
+                           .attr("transform", "translate(" + 600 + "," + 1101 + ")")
+                           .call(RAxis);
+
+
+    for (i = 0; i <= 1000; i+=125) {
+	    d3.select("svg").append("circle")
+	    				.attr("class", "circle")
+	    				.attr("id", "circle")
+	    				.attr("cx", 600)
+	    				.attr("cy", 1100 - RScale(i))
+	    				.attr("r", RScale(i))
+	    				.style("stroke", "black")
+	    				.style("fill", "none")
+	}
+
+	d3.select("svg").append("circle")
+					.attr("class", "circle")
+					.attr("id", "circle")
+					.attr("cx", 600)
+					.attr("cy", 1100 - RScale(1))
+					.attr("r", RScale(1))
+					.style("stroke", "black")
+					.style("fill", "none")
+    
+	</script>
+
+</body>
+</html>

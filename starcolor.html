@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body>
+	<script type="text/javascript">
+	var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+        hotColor = d3.rgb("white"), // hot color in the graph
+        coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+        coldestColor = d3.rgb("#ffd29c"); // coldest color in the graph
+
+    var cScale = d3.scale.linear()
+                         .domain([3.529, 3.882, 4.120, 4.599])
+                         .range([coldestColor, coldColor, hotColor, hottestColor]);
+
+    var TeffScale = d3.scale.log()
+                                .domain([Math.pow(10, 3.529), Math.pow(10, 4.599)])
+                                .range([0, 500]);
+    
+    var svg = d3.select("body").append("svg")
+                                        .attr("id","svg")
+                                        .attr("class","svg")
+                                        .attr("width", 700)
+                                        .attr("height", 200);
+
+    // Create the TeffAxis (x)
+    var TeffAxis = d3.svg.axis()
+                         .scale(TeffScale)
+                         .orient("bottom")
+                         .tickFormat(function (d) { return TeffScale.tickFormat(20,d3.format(",d")) (d) });
+
+    // Create label on TeffAxis (x)
+    var TeffAxisLabel = svg.append("text")
+                           .attr("class", "teff-label label")
+                           .attr("x", 100)
+                           .attr("y", 30)
+                           .attr("text-anchor", "left")
+                           .text("Effective temperature (K)");
+
+    // Create an SVG group Element for the TeffAxis elements and call the TeffAxis function (x)
+    var TeffAxisGroup = svg.append("g")
+                           .attr("class", "text teff-axis axis")
+                           .attr("transform", "translate(" + 100 + "," + 100 + ")")
+                           .call(TeffAxis);
+
+    var defs = svg.append("defs");
+
+    var starGradient = defs.append("linearGradient")
+    					   .attr("id", "star-gradient")
+    					   .attr("x1", "0")
+    					   .attr("y1", "0")
+    					   .attr("x2", "100%")
+    					   .attr("y2", "0");
+
+   		starGradient.append("stop")
+   					.attr("offset", "0%")
+   					.attr("stop-color", cScale(3.529))
+    				.attr("stop-opacity", 1);
+
+    	starGradient.append("stop")
+    				.attr("offset", TeffScale(4240)/5 + "%")
+    				.attr("stop-color", cScale(3.882))
+     				.attr("stop-opacity", 1);	
+
+     	starGradient.append("stop")
+    				.attr("offset", TeffScale(9802)/5 + "%")
+    				.attr("stop-color", cScale(4.120))
+     				.attr("stop-opacity", 1);
+
+     	starGradient.append("stop")
+    				.attr("offset", TeffScale(36339)/5 + "%") 
+    				.attr("stop-color", cScale(4.599))
+     				.attr("stop-opacity", 1);
+
+    var bar = d3.select("svg").append("rect")
+    						  .attr("class", "bar")
+    						  .attr("id", "bar")
+    						  .attr("width", 500)
+    						  .attr("height", 50)
+    						  .attr("x", 100)
+    						  .attr("y", 50)
+    						  .style("fill", "url(#star-gradient)");
+
+    
+	</script>
+
+</body>
+</html>

@@ -255,8 +255,22 @@
         }
       }
 
+      function animateParticles() {
+        var verts = particles.geometry.vertices;
+        for(var i = 0; i < verts.length; i++) {
+            var vert = verts[i];
+            if (vert.y < -200) {
+                vert.y = Math.random() * 400 - 200;
+            }
+            vert.y = vert.y - (10 * deltaTime);
+        }
+        particleSystem.geometry.verticesNeedUpdate = true;
+           
+      }
+
       function animate() {
         requestAnimationFrame( animate );
+        animateParticles();
         render();
       }
 
@@ -271,7 +285,7 @@
           var object = scene.children[ i ];
           if ( object instanceof THREE.Points ) {
             // object.rotation.z = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
-            object.rotation.z = time*speed;
+            // object.rotation.z = time*speed;
           }
         }
         // for ( i = 0; i < materials.length; i ++ ) {
@@ -279,6 +293,7 @@
         //   h = ( 360 * ( color[0] + time ) % 360 ) / 360;
         //   materials[i].color.setHSL( h, color[1], color[2] );
         // }
+        mesh.geometry.verticesNeedUpdate = true;
         renderer.render( scene, camera );
       }
 

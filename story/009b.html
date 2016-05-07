@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:white;
+      font-family: BretzelGrotesk, sans-serif;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 10px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+
+    .axis-group line,
+    .axis-group path {
+      fill: none;
+      stroke: black;
+/*      stroke-width: 1px;
+*/      shape-rendering: crispEdges;
+    }
+
+    .axis-group line {
+      stroke-width: 1px;
+    }
+
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+  <script type="text/javascript">
+
+  var w = 1189, h = 841;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 1000;
+  var n = 400;
+
+  var enlarge = 200;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#000000"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+  // Create the SVG Viewport
+  var svg = d3.select("body").append("svg")
+                             .attr("id","container")
+                             .attr("class","container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  var qScale = d3.scale.linear()
+                       .domain([0, 80])
+                       .range([10, h-10])
+
+  var qScalePow = d3.scale.pow()
+                       .exponent(1/3)
+                       .domain([0, 80])
+                       .range([10, h-10])
+
+  var qAxis = d3.svg.axis()
+                .scale(qScale)
+                .orient("left")
+                .tickSize(w-paddingW)
+                // .tickFormat(function (d) { return qScale.tickFormat(10,d3.format(",")) (d) });
+
+  var gy = svg.append("g")
+              .attr("class", "axis-group")
+              .attr("transform", "translate( " + (w-paddingW/2) + ", 0)")
+              .call(qAxis)
+
+  d3.selectAll(".axis-group text").attr("transform", "translate( " + (w+20) + ", 0) ")
+
+  var plot = svg.append("g").attr("id", "plot")
+
+  function randomHeight() {
+    return paddingH/2 + (Math.random()*(h-paddingH));
+  }
+
+  
+  // ASTEROID DATA 
+    var asteroiddata = d3.csv("data/allobjects.csv", function(error, rows) {
+      if (error) throw error;
+
+      // var x, y, r, v, P, E, F;
+
+      
+      // create the ellipses on which the asteroids will be projected
+      // use path instead of ellipse, because otherwise next step won't work
+      var points = plot.selectAll( "circle" )
+        .data( rows )
+        .enter()
+        .append( "circle" )
+        .attr("id", function(d, i){return "point-" + i})
+        .attr("name", function(d, i){return d.full_name})
+        .attr("class", function(d, i){
+          var myString = d.full_name;
+          if (myString.indexOf('C/') === -1 && myString.indexOf('P/') === -1) {
+            return "asteroid";
+          } else {
+            return "comet";
+          }
+        })
+        .attr("cy", function (d, i) {return qScale(d.q)})
+        .attr("cx", function (d, i) {return (w-paddingW)/713577*i+paddingW/2})
+        .attr("r", .3)
+        .style("fill", "black");
+
+        svg.on("click", function () {
+          console.log("clicked!");
+          for (i = 0; i < 713577; i++) {
+            console.log("doing stuff!");
+            setTimeout(function() {
+              var point = d3.select("#point-" + i);
+              point.transition().duration(200)
+                   .attr("cy", function (d, i) {return qScalePow(d.q)});
+            }, 220);
+          };
+        });
+
+    });
+
+
+
+  </script>
+</body>
+</html>

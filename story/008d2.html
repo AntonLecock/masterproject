@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: BretzelGrotesk, sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed; 
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r75/three.min.js"></script>
+</head>
+
+<body>
+
+    <script>
+
+    var camera;
+    var scene;
+    var renderer;
+    var cubeMesh;
+     
+    var clock;
+    var deltaTime;
+     
+    var particleSystem;
+
+    var initialEnlarge = 100;
+    var enlarge = initialEnlarge; //enlargement
+    var initialSpeed = initialEnlarge * 10000;
+    var speed = initialSpeed; // speedment
+
+    var mouseX = 0, mouseY = 0;
+    var windowHalfX = window.innerWidth / 2;
+    var windowHalfY = window.innerHeight / 2;
+
+    var asteroiddata, dataBinding;
+
+    var nodes, angles = [], angle, newAngle;
+    var nodesAmount;
+    var x, y, z;
+    var xPos, yPos, zPos;
+    var getal, t, resolution = 10;
+
+    var designerBlack = d3.rgb("#12151a"),
+          designerRed = d3.rgb("#c83c46"),
+        designerWhite = d3.rgb("#ffe9d2"),
+         designerBlue = d3.rgb("#696fc4"),
+        designerGreen = d3.rgb("#69c4be");
+
+    var cScale = d3.scale.linear()
+        .domain([0, 1])
+        .range([designerBlue, designerRed]);
+
+    asteroiddata = d3.csv("data/keplerconfirmed4.csv", function(error, rows) {
+      if (error) throw error;
+
+       
+      init();
+      animate();
+       
+      function init() {
+
+        var detachedContainer = document.createElement("custom");
+        var dataContainer = d3.select(detachedContainer);
+
+          
+          // create the ellipses on which the asteroids will be projected
+          // use path instead of ellipse, because otherwise next step won't work
+          dataBinding = dataContainer.selectAll( "node" )
+            .data( rows )
+            .enter()
+            .append( "path" )
+            .attr("id", function(d, i){return "node-" + i})
+            .attr("realid", function(d, i){return d.id})
+            .attr("class", function(d, i){return "node " + "node-" + i})
+            .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
+            .attr("a", function(d, i) {return d.pl_orbsmax})
+            .attr("M", function(d, i) {return Math.random()*360})
+            // .attr("W", function(d, i) {return d.w})
+            .attr("per", function (d, i) {return d.pl_orbper / 365.25})
+            .attr("e", function(d, i) {return d.pl_orbeccen})
+            .attr("rad", function(d, i) {return d.pl_radj})
+            .attr("radstar", function(d, i) {return d.st_rad})
+            // .attr("mass", function(d, i) {return cScale(d.pl_bmassj)})
+            .attr("solar", function(d, i) {return d.pl_nnotes})
+            .attr("stroke", function(d, i){return cScale(d.pl_orbeccen)})
+            .attr("inclination", function(d, i) {return d.pl_orbincl})
+
+          getal = 1, t = 0, resolution = 10;
+          nodes = dataContainer.selectAll(".node"); // store all nodes in array
+          nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+  
+          dataBinding.each(function(d, i) {
+            var node = d3.select(this);
+            // angles.push(+node.attr("M") / 180*Math.PI) // initial angle of the asteroid on its orbit
+            angles.push(0);
+            // angles.push(2);
+          });
+
+          console.log(angles);
+          //////////
+       
+          clock = new THREE.Clock(true);
+           
+          scene = new THREE.Scene();
+          camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000);
+          camera.position.z = 1000;
+           
+          var light = new THREE.DirectionalLight( 0xffffff );
+          light.position.set( 1, -1, 1 ).normalize();
+          scene.add(light);
+       
+          var geometry = new THREE.CubeGeometry( 10, 10, 10);  
+          var material = new THREE.MeshPhongMaterial( { color: 0x0033ff, specular: 0x555555,      shininess: 30 } );
+       
+          cubeMesh = new THREE.Mesh(geometry, material );
+          cubeMesh.position.z = -30;
+          scene.add( cubeMesh );
+
+          particleSystem = createParticleSystem();
+          scene.add(particleSystem);
+            
+          renderer = new THREE.WebGLRenderer();
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          document.body.appendChild( renderer.domElement );
+       
+          window.addEventListener( 'resize', onWindowResize, false );
+               
+          render();
+      }
+       
+      function animate() {
+          deltaTime = clock.getDelta();
+           
+          cubeMesh.rotation.x += 1 * deltaTime;
+          cubeMesh.rotation.y += 2 * deltaTime;
+         
+          animateParticles();
+          
+          render();
+          // d3.timer( animate );
+      }
+       
+       
+      function render() {
+
+          camera.position.x += ( mouseX - camera.position.x );
+          camera.position.y += ( - mouseY - camera.position.y );
+          camera.lookAt( scene.position );
+
+          renderer.render( scene, camera );
+          requestAnimationFrame( animate );
+      }
+       
+       
+      function onWindowResize() {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize( window.innerWidth, window.innerHeight );
+          render();
+      }
+
+      function onDocumentMouseMove( event ) {
+        mouseX = event.clientX - windowHalfX;
+        mouseY = event.clientY - windowHalfY;
+      }
+
+      function onDocumentTouchStart( event ) {
+        if ( event.touches.length === 1 ) {
+          event.preventDefault();
+          mouseX = event.touches[ 0 ].pageX - windowHalfX;
+          mouseY = event.touches[ 0 ].pageY - windowHalfY;
+        }
+      }
+
+      function onDocumentTouchMove( event ) {
+        if ( event.touches.length === 1 ) {
+          event.preventDefault();
+          mouseX = event.touches[ 0 ].pageX - windowHalfX;
+          mouseY = event.touches[ 0 ].pageY - windowHalfY;
+        }
+      }
+      
+      function createParticleSystem() {
+           
+          // The number of particles in a particle system is not easily changed.
+          var particleCount = nodesAmount;
+           
+          // Particles are just individual vertices in a geometry
+          // Create the geometry that will hold all of the vertices
+          var particles = new THREE.Geometry();
+       
+          /*
+          // Create the vertices and add them to the particles geometry
+          for (var p = 0; p < particleCount; p++) {
+           
+              // This will create all the vertices in a range of -200 to 200 in all directions
+              var x = Math.random() * 400 - 200;
+              var y = Math.random() * 400 - 200;
+              var z = Math.random() * 400 - 200;
+                     
+              // Create the vertex
+              var particle = new THREE.Vector3(x, y, z);
+               
+              // Add the vertex to the geometry
+              particles.vertices.push(particle);
+          }
+
+          */
+
+          // for ( i = 0; i < nodesAmount; i ++ ) {
+          dataBinding.each(function(d, i) {
+            var node = d3.select(this);
+
+            var M = node.attr("M");
+            // var om = node.attr("om");
+            var a = node.attr("a");
+            var e = node.attr("e");
+            var perNoSpeed = node.attr("per");
+            var per = node.attr("per") * speed;
+            // var W = node.attr("w");
+
+            // compute other values
+            var b = (a * (Math.sqrt(1-e*e)));
+            var F = (Math.sqrt(a * a - b * b));
+
+            // enlarge values of length
+            a = a * enlarge;
+            b = b * enlarge;
+            F = F * enlarge;
+
+            // Initial position of point (angle = 0)
+            x = a;
+            y = 0;
+
+            t = t*deltaTime;
+
+            var r = a + F;
+
+            angle = angles[i];
+
+            if (angle >= 2*Math.PI) {
+              var newAngle = angle - 2*Math.PI
+              angle = newAngle;
+            }
+
+            var k = 360 * a * b / (per * resolution);
+            
+            for (var j = 0; j < resolution; j++) {
+                angle += k / (r * r);
+                r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+            }
+
+            var newX = r * Math.cos(angle);
+            var newY = r * Math.sin(angle);
+
+            xPos = newX;
+            yPos = newY;
+            zPos = 0;
+
+            newAngle = angle;
+            angles.splice(0, 1);
+            angles.push(newAngle);  
+
+            var particle = new THREE.Vector3(xPos, yPos, zPos);
+            particles.vertices.push(particle);
+          });
+
+
+       
+          // Create the material that will be used to render each vertex of the geometry
+          var particleMaterial = new THREE.PointsMaterial(
+                  {color: 0xffffff, 
+                   size: 4,
+                   // map: THREE.ImageUtils.loadTexture("images/snowflake.png"),
+                   blending: THREE.AdditiveBlending,
+                   transparent: true,
+                  });
+            
+          // Create the particle system
+          particleSystem = new THREE.Points(particles, particleMaterial);
+       
+          return particleSystem;  
+      }
+
+      function animateParticles() {
+          var verts = particleSystem.geometry.vertices;
+          // for(var i = 0; i < verts.length; i++) {
+          //     var vert = verts[i];
+          //     if (vert.y < -200) {
+          //         vert.y = Math.random() * 400 - 200;
+          //     }
+          //     vert.y = vert.y - (10 * deltaTime);
+          // }
+
+          getal++;
+
+          dataBinding.each(function(d, i) {
+
+            var node = d3.select(this);
+
+            var M = node.attr("M");
+            // var om = node.attr("om");
+            var a = node.attr("a");
+            var e = node.attr("e");
+            var perNoSpeed = node.attr("per");
+            var per = node.attr("per") * speed;
+            // var W = node.attr("w");
+
+            // compute other values
+            var b = (a * (Math.sqrt(1-e*e)));
+            var F = (Math.sqrt(a * a - b * b));
+
+            // enlarge values of length
+            a = a * enlarge;
+            b = b * enlarge;
+            F = F * enlarge;
+
+            // Initial position of point (angle = 0)
+            x = a;
+            y = 0;
+
+            t++;
+
+            var r = a + F;
+
+            angle = angles[i];
+
+            if (angle >= 2*Math.PI) {
+              var newAngle = angle - 2*Math.PI
+              angle = newAngle;
+            }
+
+
+            if (i === 1000) {
+              console.log("i is " + i + ", angle is " + angle);
+            }
+
+            var k = 360 * a * b / (per * resolution);
+            
+            for (var j = 0; j < resolution; j++) {
+                angle += k / (r * r);
+                r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+            }
+
+            var newX = r * Math.cos(angle);
+            var newY = r * Math.sin(angle);
+
+            x = newX;
+            y = newY;
+            z = 0; 
+
+            var vert = verts[i];
+                vert.x = x;
+                vert.y = y;
+                vert.z = z;
+
+            newAngle = angle;
+            angles.splice(0, 1);
+            angles.push(newAngle); 
+
+          });
+
+          particleSystem.geometry.verticesNeedUpdate = true;
+          // particleSystem.rotation.y -= .1 * deltaTime;
+           
+      }
+
+    });
+
+    </script>
+  </body>
+</html>
