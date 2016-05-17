@@ -37,12 +37,22 @@
       font-size:20px;
       color:white;
       outline:0;
+      opacity:0.5;
+      transition: opacity .5s ease;
     }
 
     button::-moz-focus-inner,
     input::-moz-focus-inner {
       border: 0;
       padding: 0;
+    }
+
+    button:hover {
+      opacity:1;
+    }
+
+    button:disabled {
+      opacity: 0.2;
     }
 
   </style>
@@ -61,15 +71,54 @@
       These are <span class="bold">exoplanets</span>, planets orbiting around a star other than the sun. Exoplanets are very common in the universe. The average star has more than one planet orbiting around it, making our solar system the rule rather than the exception. 
     </p>
     <p style="width:600px; font-size: 25px; text-transform: none; line-height:1.8;">
-      These are all 3264 known and confirmed exoplanets, but shown rotating around a single star. Try <span class="bold">scrolling</span> to get the complete picture: orbits of the inner planets in our solar system are highlighted.
+      These are all 1963 known and confirmed exoplanets, but shown rotating around a single star. Try <span class="bold">scrolling</span> to get the complete picture: orbits of the inner planets in our solar system are highlighted.
     </p>
 
    <!--  <button type="button" onclick="okay();" style="background-color: none; border:none; font:inherit; font-weight:700;">I get it</button> -->
   </div>
-  <div id="buttons-container" style="position: absolute; bottom: 50px; max-width:600px; font-size:1">
-    <button id="info" type="button" onclick="info()" style="border:2px solid white; font-weight:700; font-size:16px; width:40px; height:40px; border-radius:20px;">
+  <div id="pause-container" style="position: absolute; top: 50px; left: 50px; font-size:16px;">
+    <button id="pause" type="button" onclick="togglePause()" style="width:40px; height:40px;">
+      <svg id="pausesvg" class="pausesvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polygon id="pausepolygonleft" class="polygon shape left" points="0,0 12,0 12,36 0,36" style="fill:white; stroke: none;"/></polygon>
+        <polygon id="pausepolygonright" class="polygon shape right" points="24,0 36,0 36,36 24,36" style="fill:white; stroke: none;"/></polygon>
+      </svg>
+    </button>
+  </div>
+
+
+  <div id="buttons-container" style="position: absolute; bottom: 50px; max-width:600px; font-size:16px">
+    <button id="planets" type="button" onclick="togglePlanets()" style="border:0px solid white; width:40px; height:40px; border-radius:50%;">
+      <svg id="planetssvg" class="planetssvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polyline id="solarsystempolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
+        <ellipse cx="18" cy="18" rx="18" ry="6"  style="stroke-width:1.5px; fill:none; stroke: white;" /> 
+      </svg>
+    </button>
+    <button id="orbits" type="button" onclick="toggleOrbits()" style="border:0px solid white; width:40px; height:40px; border-radius:50%;">
+      <svg id="orbitssvg" class="orbitssvg" width="36" height="36" style="transform:rotate(0deg)">
+        <ellipse cx="18" cy="18" rx="18" ry="6"  style="stroke-width:1.5px; fill:none; stroke: white;" /> 
+      </svg>
+    </button>
+    <button id="solarsystem" type="button" onclick="toggleSolarsystem()" style="border:0px solid white; width:40px; height:40px; border-radius:50%;">
+      <svg id="solarsystemsvg" class="solarsystemsvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polyline id="solarsystempolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
+        <ellipse cx="18" cy="18" rx="18" ry="6"  style="stroke-width:1.5px; fill:none; stroke: white;" /> 
+      </svg>
+    </button>
+    <button id="info" type="button" onclick="info()" style="border:2px solid white; width:40px; height:40px; border-radius:50%;">
       <svg id="infosvg" class="infosvg" width="36" height="36" style="transform:rotate(0deg)">
         <polyline id="infopolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
+      </svg>
+    </button>
+    <button id="viewfront" type="button" onclick="toggleViewFront()" style="border:0px solid white; width:40px; height:40px; border-radius:50%;">
+      <svg id="viewfrontsvg" class="viewfrontsvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polyline id="viewfrontpolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
+        <ellipse cx="18" cy="18" rx="18" ry="6"  style="stroke-width:1.5px; fill:none; stroke: white;" /> 
+      </svg>
+    </button>
+    <button id="viewtop" type="button" onclick="toggleViewTop()" style="border:0px solid white; width:40px; height:40px; border-radius:50%;">
+      <svg id="viewtopsvg" class="viewtopsvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polyline id="viewtoppolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
+        <ellipse cx="18" cy="18" rx="18" ry="6"  style="stroke-width:1.5px; fill:none; stroke: white;" /> 
       </svg>
     </button>
   </div>
@@ -111,6 +160,9 @@
                                 // if false: stars are positioned relative to their distance from their host star
   var viewMouse = true; // should the visualisation be changed through mouse movements? if false, top view is enabled.
   var viewFront = false; // is the visualisation to be viewed from the front?
+  var viewTop = false; // is the visualisation to be viewed from the top?
+  var counter = true; // should there be an indicator that gives the amount of days that ellapsed?
+
   if (markers) {
     viewFront = true;
   }
@@ -118,7 +170,6 @@
     viewMouse = false;
     orbits = false;
   }
-  var counter = false; // should there be an indicator that gives the amount of days that ellapsed?
 
   var infoShown = false;
 
@@ -203,11 +254,12 @@
       .attr("class", function(d, i){return "node " + "node-" + i})
       .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
       .attr("a", function(d, i) {
-        if (d.pl_orbsmax) {
+        if (d.pl_orbper) {
           return d.pl_orbsmax;
-        } else {
-          return 10 / 365 * d.pl_orbper;
         }
+        // } else {
+        //   return 10 / 365 * d.pl_orbper;
+        // }
       })
       .attr("M", function(d, i) {return Math.random()*360})
       // .attr("W", function(d, i) {return d.w})
@@ -237,7 +289,11 @@
     dataBinding.each(function(d, i) {
       var node = d3.select(this);
       // angles.push(0);
-      angles.push(Math.random()*(Math.PI*2));
+      if (node.attr("realid") === "earth") {
+        angles.push(0);
+      } else {
+        angles.push(Math.random()*(Math.PI*2));
+      }
     }); 
 
     // Variables for storing previous positions
@@ -273,9 +329,12 @@
         viewpointY = yPosScale(mousePosY);
   
       }, false);
-    } else {
+    } else if (viewFront) {
       viewpointX = 0;
       viewpointY = 100;
+    } else if (viewTop) {
+      viewpointX = 0;
+      viewpointY = 1;
     };
 
     d3.timer(step);
@@ -306,7 +365,7 @@
           context.fillStyle = "white";
           context.font = 2 * enlarge + "px Larish Alte";
           context.textAlign = "left";
-          context.fillText("3 2 6 4   E X O P L A N E T S", enlarge*4, enlarge/1.5);
+          context.fillText("1 9 6 3   E X O P L A N E T S", enlarge*4, enlarge/1.5);
         }
         context.restore();
   
@@ -315,7 +374,9 @@
         context.beginPath();
         if (relativeDistance) {
           context.arc(wMid, hMid, pointRadius, 0, 2 * Math.PI);
+          context.closePath();
         } else {
+          context.arc(wMid, hMid, pointRadius / 10, 0, 2 * Math.PI);
           context.closePath();
         }
         context.fill();
@@ -404,7 +465,10 @@
 
             x = newX;
             y = newY; 
-          } else {
+          } else if (viewTop) {
+            x = newX;
+            y = newY; 
+          } else { 
             var xPercentage = 100 - (100/90 * inclination);
             newX = newX / 100 * xPercentage;
   
@@ -428,8 +492,21 @@
 
           if (planets) {
             context.beginPath();
-            context.arc(x, y, rScale(pointRadius / rad), 0, 2 * Math.PI);
+
+            if (relativeDistance) {
+              if (rScale(pointRadius / rad) > .5) {
+                context.arc(x, y, rScale(pointRadius / rad), 0, 2 * Math.PI);
+              } else {
+                context.fillStyle = designerBlue;
+                context.fillRect(x, y, 1, 1);
+              }
+            } else {
+              context.fillStyle = designerBlue;
+              context.fillRect(x, y, 1, 1);
+              // context.arc(x, y, rScale(pointRadius / 100), 0, 2 * Math.PI);
+            }
             context.closePath();
+
           
 
             // make orbiting point opaque when behind sun
@@ -538,7 +615,7 @@
               var earthAngle = angle*(180/Math.PI);
               var earthTime = earthAngle/360*365.25; 
               var earthTimeRounded = earthTime.toFixed(2)
-              context.fillText("Days ellapsed: " + earthTimeRounded, 50, 50);
+              context.fillText("Days ellapsed: " + earthTimeRounded, 125, 74);
             }
           };
 
@@ -597,7 +674,7 @@
                        .style("-webkit-filter", "blur(" + 0 + "px)");
 
   function info() {
-    if (!infoShown) {
+    if (!infoShown && running) {
       var textContainerHeight = document.getElementById('text-container').clientHeight;
       console.log(textContainerHeight);
       textContainer.transition().duration(1000).style("bottom", (h - textContainerHeight) / 2 + "px")
@@ -605,7 +682,7 @@
                          .style("opacity", .2)
 
       infoShown = true;
-      running = false;
+      togglePause();
 
       d3.select("#infosvg").transition().delay(250).duration(500)
                            .style("transform", "rotate(90deg)")
@@ -624,12 +701,39 @@
       d3.select('#infopolyline').transition().delay(250).duration(500)
                                 .attr("points", "18,9 18,27 18,18 9,18 27,18"); 
 
-      setTimeout(function() {
-        running = true; 
+      togglePause(); 
 
-      }, 750);
     }
   };
+
+  function togglePause() {
+    if (running) {
+      running = false;
+
+      d3.select("canvas").transition().delay(0).duration(1000)
+                         .style("opacity", .5)
+
+      // d3.select("#pausesvg").transition().delay(250).duration(500)
+      //                      .style("transform", "rotate(90deg)");
+
+      d3.select('#pausepolygonleft').transition().delay(250).duration(250)
+                                .attr("points", "0,0 18,9 18,27 0,36");
+      d3.select('#pausepolygonright').transition().delay(100).duration(500)
+                                .attr("points", "18,9 36,18 36,18 18,27");
+    } else {
+
+      d3.select("canvas").transition().delay(0).duration(750)
+                         .style("opacity", 1)
+
+      d3.select('#pausepolygonleft').transition().delay(400).duration(250)
+                                .attr("points", "0,0 12,0 12,36 0,36");
+      d3.select('#pausepolygonright').transition().delay(250).duration(500)
+                                .attr("points", "24,0 36,0 36,36 24,36");
+      setTimeout(function() {
+        running = true;
+      }, 750);
+    }
+  }
 
   function toggleTitle() {
     if (title) {
@@ -639,19 +743,72 @@
     }
   }
 
-  function toggleMarkers() {
-    if (markers) {
-      markers = false;
+  function togglePlanets() {
+    if (planets) {
+      planets = false;
     } else {
-      markers = true;
+      planets = true;
+    }
+  }
+
+  function toggleOrbits() {
+    if (orbits) {
+      orbits = false;
+    } else {
+      orbits = true;
+    }
+  }
+
+  function toggleSolarsystem() {
+    if (solarsystem) {
+      solarsystem = false;
+    } else {
+      solarsystem = true;
+    }
+  }
+
+  function toggleViewFront() {
+    if (viewFront) {
+      viewFront = false;
+      viewMouse = true;
+      solarsystem = true;
+      document.getElementById('solarsystem').disabled = false;
+      document.getElementById('orbits').disabled = false;
+    } else {
+      viewFront = true;
+      viewMouse = false;
+      viewTop = false;
+      solarsystem = false;
+      orbits = false;
+      document.getElementById('solarsystem').disabled = true;
+      document.getElementById('orbits').disabled = true;
+    }
+  }
+
+  function toggleViewTop() {
+    if (viewTop) {
+      viewTop = false;
+      viewMouse = true;
+      solarsystem = true;
+      document.getElementById('solarsystem').disabled = false;
+      document.getElementById('orbits').disabled = false;
+    } else {
+      viewTop = true;
+      viewMouse = false;
+      viewFront = false;
+      solarsystem = false;
+      orbits = false;
+      document.getElementById('solarsystem').disabled = true;
+      document.getElementById('orbits').disabled = true;
     }
   }
 
   // positioning
+
   var textContainer = d3.select("#text-container").style("left", (wMid - 300) + "px")
                                                   .style("bottom", (h+100) + "px");
 
-  var infoButton = d3.select("#buttons-container").style("left", (wMid - 20) + "px");
+  var infoButton = d3.select("#buttons-container").style("left", (wMid - 60) + "px");
 
   </script>
 </body>
