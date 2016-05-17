@@ -597,7 +597,7 @@
                        .style("-webkit-filter", "blur(" + 0 + "px)");
 
   function info() {
-    if (infoShown === false) {
+    if (!infoShown) {
       var textContainerHeight = document.getElementById('text-container').clientHeight;
       console.log(textContainerHeight);
       textContainer.transition().duration(1000).style("bottom", (h - textContainerHeight) / 2 + "px")
@@ -608,7 +608,7 @@
       running = false;
 
       d3.select("#infosvg").transition().delay(250).duration(500)
-                           .style("transform", "rotate(360deg)")
+                           .style("transform", "rotate(90deg)")
 
       d3.select('#infopolyline').transition().delay(250).duration(500)
                                 .attr("points", "11,11 25,25 18,18 25,11 11,25");
@@ -619,7 +619,7 @@
       infoShown = false;
       
       d3.select("#infosvg").transition().delay(250).duration(500)
-                           .style("transform", "rotate(360deg)"); 
+                           .style("transform", "rotate(90deg)"); 
 
       d3.select('#infopolyline').transition().delay(250).duration(500)
                                 .attr("points", "18,9 18,27 18,18 9,18 27,18"); 
