@@ -58,6 +58,7 @@
 
     button:disabled {
       opacity: 0.2;
+      cursor:auto;
     }
 
     button svg {
@@ -66,16 +67,16 @@
 
     button.active {
       opacity: 1;
-      font-weight:300;
+      font-weight:800;
+    }
+
+    button.active:disabled {
+      opacity: 0.2;
+      cursor:auto;
     }
 
     button.active:hover {
       background: rgba(255,255,255,.25);
-    }
-
-    button.on {
-      opacity: 1;
-      font-weight: 800;
     }
 
     button.active svg .shape {
@@ -176,7 +177,7 @@
       Top view
     </button>
 
-    <button id="viewfree" class="viewfree button-viewfree active on" type="button" onclick="toggleViewFree()">
+    <button id="viewfree" class="viewfree button-viewfree active" type="button" onclick="toggleViewFree()">
       <svg id="viewfreesvg" class="button-svg radiobutton-svg viewfreesvg">
         <circle id="viewfreeshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="viewfreeshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
@@ -186,7 +187,7 @@
 
     <span class="buttons-title">Highlight</span>
 
-    <button id="highlightplanets" class="highlightplanets button-highlightplanets active on" type="button" onclick="toggleHighlightPlanets()">
+    <button id="highlightplanets" class="highlightplanets button-highlightplanets active" type="button" onclick="toggleHighlightPlanets()">
       <svg id="highlightplanetssvg" class="button-svg switchbutton-svg highlightplanetssvg">
         <rect id="highlightplanetsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="highlightplanetsshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
@@ -202,7 +203,7 @@
       Orbits
     </button>
 
-    <button id="highlightsolarsystem" class="highlightsolarsystem button-highlightsolarsystem active on" type="button" onclick="toggleHighlightSolarsystem()">
+    <button id="highlightsolarsystem" class="highlightsolarsystem button-highlightsolarsystem active" type="button" onclick="toggleHighlightSolarsystem()">
       <svg id="highlightsolarsystemsvg" class="button-svg switchbutton-svg highlightsolarsystemsvg">
         <rect id="highlightsolarsystemshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="highlightsolarsystemshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
@@ -228,7 +229,7 @@
 
     <span class="buttons-title">Graphs</span>
 
-    <button id="graphsradius" class="graphsradius button-graphsradius" type="button" onclick="toggleGraphsRadius()">
+    <button id="graphsradius" class="graphsradius button-graphsradius active" type="button" onclick="toggleGraphsRadius()" disabled>
       <svg id="graphsradiussvg" class="button-svg radiobutton-svg graphsradiussvg">
         <circle id="graphsradiusshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsradiusshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -236,7 +237,7 @@
       Radius
     </button>
 
-    <button id="graphseccentricity" class="graphseccentricity button-graphseccentricity" type="button" onclick="toggleGraphsEccentricity()">
+    <button id="graphseccentricity" class="graphseccentricity button-graphseccentricity" type="button" onclick="toggleGraphsEccentricity()" disabled>
       <svg id="graphseccentricitysvg" class="button-svg radiobutton-svg graphseccentricitysvg">
         <circle id="graphseccentricityshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphseccentricityshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -244,7 +245,7 @@
       Eccentricity
     </button>
     
-    <button id="graphsinclination" class="graphsinclination button-graphsinclination" type="button" onclick="toggleGraphsInclination()">
+    <button id="graphsinclination" class="graphsinclination button-graphsinclination" type="button" onclick="toggleGraphsInclination()" disabled>
       <svg id="graphsinclinationsvg" class="button-svg radiobutton-svg graphsinclinationsvg">
         <circle id="graphsinclinationshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsinclinationshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -252,7 +253,7 @@
       Inclination
     </button>
 
-    <button id="graphsteff" class="graphsteff button-graphsteff" type="button" onclick="toggleGraphsTeff()">
+    <button id="graphsteff" class="graphsteff button-graphsteff" type="button" onclick="toggleGraphsTeff()" disabled>
       <svg id="graphsteffsvg" class="button-svg radiobutton-svg graphsteffsvg">
         <circle id="graphsteffshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsteffshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -260,7 +261,7 @@
       Effective temp.
     </button>
 
-    <button id="graphsdistance" class="graphsdistance button-graphsdistance" type="button" onclick="toggleGraphsDistance()">
+    <button id="graphsdistance" class="graphsdistance button-graphsdistance" type="button" onclick="toggleGraphsDistance()" disabled>
       <svg id="graphsdistancesvg" class="button-svg radiobutton-svg graphsdistancesvg">
         <circle id="graphsdistanceshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsdistanceshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -329,11 +330,11 @@
   var running = true; // is the animation playing or paused?
   var title = true; // should the title in the visualisation be shown or not?
   var graphs = false, // graphs: the little graph bars on top of exoplanets
-      radiusgraphs = false, // graphs that show the radius of the planet
+      radiusgraphs = true, // graphs that show the radius of the planet
       eccentricitygraphs = false, // graphs that show the eccentricity of the planet's orbit
       inclinationgraphs = false; // graphs that show the inclination of the planet's orbit
       teffgraphs = false; // graphs that show the effective temperature of the star the planet is orbiting around
-      distancegraphs = true; // graphs that show the mass of the planet
+      distancegraphs = false; // graphs that show the mass of the planet
 
   var planets = true; // should the planets be shown?!
   var orbits = false; // should the orbits of the planets be shown?
@@ -344,7 +345,7 @@
   var relativeDistance = true; // should the planets be positioned relative to the size of their host star? 
                                 // if false: stars are positioned relative to their distance from their host star
   d3.select('#relativeDistance').classed("active", true);
-  var viewMouse = true; // should the visualisation be changed through mouse movements? if false, top view is enabled.
+  var viewFree = true; // should the visualisation be changed through mouse movements? if false, top view is enabled.
   var viewFront = false; // is the visualisation to be viewed from the front?
   var viewTop = false; // is the visualisation to be viewed from the top?
   var counter = false; // should there be an indicator that gives the amount of days that ellapsed?
@@ -354,7 +355,7 @@
   var details = false; // should the name and other details of body be shown on hover?
 
   if (viewFront) {
-    viewMouse = false;
+    viewFree = false;
     orbits = false;
   }
 
@@ -466,18 +467,9 @@
       .append( "path" )
       .attr("id", function(d, i){return "node-" + i})
       .attr("realid", function(d, i){return d.id})
-      // .attr("class", function(d, i){return "node " + "node-" + i})
       .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
-      .attr("a", function(d, i) {
-        // if (d.pl_orbper) {
-          return d.pl_orbsmax;
-        // }
-        // } else {
-        //   return 10 / 365 * d.pl_orbper;
-        // }
-      })
+      .attr("a", function(d, i) {return d.pl_orbsmax;})
       .attr("M", function(d, i) {return Math.random()*360})
-      // .attr("W", function(d, i) {return d.w})
       .attr("per", function (d, i) {return d.pl_orbper / 365.25})
       .attr("e", function(d, i) {return d.pl_orbeccen})
       .attr("rad", function(d, i) {return d.pl_radj})
@@ -961,6 +953,9 @@
              && x < mousePosX - w/2 + 10 
              && y > mousePosY - h/2 - 10 
              && y < mousePosY - h/2 + 10) {
+
+              var primaryDesignation = node.attr("pdes");
+              if (pdes)
               
               //draw orbit of planet
               context.strokeStyle = designerGreen;
@@ -1014,13 +1009,10 @@
               context.arc(x, y, 10, 0, 2 * Math.PI);
               context.stroke();
     
-              if (scaler === "big") {
-                context.fillStyle = "white";
-                context.font = 1.5 * enlarge + "px Circular Std";
-                context.textAlign = "center";
-                // context.fillText(node.attr("pdes"), a/4 + enlarge/35.2, (b - 10)/viewpointY);
-                context.fillText(node.attr("pdes"), x, y - 20);
-              }
+              context.fillStyle = "white";
+              context.font = "12px Circular Std";
+              context.textAlign = "center";
+              context.fillText(node.attr("pdes"), x, y - 20);
             }
           }         
 
@@ -1202,29 +1194,19 @@
   // TOGGLES
   // VIEW
   function toggleViewFront() {
-    if (viewFront) {
-      // viewFront = false;
-      // d3.select('#viewfront').classed("active", false);
-      // document.getElementById('highlightsolarsystem').disabled = false;
-      // document.getElementById('highlightorbits').disabled = false;
-      // document.getElementById('highlightdetails').disabled = false;
-      
-      // //make graphs look better instantaniously
-      // viewpointYInterpolate(5, 1);
-      // viewpointScale = d3.scale.linear()
-      //                          .domain([0, 10])
-      //                          .range([0, 1]);
-
-    } else {
+    if (!viewFront) {
       viewFront = true;
       viewTop = false;
-      viewMouse = false;
+      viewFree = false;
 
       if (!graphs) {
         setTimeout(toggleHighlightGraphs, 500);
       }
+
       d3.select('#viewfront').classed("active", true);
       d3.select('#viewtop').classed("active", false);
+      d3.select('#viewfree').classed("active", false);
+
       solarsystem = false;
       d3.select('#highlightsolarsystem').classed("active", false);
       document.getElementById('highlightsolarsystem').disabled = true;
@@ -1247,21 +1229,10 @@
   }
 
   function toggleViewTop() {
-    if (viewTop) {
-      // viewTop = false;
-      // solarsystem = true;
-      // d3.select('#viewtop').classed("active", false);
-      // document.getElementById('viewfront').disabled = false;
-      // document.getElementById('highlightgraphs').disabled = false;
-
-      // viewpointYInterpolate(1, 10);
-      // viewpointScale = d3.scale.linear()
-      //                          .domain([0, 10])
-      //                          .range([0, 1]);
-    } else {
+    if (!viewTop) {
       viewTop = true;
       viewFront = false;
-      viewMouse = false;
+      viewFree = false;
       details = true;
 
       if (graphs) {
@@ -1270,12 +1241,14 @@
 
       d3.select('#viewtop').classed("active", true);
       d3.select('#viewfront').classed("active", false);
+      d3.select('#viewfree').classed("active", false);
 
       if (!solarsystem) {
         toggleHighlightSolarsystem();
       }
       document.getElementById('highlightsolarsystem').disabled = false;
       document.getElementById('highlightorbits').disabled = false;
+      document.getElementById('highlightdetails').disabled = false;
       document.getElementById('highlightgraphs').disabled = true;
 
       viewpointYInterpolate(viewpointY, 1);
@@ -1286,19 +1259,8 @@
   }
 
   function toggleViewFree() {
-    if (viewMouse) {
-      // viewMouse = false;
-      // // hover = false;
-      // d3.select('#viewtop').classed("active", false);
-      // document.getElementById('viewfront').disabled = false;
-      // document.getElementById('highlightgraphs').disabled = false;
-
-      // viewpointYInterpolate(1, 10);
-      // viewpointScale = d3.scale.linear()
-      //                          .domain([0, 10])
-      //                          .range([0, 1]);
-    } else {
-      viewMouse = true;
+    if (!viewFree) {
+      viewFree = true;
       viewFront = false;
       viewTop = false;
 
@@ -1313,6 +1275,8 @@
       document.getElementById('highlightsolarsystem').disabled = false;
       document.getElementById('highlightorbits').disabled = false;
       document.getElementById('highlightgraphs').disabled = false;
+      document.getElementById('highlightdetails').disabled = false;
+
 
       viewpointYInterpolate(viewpointY, 1);
       viewpointScale = d3.scale.linear()
