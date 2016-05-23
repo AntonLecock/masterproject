@@ -52,7 +52,7 @@
     }
 
     button:hover {
-      opacity:.75;
+      opacity:1;
       cursor:pointer;
     }
 
@@ -160,28 +160,29 @@
     </div> -->
 
     <span class="buttons-title">View</span>
-    <button id="viewfree" class="viewfree button-viewfree active" type="button" onclick="toggleViewFree()">
-      <svg id="viewfreesvg" class="button-svg radiobutton-svg viewfreesvg">
-        <circle id="viewfreeshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
-        <circle id="viewfreeshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
-      </svg>
-      Free
-    </button>
 
     <button id="viewfront" class="viewfront button-viewfront" type="button" onclick="toggleViewFront()">
       <svg id="viewfrontsvg" class="button-svg radiobutton-svg viewfrontsvg">
-        <circle id="viewfrontshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
-        <circle id="viewfrontshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+        <circle id="viewfrontshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewfrontshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
       </svg>
       Front view
     </button>
 
     <button id="viewtop" class="viewtop button-viewtop" type="button" onclick="toggleViewTop()">
       <svg id="viewtopsvg" class="button-svg radiobutton-svg viewtopsvg">
-        <circle id="viewtopshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
-        <circle id="viewtopshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+        <circle id="viewtopshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewtopshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
       </svg>
       Top view
+    </button>
+
+    <button id="viewfree" class="viewfree button-viewfree active" type="button" onclick="toggleViewFree()">
+      <svg id="viewfreesvg" class="button-svg radiobutton-svg viewfreesvg">
+        <circle id="viewfreeshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewfreeshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Free
     </button>
 
     <span class="buttons-title">Highlight</span>
@@ -228,7 +229,7 @@
 
     <span class="buttons-title">Graphs</span>
 
-    <button id="graphsradius" class="graphsradius button-graphsradius graphsoption active" type="button" onclick="toggleGraphsRadius()">
+    <button id="graphsradius" class="graphsradius button-graphsradius active" type="button" onclick="toggleGraphsRadius()" disabled>
       <svg id="graphsradiussvg" class="button-svg radiobutton-svg graphsradiussvg">
         <circle id="graphsradiusshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsradiusshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -236,7 +237,7 @@
       Radius
     </button>
 
-    <button id="graphseccentricity" class="graphseccentricity button-graphseccentricity graphsoption" type="button" onclick="toggleGraphsEccentricity()">
+    <button id="graphseccentricity" class="graphseccentricity button-graphseccentricity" type="button" onclick="toggleGraphsEccentricity()" disabled>
       <svg id="graphseccentricitysvg" class="button-svg radiobutton-svg graphseccentricitysvg">
         <circle id="graphseccentricityshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphseccentricityshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -244,7 +245,7 @@
       Eccentricity
     </button>
     
-    <button id="graphsinclination" class="graphsinclination button-graphsinclination graphsoption" type="button" onclick="toggleGraphsInclination()">
+    <button id="graphsinclination" class="graphsinclination button-graphsinclination" type="button" onclick="toggleGraphsInclination()" disabled>
       <svg id="graphsinclinationsvg" class="button-svg radiobutton-svg graphsinclinationsvg">
         <circle id="graphsinclinationshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsinclinationshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -252,7 +253,7 @@
       Inclination
     </button>
 
-    <button id="graphsteff" class="graphsteff button-graphsteff graphsoption" type="button" onclick="toggleGraphsTeff()">
+    <button id="graphsteff" class="graphsteff button-graphsteff" type="button" onclick="toggleGraphsTeff()" disabled>
       <svg id="graphsteffsvg" class="button-svg radiobutton-svg graphsteffsvg">
         <circle id="graphsteffshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsteffshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -260,7 +261,7 @@
       Effective temp.
     </button>
 
-    <button id="graphsdistance" class="graphsdistance button-graphsdistance graphsoption" type="button" onclick="toggleGraphsDistance()">
+    <button id="graphsdistance" class="graphsdistance button-graphsdistance" type="button" onclick="toggleGraphsDistance()" disabled>
       <svg id="graphsdistancesvg" class="button-svg radiobutton-svg graphsdistancesvg">
         <circle id="graphsdistanceshape-circle" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="graphsdistanceshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
@@ -952,6 +953,9 @@
              && x < mousePosX - w/2 + 10 
              && y > mousePosY - h/2 - 10 
              && y < mousePosY - h/2 + 10) {
+
+              var primaryDesignation = node.attr("pdes");
+              if (pdes)
               
               //draw orbit of planet
               context.strokeStyle = designerGreen;
@@ -1044,7 +1048,7 @@
 
         });
       
-        if (!viewFront && relativeDistance && !graphs) {
+        if (!viewFront && relativeDistance) {
           // adds sun top half
           context.fillStyle = "rgba(255,255,255,1)";
           context.beginPath();
@@ -1052,12 +1056,6 @@
           context.closePath();
           context.fill();
         }
-
-        if(viewTop && hMid === h/4*3) {
-          console.log("this is true")
-          hMidInterpolate(hMid, h/2);
-        }
-
       }
   
   });
@@ -1195,49 +1193,6 @@
 
   // TOGGLES
   // VIEW
-  function toggleViewFree() {
-    if (!viewFree) {
-      viewFree = true;
-      viewFront = false;
-      viewTop = false;
-
-      d3.select('#viewtop').classed("active", false);
-      d3.select('#viewfront').classed("active", false);
-      d3.select('#viewfree').classed("active", true);
-
-      if (!solarsystem) {
-        toggleHighlightSolarsystem();
-      }
-
-      document.getElementById('highlightsolarsystem').disabled = false;
-      document.getElementById('highlightorbits').disabled = false;
-      document.getElementById('highlightgraphs').disabled = false;
-      if (!graphs) {
-        document.getElementById('highlightdetails').disabled = false;
-      }
-
-
-      viewpointYInterpolate(viewpointY, 1);
-      viewpointScale = d3.scale.linear()
-                               .domain([0, 10])
-                               .range([0, 1]);
-
-      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
-                                              .attr("r", "4.5");
-      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
-                                              .attr("r", "2.75");
-      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
-                                               .attr("r", "4");
-      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
-                                               .attr("r", "0");
-      d3.select("#viewtopshape-circle-outer").transition().duration(250)
-                                             .attr("r", "4");
-      d3.select("#viewtopshape-circle-inner").transition().duration(250)
-                                             .attr("r", "0");                                   
-
-    }
-  }
-
   function toggleViewFront() {
     if (!viewFront) {
       viewFront = true;
@@ -1252,17 +1207,15 @@
       d3.select('#viewtop').classed("active", false);
       d3.select('#viewfree').classed("active", false);
 
-      if (solarsystem) {
-        toggleHighlightSolarsystem();
-      }
-
-      if (orbits) {
-        toggleHighlightOrbits();
-      }
-
-      if (details) {
-        toggleHighlightDetails();
-      }
+      solarsystem = false;
+      d3.select('#highlightsolarsystem').classed("active", false);
+      document.getElementById('highlightsolarsystem').disabled = true;
+      orbits = false;
+      d3.select('#highlightorbits').classed("active", false);
+      document.getElementById('highlightorbits').disabled = true;
+      details = false;
+      d3.select('#highlightdetails').classed("active", false);
+      document.getElementById('highlightdetails').disabled = true;
 
       document.getElementById('highlightgraphs').disabled = false;
 
@@ -1272,20 +1225,6 @@
       viewpointScale = d3.scale.linear()
                                .domain([0, 100])
                                .range([0, 1]);
-
-      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
-                                              .attr("r", "4");
-      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
-                                              .attr("r", "0");
-      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
-                                               .attr("r", "4.5");
-      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
-                                               .attr("r", "2.75");
-      d3.select("#viewtopshape-circle-outer").transition().duration(250)
-                                             .attr("r", "4");
-      d3.select("#viewtopshape-circle-inner").transition().duration(250)
-                                             .attr("r", "0"); 
-
     }
   }
 
@@ -1294,6 +1233,7 @@
       viewTop = true;
       viewFront = false;
       viewFree = false;
+      details = true;
 
       if (graphs) {
         toggleHighlightGraphs();
@@ -1315,19 +1255,33 @@
       viewpointScale = d3.scale.linear()
                                .domain([0, 10])
                                .range([0, 1]);
+    }
+  }
 
-      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
-                                              .attr("r", "4");
-      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
-                                              .attr("r", "0");
-      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
-                                               .attr("r", "4");
-      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
-                                               .attr("r", "0");
-      d3.select("#viewtopshape-circle-outer").transition().duration(250)
-                                             .attr("r", "4.5");
-      d3.select("#viewtopshape-circle-inner").transition().duration(250)
-                                             .attr("r", "2.75");
+  function toggleViewFree() {
+    if (!viewFree) {
+      viewFree = true;
+      viewFront = false;
+      viewTop = false;
+
+      d3.select('#viewtop').classed("active", false);
+      d3.select('#viewfront').classed("active", false);
+      d3.select('#viewfree').classed("active", true);
+
+      if (!solarsystem) {
+        toggleHighlightSolarsystem();
+      }
+
+      document.getElementById('highlightsolarsystem').disabled = false;
+      document.getElementById('highlightorbits').disabled = false;
+      document.getElementById('highlightgraphs').disabled = false;
+      document.getElementById('highlightdetails').disabled = false;
+
+
+      viewpointYInterpolate(viewpointY, 1);
+      viewpointScale = d3.scale.linear()
+                               .domain([0, 10])
+                               .range([0, 1]);
     }
   }
 
@@ -1347,13 +1301,9 @@
     if (highlight) {
       highlight = false;
       d3.select('#highlightplanets').classed("active", false);
-      d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
-                                                .attr("cx", 5);
     } else {
       highlight = true;
       d3.select('#highlightplanets').classed("active", true);
-      d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
-                                                .attr("cx", 11.5);
     }
   }
 
@@ -1361,14 +1311,9 @@
     if (orbits) {
       orbits = false;
       d3.select('#highlightorbits').classed("active", false);
-      d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
-                                               .attr("cx", 5);
     } else {
       orbits = true;
       d3.select('#highlightorbits').classed("active", true);
-      d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
-                                               .attr("cx", 11.5);
-
     }
   }
 
@@ -1376,13 +1321,9 @@
     if (solarsystem) {
       solarsystem = false;
       d3.select('#highlightsolarsystem').classed("active", false);
-      d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
-                                                    .attr("cx", 5);
     } else {
       solarsystem = true;
       d3.select('#highlightsolarsystem').classed("active", true);
-      d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
-                                                    .attr("cx", 11.5);
     }
   }
 
@@ -1390,13 +1331,9 @@
     if (details) {
       details = false;
       d3.select('#highlightdetails').classed("active", false);
-      d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
-                                                .attr("cx", 5);
     } else {
       details = true;
       d3.select('#highlightdetails').classed("active", true);
-      d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
-                                                .attr("cx", 11.5);
     }
   }
 
@@ -1414,123 +1351,17 @@
 
   function toggleHighlightGraphs() {
     if (graphs) {
+      hMidInterpolate(hMid, h/2);
       // setTimeout(wMidInterpolate(wMid, w/2), 1000);
       graphs = false;
       d3.select('#highlightgraphs').classed("active", false);
-      d3.select("#highlightgraphsshape-circle").transition().duration(500).ease("elastic-in")
-                                               .attr("cx", 5);
-
-      document.getElementById('graphsradius').disabled = true;
-      document.getElementById('graphseccentricity').disabled = true;
-      document.getElementById('graphsinclination').disabled = true;
-      document.getElementById('graphsteff').disabled = true;
-      document.getElementById('graphsdistance').disabled = true;
-
-      document.getElementById('highlightdetails').disabled = false;
-
-      hMidInterpolate(hMid, h/2);
-
-
     } else {
       hMidInterpolate(hMid, h/4*3);
       // setTimeout(wMidInterpolate(wMid, w/4), 1000);
       graphs = true;
       d3.select('#highlightgraphs').classed("active", true);
-      d3.select("#highlightgraphsshape-circle").transition().duration(500).ease("elastic-in")
-                                               .attr("cx", 11.5);
-
-      document.getElementById('graphsradius').disabled = false;
-      document.getElementById('graphseccentricity').disabled = false;
-      document.getElementById('graphsinclination').disabled = false;
-      document.getElementById('graphsteff').disabled = false;
-      document.getElementById('graphsdistance').disabled = false;
-
-      if (details) {
-        toggleHighlightDetails();
-      }
-      document.getElementById('highlightdetails').disabled = true;
     }
   };
-
-  function toggleGraphsRadius() {
-    if (!radiusgraphs) {
-      radiusgraphs = true;
-      eccentricitygraphs = false;
-      inclinationgraphs = false;
-      teffgraphs = false;
-      distancegraphs = false;
-  
-      d3.select("#graphsradius").classed("active", true);
-      d3.select("#graphseccentricity").classed("active", false);
-      d3.select("#graphsinclination").classed("active", false);
-      d3.select("#graphsteff").classed("active", false);
-      d3.select("#graphsdistance").classed("active", false);
-    }
-  }
-
-  function toggleGraphsEccentricity() {
-    if (!eccentricitygraphs) {
-      radiusgraphs = false;
-      eccentricitygraphs = true;
-      inclinationgraphs = false;
-      teffgraphs = false;
-      distancegraphs = false;
-  
-      d3.select("#graphsradius").classed("active", false);
-      d3.select("#graphseccentricity").classed("active", true);
-      d3.select("#graphsinclination").classed("active", false);
-      d3.select("#graphsteff").classed("active", false);
-      d3.select("#graphsdistance").classed("active", false);
-    }
-  }
-
-  function toggleGraphsInclination() {
-    if (!inclinationgraphs) {
-      radiusgraphs = false;
-      eccentricitygraphs = false;
-      inclinationgraphs = true;
-      teffgraphs = false;
-      distancegraphs = false;
-  
-      d3.select("#graphsradius").classed("active", false);
-      d3.select("#graphseccentricity").classed("active", false);
-      d3.select("#graphsinclination").classed("active", true);
-      d3.select("#graphsteff").classed("active", false);
-      d3.select("#graphsdistance").classed("active", false);
-    }
-  }
-
-  function toggleGraphsTeff() {
-    if (!teffgraphs) {
-      radiusgraphs = false;
-      eccentricitygraphs = false;
-      inclinationgraphs = false;
-      teffgraphs = true;
-      distancegraphs = false;
-  
-      d3.select("#graphsradius").classed("active", false);
-      d3.select("#graphseccentricity").classed("active", false);
-      d3.select("#graphsinclination").classed("active", false);
-      d3.select("#graphsteff").classed("active", true);
-      d3.select("#graphsdistance").classed("active", false);
-    }
-  }
-
-  function toggleGraphsDistance() {
-    if (!distancegraphs) {
-      radiusgraphs = false;
-      eccentricitygraphs = false;
-      inclinationgraphs = false;
-      teffgraphs = false;
-      distancegraphs = true;
-  
-      d3.select("#graphsradius").classed("active", false);
-      d3.select("#graphseccentricity").classed("active", false);
-      d3.select("#graphsinclination").classed("active", false);
-      d3.select("#graphsteff").classed("active", false);
-      d3.select("#graphsdistance").classed("active", true);
-    }
-  }
 
   // positioning
 
