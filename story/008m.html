@@ -160,6 +160,7 @@
     </div> -->
 
     <span class="buttons-title">View</span>
+
     <button id="viewfree" class="viewfree button-viewfree active" type="button" onclick="toggleViewFree()">
       <svg id="viewfreesvg" class="button-svg radiobutton-svg viewfreesvg">
         <circle id="viewfreeshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
@@ -268,35 +269,30 @@
       Distance
     </button>
 
-
     <span class="buttons-title">Other</span>
 
-    <button id="speedzoom" type="button" onclick="toggleSpeedzoom()" style="border:0px solid white; width:100%; height:40px;">
-      <svg id="speedzoomsvg" class="speedzoomsvg" width="36" height="36" style="transform:rotate(0deg)">
-        <polyline id="speedzoompolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
-        <ellipse cx="18" cy="18" rx="18" ry="6" class="ellipse shape" style="stroke-width:1.5px; fill:none; stroke: white;" /> 
-      </svg>
-    </button>
-    
     <button id="speedzoom" class="speedzoom button-speedzoom" type="button" onclick="toggleSpeedzoom()">
       <svg id="speedzoomsvg" class="button-svg switchbutton-svg speedzoomsvg">
         <rect id="speedzoomshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
         <circle id="speedzoomshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
       </svg>
-      Speedzoom
+      Zoom speed
     </button>
     
+    <button id="relativedistance" class="relativedistance button-relativedistance active" type="button" onclick="toggleRelativeDistance()">
+      <svg id="relativedistancesvg" class="button-svg switchbutton-svg relativedistancesvg">
+        <rect id="relativedistanceshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="relativedistanceshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Relative sizes
+    </button>
+
     <button id="info" type="button" onclick="info()" style="border:2px solid white; width:100%; height:40px;">
       <svg id="infosvg" class="infosvg" width="36" height="36" style="transform:rotate(0deg)">
         <polyline id="infopolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
       </svg>
     </button>
-    <button id="relativeDistance" type="button" onclick="toggleRelativeDistance()" style="border:0px solid white; width:100%; height:40px;">
-      <svg id="relativeDistancesvg" class="relativeDistancesvg" width="36" height="36" style="transform:rotate(0deg)">
-        <polyline id="relativeDistancepolyline" class="polyline shape" points="18,9 18,27 18,18 9,18 27,18" style="stroke-width:1.5px; fill:none; stroke: white;"/></polyline>
-        <ellipse cx="18" cy="18" rx="18" ry="6" class="ellipse shape" style="stroke-width:1.5px; fill:none; stroke: white;" /> 
-      </svg>
-    </button>
+
   </div>
   <canvas style=" position: fixed; z-index:-5" width="500" height="500"></canvas>
 <!--   <div class="kader" style="position:fixed; z-index: -6; width: 100%; height: 100%; background:none; box-sizing: border-box; border: 5px solid #c83c46;" >
@@ -1324,16 +1320,6 @@
 
 
   // HIGHLIGHTS
-  function toggleSpeedzoom() {
-    if (speedzoom) {
-      speedzoom = false;
-      d3.select('#speedzoom').classed("active", false);
-    } else {
-      speedzoom = true;
-      d3.select('#speedzoom').classed("active", true);
-    }
-  }
-
   function toggleHighlightPlanets() {
     if (highlight) {
       highlight = false;
@@ -1391,18 +1377,6 @@
     }
   }
 
-  function toggleRelativeDistance() {
-    if (relativeDistance) {
-      relativeDistance = false;
-      title = false;
-      d3.select('#relativeDistance').classed("active", false);
-    } else {
-      relativeDistance = true;
-      title = true;
-      d3.select('#relativeDistance').classed("active", true);
-    }
-  };
-
   function toggleHighlightGraphs() {
     if (graphs) {
       // setTimeout(wMidInterpolate(wMid, w/2), 1000);
@@ -1443,6 +1417,7 @@
     }
   };
 
+  // GRAPHS
   var graphsRadiusOuter = d3.select("#graphsradiusshape-circle-outer");
   var graphsRadiusInner = d3.select("#graphsradiusshape-circle-inner");
   var graphsEccentricityOuter = d3.select("#graphseccentricityshape-circle-outer");
@@ -1590,6 +1565,37 @@
           graphsDistanceInner.transition().duration(250).attr("r", "2.75");
     }
   }
+
+  // OTHER
+  function toggleSpeedzoom() {
+    if (speedzoom) {
+      speedzoom = false;
+      d3.select('#speedzoom').classed("active", false);
+      d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 5);
+    } else {
+      speedzoom = true;
+      d3.select('#speedzoom').classed("active", true);
+      d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 11.5);
+    }
+  }
+
+  function toggleRelativeDistance() {
+    if (relativeDistance) {
+      relativeDistance = false;
+      title = false;
+      d3.select('#relativedistance').classed("active", false);
+      d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 5);
+    } else {
+      relativeDistance = true;
+      title = true;
+      d3.select('#relativedistance').classed("active", true);
+      d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 11.5);
+    }
+  };
 
   // positioning
   var textContainer = d3.select("#text-container").style("left", (wMid - 300) + "px")
