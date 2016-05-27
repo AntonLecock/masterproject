@@ -128,6 +128,7 @@
 
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="http://cdn.tonejs.org/latest/Tone.min.js"></script>
   <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
@@ -454,6 +455,23 @@
   var detachedContainer = document.createElement("custom");
   var dataContainer = d3.select(detachedContainer);
 
+  // AUDIO PLANET
+  var planetVerb = new Tone.Freeverb().toMaster();
+  planetVerb.dampening.value = 1000;
+  planetVerb.roomSize.value = .2;
+
+  var planetSynth = new Tone.PolySynth(20, Tone.SimpleSynth).connect(planetVerb);;
+
+  planetSynth.set({
+    "filter" : {
+      "type" : "notch",
+      "frequency" : 500
+    },
+    "envelope" : {
+      "attack" : 0.005
+    }
+  });
+
   // ASTEROID DATA 
   var asteroiddata = d3.csv("data/keplerconfirmed4.csv", function(error, rows) {
     if (error) throw error;
@@ -736,6 +754,7 @@
         drawOrbit();
       
       // } // if
+
     } // step
 
 
@@ -1221,7 +1240,7 @@
                                              .attr("r", "4");
       d3.select("#viewtopshape-circle-inner").transition().duration(250)
                                              .attr("r", "0");                                   
-
+      playSound(.5);
     }
   }
 
@@ -1272,7 +1291,7 @@
                                              .attr("r", "4");
       d3.select("#viewtopshape-circle-inner").transition().duration(250)
                                              .attr("r", "0"); 
-
+      playSound(.5);
     }
   }
 
@@ -1315,6 +1334,7 @@
                                              .attr("r", "4.5");
       d3.select("#viewtopshape-circle-inner").transition().duration(250)
                                              .attr("r", "2.75");
+      playSound(.5);
     }
   }
 
@@ -1326,11 +1346,13 @@
       d3.select('#highlightplanets').classed("active", false);
       d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
                                                 .attr("cx", 5);
+      playSound(1/4);
     } else {
       highlight = true;
       d3.select('#highlightplanets').classed("active", true);
       d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
                                                 .attr("cx", 11.5);
+      playSound(1);
     }
   }
 
@@ -1340,12 +1362,13 @@
       d3.select('#highlightorbits').classed("active", false);
       d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
                                                .attr("cx", 5);
+      playSound(1/4);
     } else {
       orbits = true;
       d3.select('#highlightorbits').classed("active", true);
       d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
                                                .attr("cx", 11.5);
-
+      playSound(1);
     }
   }
 
@@ -1355,11 +1378,13 @@
       d3.select('#highlightsolarsystem').classed("active", false);
       d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
                                                     .attr("cx", 5);
+      playSound(1/4);
     } else {
       solarsystem = true;
       d3.select('#highlightsolarsystem').classed("active", true);
       d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
                                                     .attr("cx", 11.5);
+      playSound(1);
     }
   }
 
@@ -1369,11 +1394,13 @@
       d3.select('#highlightdetails').classed("active", false);
       d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
                                                 .attr("cx", 5);
+      playSound(1/4);
     } else {
       details = true;
       d3.select('#highlightdetails').classed("active", true);
       d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
                                                 .attr("cx", 11.5);
+      playSound(1);
     }
   }
 
@@ -1395,7 +1422,7 @@
 
       hMidInterpolate(hMid, h/2);
 
-
+      playSound(1/4);
     } else {
       hMidInterpolate(hMid, h/4*3);
       // setTimeout(wMidInterpolate(wMid, w/4), 1000);
@@ -1414,6 +1441,8 @@
         toggleHighlightDetails();
       }
       document.getElementById('highlightdetails').disabled = true;
+    
+      playSound(1);
     }
   };
 
@@ -1453,6 +1482,8 @@
               graphsTeffInner.transition().duration(250).attr("r", "0");
           graphsDistanceOuter.transition().duration(250).attr("r", "4");
           graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
     }
   }  
 
@@ -1480,6 +1511,8 @@
               graphsTeffInner.transition().duration(250).attr("r", "0");
           graphsDistanceOuter.transition().duration(250).attr("r", "4");
           graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
     }
   }
 
@@ -1507,6 +1540,8 @@
               graphsTeffInner.transition().duration(250).attr("r", "0");
           graphsDistanceOuter.transition().duration(250).attr("r", "4");
           graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
     }
   }
 
@@ -1534,6 +1569,8 @@
               graphsTeffInner.transition().duration(250).attr("r", "2.75");
           graphsDistanceOuter.transition().duration(250).attr("r", "4");
           graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
     }
   }
 
@@ -1561,6 +1598,7 @@
               graphsTeffInner.transition().duration(250).attr("r", "0");
           graphsDistanceOuter.transition().duration(250).attr("r", "4.5");
           graphsDistanceInner.transition().duration(250).attr("r", "2.75");
+      playSound(.5);
     }
   }
 
@@ -1571,11 +1609,13 @@
       d3.select('#speedzoom').classed("active", false);
       d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
                                          .attr("cx", 5);
+      playSound(1/4);
     } else {
       speedzoom = true;
       d3.select('#speedzoom').classed("active", true);
       d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
                                          .attr("cx", 11.5);
+      playSound(1);
     }
   }
 
@@ -1586,18 +1626,28 @@
       d3.select('#relativedistance').classed("active", false);
       d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
                                          .attr("cx", 5);
+      playSound(1/4);
     } else {
       relativeDistance = true;
       title = true;
       d3.select('#relativedistance').classed("active", true);
       d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
                                          .attr("cx", 11.5);
+      playSound(1);
     }
   };
 
   // positioning
   var textContainer = d3.select("#text-container").style("left", (wMid - 300) + "px")
                                                   .style("bottom", (h+100) + "px");
+
+
+  // sound
+
+  function playSound(factor) {
+    planetSynth.volume.value = 1;
+    planetSynth.triggerAttackRelease(523.25 * factor / 2, 0.01);
+  }
 
   // // Redirect to hub after 10 secs
   // setTimeout(returnToHub(), 5000);

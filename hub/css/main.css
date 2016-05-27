@@ -11,19 +11,11 @@ info@antonlecock.be
    Base styles:
 -------------------------------------------------------------------------- */
 
-@font-face {
-	font-family: 'Anke';
-	src: url('font/anke-webfont.eot?#iefix') format('embedded-opentype'), 
-	     url('font/anke-webfont.woff') format('woff'), 
-	     url('font/anke-webfont.ttf')  format('truetype'),
-	     url('font/anke-webfont.svg#svganke-webfont') format('svg');
-}
-
 html {
     color: #444; /*black*/
     font-size: 22px;
     line-height: 2;
-    font-family: "Butler", georgia, arial, sans-serif;
+    font-family: "Bagnard", georgia, arial, sans-serif;
     font-weight:300;	
     letter-spacing: 1.1;
 
@@ -161,7 +153,7 @@ button {
 -------------------------------------------------------------------------- */
 
 body {
-	background-color: #222;
+	background-color: #12151a;
 }
 
 
@@ -226,9 +218,9 @@ header {
 -------------------------------------------------------------------------- */
 
 h1 {
-	font-weight: 600;
+	font-weight: 300;
 	font-size:4em;
-	line-height:1.1;
+	line-height:1;
 	margin:1.2em auto .2em auto;
 	display:inline-block;
 	color:#FFF;
@@ -238,7 +230,7 @@ h1 {
 }
 
 h3 {
-	font-family: helvetica, arial, sans-serif;
+	font-family: "Circular Std", arial, sans-serif;
 	font-weight:200;
 	line-height:1.2;
 	color:#FFF;
