@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: 'Circular Std', sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+  <div class="return-notification" id="return-notification" style="z-index: 997; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 998; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      Rotating orbits of the Apollo asteroids
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      This visualisation is scientifically incorrect, as the orbits themselves shouldn't be rotating.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Orbits of potentially hazardous asteroids are shown in red.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="svg-wrapper" style="z-index: -500">
+  </div>
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 0;
+  var n = 0;
+
+  var enlarge = 100;
+
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#12151a"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", designerBlack);
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("#svg-wrapper").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var asteroidsGroup = svg.append("g").attr("id","asteroids-group");
+  var labelGroup = svg.append("g").attr("id", "label-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+
+  svg.attr("transform", "translate(" + w/2 + "," + h/2 + ")")
+
+  var rScale = d3.scale.pow()
+                       .exponent(.3)
+                       .domain([-1.2, 8])
+                       .range([2, .05]);
+
+  var planets = d3.csv("data/apolloperiod.csv", function(error, rows) {
+    if (error) throw error;
+
+  var x, y, r, v, P, E, F;
+
+  var asteroid = asteroidsGroup.selectAll( "ellipse" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("id", function(d, i){return d.id})
+    .attr("class", function(d, i){return "node " + d.name})
+    .attr("cx", function(d, i) { 
+      var Ezero, Eone;
+        Ezero = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M)));
+        Eone = Ezero-(Ezero-(180/Math.PI)*d.e*Math.sin(Ezero)-d.M)/(1-d.e*Math.cos(Ezero));
+        // console.log(d.name + ", E0 = " + Ezero + ", E1 = " + Eone + ", E0 - E1 = " + (Eone-Ezero));
+
+        for (i = 0; i < 20; i++) {
+          Ezero = Eone;
+          Eone = Ezero-(Ezero-(180/Math.PI)*d.e*Math.sin(Ezero)-d.M)/(1-d.e*Math.cos(Ezero));
+          // console.log(d.name + ", E0 = " + Ezero + ", E1 = " + Eone + ", E0 - E1 = " + (Eone-Ezero));
+        }
+      E = Eone;
+      P = 2*Math.PI*Math.sqrt(d.a*d.a*d.a);
+      
+      var aSquared = Math.pow(d.a, 2);
+      var bSquared = Math.pow(d.a*(Math.sqrt(1-Math.pow(d.e, 2))), 2);
+      F = Math.sqrt(aSquared - bSquared);      
+      // var v = 2*Math.atan(d.w)
+      // var r = (d.a * (1-d.e))*(1+d.w*d.w);
+      // x = d.a*(Math.cos(E)-d.e);
+      // return w/2 + x*enlarge;
+      return w/2 + F*enlarge;
+    })
+    .attr("cy", function(d, i) { 
+      // var Ezero, Eone;
+      //   Ezero = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M)));
+      //   Eone = Ezero-(Ezero-(180/Math.PI)*d.e*Math.sin(Ezero)-d.M)/(1-d.e*Math.cos(Ezero));
+      //   // console.log(d.name + ", E0 = " + Ezero + ", E1 = " + Eone + ", E0 - E1 = " + (Eone-Ezero));
+
+      //   for (i = 0; i < 20; i++) {
+      //     Ezero = Eone;
+      //     Eone = Ezero-(Ezero-(180/Math.PI)*d.e*Math.sin(Ezero)-d.M)/(1-d.e*Math.cos(Ezero));
+      //     // console.log(d.name + ", E0 = " + Ezero + ", E1 = " + Eone + ", E0 - E1 = " + (Eone-Ezero));
+      //   }
+      // E = Eone;
+      // P = 2*Math.PI*Math.sqrt(d.a*d.a*d.a);
+      // v = 2*Math.atan(d.w)
+      y = d.a*Math.sqrt(1-d.e*d.e)*Math.sin(E);
+      // return h/2 + y*enlarge;
+      return h/2;
+    })
+    .attr("rx", function(d, i){return d.a * enlarge } )
+    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } )
+    .style("fill", "none")
+    .style("stroke-width", .4)
+    .style("stroke", function(d, i){
+      if (d.pha === 'Y') {
+        return "rgba(255,0,0,.5)";
+      } else {
+        return "rgba(255,255,255,.25)";
+      }
+    })
+    .attr("transform", function(d, i){ 
+      return "rotate(" + d.M + "," + w/2 + "," + h/2 + ")";
+    })
+    .each(transit);
+
+
+    function transit(d, i) {
+      var aster = d3.select(this);
+      // d3.selectAll(".node").transition().duration(5000).ease("linear")
+      (function repeat() {
+              aster = aster.transition().duration(d.per * 10000).ease("linear")
+                            .attrTween("transform", function rotTween(d, i) {
+                              var i = d3.interpolateString(0, 360);
+                              return function(t) {
+                                  return "rotate(" + i(t) + "," + w/2 + "," + h/2 + ")";
+                              };
+                            })
+                           .transition().duration(d.per * 10000).ease("linear")
+                            .attrTween("transform", function rotTween(d, i) {
+                              var i = d3.interpolateString(0, 360);
+                              return function(t) {
+                                  return "rotate(" + i(t) + "," + w/2 + "," + h/2 + ")";
+                              };
+                            })
+                            .each("end", repeat);
+      })();
+    };
+
+
+    // .each("start", function () {
+    //     d3.timer(function () {
+    //         var t = d3.transform(rectTween.attr("transform"));
+    //         logTween.writeLine([t.translate.map(f).join(","), f(t.rotate)].join("\t"))
+    //         return stoppedTween;
+    //     })
+    // })
+    // .each("end", function () {
+    //     stoppedTween = true
+    // });
+    
+    
+    // function rotTween(d, i) {
+    //     var i = d3.interpolate(d.M, d.M+360);
+    //     return function(t) {
+    //         return "rotate(" + i(t) + "," + w/2 + "," + h/2 + ")";
+    //     };
+    // } 
+
+    ready();
+  });
+
+
+/*asteroidsGroup.selectAll( "ellipse" )
+  .data( asteroids.features )
+  .enter()
+  .append( "ellipse" )
+  .attr("id", function(d, i){return d.id})
+  .attr("class", function(d, i){return d.full_name})
+  .style("stroke", "white")
+  .style("fill", "none")
+  .style("opacity", .1)
+  .style("stroke-width", 0)
+  .attr("cx", "50%")
+  .attr("cy", "50%")
+  .attr("rx", function(d, i){return d.semimajor_axis * 100 } )
+  .attr("ry", function(d, i){return (d.semimajor_axis * Math.sqrt(1-(Math.pow(d.eccentricity,2)))) * 100 } );
+
+function counter() {
+  number++;
+  var total = "0000000" + number;
+  return total.substr(total.length-7);
+}
+
+setTimeout( function() {
+  for (i = 0; i<19999; i++) {
+    d3.select("#a" + counter()).transition()
+      .duration(0)
+      .delay(2000 + number)
+      .style("stroke-width", function () { return .25 });
+  }
+
+}, 2000);
+*/
+
+    svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+    var returnTimer = 0;
+    var returnCountdown = 0;
+    var returnLink = 0;
+    var returnNotification = d3.select('#return-notification');
+
+    document.body.addEventListener('mousemove', function() {
+      clearTimeout(returnTimer);
+      clearInterval(returnCountdown);
+      clearTimeout(returnLink);
+      countdown = 10;
+      returnNotification.transition().duration(500).style("opacity", 0);
+      setTimeout(function() {returnNotification.style("display", "none")}, 500);
+      ready();
+    });
+
+    function ready() {
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+      d3.select("#loading").transition().duration(500).style("opacity", 0);
+      setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+      svg.transition().delay(0).duration(1000)
+                         .style("-webkit-filter", "blur(" + 0 + "px)")
+                         .style("opacity",1);
+      d3.select("#info").transition().duration(500).style('opacity', 1);
+      returnTimer = setTimeout(returnToHub, 20000);
+    };
+
+    function returnToHub() {
+      returnNotification.style("display", "block").transition().duration(500)
+                        .style("opacity", 1);
+      svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                         .style("-webkit-filter", "blur(" + 5 + "px)")
+                         .style("opacity",.2);
+      d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                         .style('opacity', 0);
+
+      var countdown = 10; 
+      console.log(countdown);
+      returnCountdown = setInterval(function() {
+        countdown = countdown - 1;
+        document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+        console.log(countdown);
+      }, 1000)
+      returnLink = setTimeout(function() {window.location.href = "http://antonlecock.github.io/masterproject/hub/";}, 10000)
+    }
+
+  </script>
+</body>
+</html>
