@@ -63,7 +63,7 @@
   </div>
   <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
     <p style="font-weight:800; margin: 0;">
-      The solar system, including the asteroid belt. 
+      The inner solar system, including the asteroid belt. 
     </p>
     <p style="font-weight:100; margin: 0;">
       Potentially hazardous asteroids, objects that could pose a threat to earth, are marked in red.
@@ -77,6 +77,8 @@
   </div>
 
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/10,
@@ -213,6 +215,7 @@ d3.csv("data/results_asteroids_n_pha3.csv", function(error, rows) {
   });
 
   ready();
+  readySetGo = true;
 
 });
 
@@ -346,15 +349,19 @@ d3.csv("data/planets2.csv", function(error, rows) {
     var returnLink = 0;
     var returnNotification = d3.select('#return-notification');
 
-    document.body.addEventListener('mousemove', function() {
+    document.body.addEventListener('mousemove', resetTimers);
+
+    function resetTimers() {
       clearTimeout(returnTimer);
       clearInterval(returnCountdown);
       clearTimeout(returnLink);
       countdown = 10;
       returnNotification.transition().duration(500).style("opacity", 0);
       setTimeout(function() {returnNotification.style("display", "none")}, 500);
-      ready();
-    });
+      if (readySetGo) {
+        ready();
+      }
+    }
 
     function ready() {
       document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";

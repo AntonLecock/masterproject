@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: 'Circular Std', sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed; 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="data/20000.js" charset="utf-8"></script>
+</head>
+
+<body>
+
+  <div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      Pluto isn't that special, after all. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Pluto is one of many icy objects floating around in the outer reaches of the solar system.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      These orbiting points depict all the known 'Trans-Neptunian' objects. Scroll to zoom in and out.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="canvas-wrapper" style="z-index: -500">
+  </div>
+
+  <script type="text/javascript">
+
+  var readySetGo = false;
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/50,
+      paddingH = h/50;
+
+  var number  = 0;
+  var n = 0;
+
+  var nodes,
+      angles = [],
+      angle,
+      newAngle;
+
+  var scaler = "big"; // only display labels if "big"
+
+
+
+  var initialEnlarge = 8;
+  var enlarge = initialEnlarge; //enlargement
+  var initialSpeed = initialEnlarge * 50;
+  var speed = initialSpeed; // speed in milliseconds, equals one year (eg. speed = 1000 means one earth year will be displayed as one second)
+  var initialPointRadius = 1.5; 
+  var pointRadius = initialPointRadius; // radius of asteroid point
+  var lineRadius = .2;
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#000000"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2"),
+      designerBlue = d3.rgb("#696fc4")
+      designerGreen = d3.rgb("#69c4be");
+
+
+  // CANVAS
+  var canvas = d3.select("#canvas-wrapper").append("canvas")
+               .attr("width", w)
+               .attr("height", h),
+    context = canvas.node().getContext("2d"),
+    width = canvas.width,
+    height = canvas.height;
+
+      d3.select("body").style("background-color", "#12151a");
+
+    var cScale = d3.scale.linear()
+        .domain([0, 1])
+        .range([designerBlue, designerRed]); 
+
+  // // Create the SVG Viewport
+  // var svg = d3.select("body").append("svg")
+  //                            .attr("id","svg-container")
+  //                            .attr("class","svg-container")
+  //                            .attr("width", w)
+  //                            .attr("height", h);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  var detachedContainer = document.createElement("custom");
+  var dataContainer = d3.select(detachedContainer);
+
+  // ASTEROID DATA 
+  var asteroiddata = d3.csv("data/transneptunianperiod2.csv", function(error, rows) {
+    if (error) throw error;
+
+    var x, y, r, v, P, E, F;
+
+    
+    // create the ellipses on which the asteroids will be projected
+    // use path instead of ellipse, because otherwise next step won't work
+    var dataBinding = dataContainer.selectAll( "node" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "node-" + i})
+      .attr("class", function(d, i){return "node " + "node-" + i})
+      .attr("pdes", function(d, i){return d.name})
+      .attr("a", function(d, i) {return d.a})
+      .attr("M", function(d, i) {return d.M})
+      // .attr("W", function(d, i) {return d.w})
+      .attr("per", function (d, i) {return d.per})
+      .attr("e", function(d, i) {return d.e})
+      .attr("stroke", function(d, i){
+        return cScale(d.e);
+      })
+
+    var getal = 1;          
+    var resolution = 10;
+    var oneTime = true;
+    var t = 0;
+
+    nodes = dataContainer.selectAll(".node"); // store all nodes in array
+    nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+
+    dataBinding.each(function(d, i) {
+      var node = d3.select(this);
+      angles.push(+node.attr("M")) // initial angle of the asteroid on its orbit
+      // angles.push(0);
+    });
+    // console.log(angles);
+    // for (i = 0; i < nodesAmount; i++) {
+    //   angles.push(d.M[i]); 
+    // }  
+
+    // Variables for storing previous positions
+    var oldPoints = [];
+    var pointInterval = 5;
+    var oldTime = 0;
+    var periodTime = false;
+
+    d3.timer(step);
+
+    function step() {
+
+      // "clear" canvas
+      context.fillStyle = "rgba(18,21,26,0.8)";
+      context.strokeStyle = "none"
+      context.fillRect(0,0,w,h);
+
+      // add sun and nametag, but only if zoom level isn't too far out
+      context.fillStyle = designerWhite;
+      context.beginPath();
+      context.arc(w/2, h/2, pointRadius, 0, 2 * Math.PI);
+      context.fill();
+
+      // if (scaler != "tiny") {
+      //   context.font = "12px Circular Std";
+      //   context.textAlign = "center";
+      //   context.fillText("Sun", w/2, h/2 - 9);
+      // };
+
+      // add title and text
+      // context.font = "24px Circular Std";
+      // context.textAlign = "center";
+      // context.fillText("Pluto isn't that special, after all.",  w/2, paddingH*5);
+      // context.font = "16px Circular Std";
+      // context.fillText("In 2006, Pluto was degraded from a planet to a dwarf planet by the IAU, ", w/2, h-paddingH*5);
+      // context.fillText("because other similar objects in the outer reaches of the solar system had been discovered. ", w/2, h-paddingH*4);
+      // context.fillText("These orbiting points depict other so called 'Trans-Neptunian' objects:", w/2, h-paddingH*3);
+      // context.fillText(" their orbits reach further than Neptune, the furthest planet in our solar system.", w/2, h-paddingH*2);
+
+      
+      drawOrbit();
+
+    }
+
+    function drawOrbit() {
+        
+        // console.log( getal++ );
+
+        dataBinding.each(function(d, i) {
+
+          var node = d3.select(this);
+
+          var M = node.attr("M");
+          var a = node.attr("a");
+          var e = node.attr("e");
+          var per = node.attr("per") * speed;
+          // var W = node.attr("W");
+
+          // compute other values
+          var b = (a * (Math.sqrt(1-e*e)));
+          var F = (Math.sqrt(a * a - b * b));
+
+          // enlarge values of length
+          a = a * enlarge;
+          b = b * enlarge;
+          F = F * enlarge;
+
+          // Initial position of point (angle = 0)
+          var x = a;
+          var y = 0;
+
+          t++;
+
+          var r = a + F;
+
+          angle = angles[0];
+
+          var k = 360 * a * b / (per * resolution);
+        
+          for (var j = 0; j < resolution; j++) {
+              angle += k / (r * r);
+              r = a * (1 - e * e) / (1 - e * Math.cos(angle));   
+          }
+
+          // angle += (360 * a * b / (r * r * per)); 
+          // r = a * (1 - e * e) / (1 - e * Math.cos(angle));
+
+          // if (angle > 360) {
+          //   angle -= 360;
+          //   if (oldTime) {
+          //       periodTime = t - oldTime;
+          //   }
+          //   oldTime = t;
+          // }
+
+          var newX = r * Math.cos(angle);
+          var newY = r * Math.sin(angle);
+
+          x = newX;
+          y = newY;
+
+          getal = getal + 1;
+
+          context.save();
+          
+          context.translate(w/2, h/2);
+
+          var rotation = +M + (((360-getal)/+per/speed));
+          // context.rotate(M);
+          context.rotate(rotation);
+  
+          // add orbit paths
+          context.fillStyle = "none";
+          context.strokeStyle = node.attr("stroke");
+          context.lineWidth = lineRadius;
+          context.beginPath();
+          context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
+          context.stroke();
+          context.closePath();
+
+          // add orbiting points
+          context.fillStyle = node.attr("stroke");
+          context.beginPath();
+          context.arc(x, y, pointRadius, 0, 2 * Math.PI);
+          context.fill(); 
+
+          // add label
+          context.fillStyle = node.attr("stroke");
+          context.font = "12px Circular Std"
+          if (node.attr("pdes") === "Pluto" ) {
+            context.fillStyle = designerWhite;
+          }
+          if (node.attr("pdes") != undefined && scaler != "tiny") {
+            if (node.attr("pdes") === "Uranus" ||
+                node.attr("pdes") === "Saturn" ||
+                node.attr("pdes") === "Jupiter" ||
+                node.attr("pdes") === "Mars" ||
+                node.attr("pdes") === "Earth" ||
+                node.attr("pdes") === "Venus" ||
+                node.attr("pdes") === "Mercury" ) {
+
+            } else if (node.attr("pdes") != "Neptune" ) {
+              context.fillText(node.attr("pdes"), x, y - 9)
+            } 
+          }
+          
+          // highlight neptune + inner planets 
+          if (node.attr("pdes") === "Neptune" ||
+              node.attr("pdes") === "Uranus" ||
+              node.attr("pdes") === "Saturn" ||
+              node.attr("pdes") === "Jupiter" ||
+              node.attr("pdes") === "Mars" ||
+              node.attr("pdes") === "Earth" ||
+              node.attr("pdes") === "Venus" ||
+              node.attr("pdes") === "Mercury" ) {
+
+            context.fillStyle = "none";
+            context.strokeStyle = designerWhite;
+            context.lineWidth = lineRadius*2;
+            context.beginPath();
+            context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
+            context.stroke();
+            context.closePath();
+
+            context.fillStyle = designerWhite;
+            context.beginPath();
+            context.arc(x, y, pointRadius/2, 0, 2 * Math.PI);
+            context.fill(); 
+
+            if (node.attr("pdes") === "Neptune") {
+              context.fillStyle = designerWhite;
+              context.beginPath();
+              context.arc(x, y, pointRadius*2, 0, 2 * Math.PI);
+              context.fill(); 
+              context.fillText(node.attr("pdes"), x, y - 9)
+            }
+            
+          }
+
+
+
+          context.restore();
+
+
+          newAngle = angle;
+          angles.splice(0, 1);
+          angles.push(newAngle);          
+        });
+      }
+  
+    ready();
+    readySetGo = true;
+  });
+  
+
+  var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([.01, 10])
+    .on("zoom", zoomed);
+
+  canvas.call(zoom);
+
+  function zoomed() {
+    speed = initialSpeed * d3.event.scale;
+    enlarge = initialEnlarge * d3.event.scale;
+  
+    if (d3.event.scale < .1) {
+      scaler = "tiny";
+    } else {
+      scaler = "big";
+    }
+
+    resetTimers();
+    
+  }
+
+  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+  var returnTimer = 0;
+  var returnCountdown = 0;
+  var returnLink = 0;
+  var returnNotification = d3.select('#return-notification');
+
+  document.body.addEventListener('mousemove', resetTimers);
+
+  function resetTimers() {
+    clearTimeout(returnTimer);
+    clearInterval(returnCountdown);
+    clearTimeout(returnLink);
+    countdown = 10;
+    returnNotification.transition().duration(500).style("opacity", 0);
+    setTimeout(function() {returnNotification.style("display", "none")}, 500);
+    if (readySetGo) {
+      ready();
+    }
+  }
+
+  function ready() {
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+    d3.select("#loading").transition().duration(500).style("opacity", 0);
+    setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+    canvas.transition().delay(0).duration(1000)
+                       .style("-webkit-filter", "blur(" + 0 + "px)")
+                       .style("opacity",1);
+    d3.select("#info").transition().duration(500).style('opacity', 1);
+    returnTimer = setTimeout(returnToHub, 20000);
+  };
+
+  function returnToHub() {
+    returnNotification.style("display", "block").transition().duration(500)
+                      .style("opacity", 1);
+    canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                       .style("-webkit-filter", "blur(" + 5 + "px)")
+                       .style("opacity",.2);
+    d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                       .style('opacity', 0);
+
+    var countdown = 10; 
+    console.log(countdown);
+    returnCountdown = setInterval(function() {
+      countdown = countdown - 1;
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+      console.log(countdown);
+    }, 1000)
+    returnLink = setTimeout(function() {window.location.href = "http://antonlecock.github.io/masterproject/hub/";}, 10000)
+  }
+
+  </script>
+</body>
+</html>

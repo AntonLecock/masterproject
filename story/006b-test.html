@@ -79,6 +79,8 @@
   </div>
   <script type="text/javascript">
 
+  var readySetGo = false;
+
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/10,
       paddingH = h/10;
@@ -243,6 +245,7 @@
     // } 
 
     ready();
+    readySetGo = true;
   });
 
 
@@ -292,7 +295,9 @@ setTimeout( function() {
       countdown = 10;
       returnNotification.transition().duration(500).style("opacity", 0);
       setTimeout(function() {returnNotification.style("display", "none")}, 500);
-      ready();
+      if (readySetGo) {
+        ready();
+      }
     });
 
     function ready() {
