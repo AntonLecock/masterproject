@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: 'Circular Std', sans-serif;
+      letter-spacing: 1px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100% 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+
+  <div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      NEO (Near Earth Objects) in motion. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Objects that are classified as being close to earth's orbit.
+    </p>
+    <p style="font-weight:100; margin:0;">
+      Potentially hazardous asteroids are shown in red.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
+    </p>
+  </div>
+  <div id="svg-wrapper" style="z-index: -500">
+  </div>
+
+  <script type="text/javascript">
+
+  var readySetGo = false;
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  var number  = 0;
+  var n = 0;
+
+  var enlarge = 100; //enlargement
+  var speed = 10000; // speed in milliseconds, equals one year (eg. speed = 1000 means one earth year will be displayed as one second)
+
+
+  // COLORS    
+  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
+     var designerBlack = d3.rgb("#12151a"),
+      designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2");
+
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+      hotColor = d3.rgb("white"), // hot color in the graph
+      midColor = d3.rgb("#ffe9d2")
+      coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+      d3.select("body").style("background-color", "#12151a");
+
+
+
+  // Create the SVG Viewport
+  var svg = d3.select("#svg-wrapper").append("svg")
+                             .attr("id","svg-container")
+                             .attr("class","svg-container")
+                             .attr("width", w)
+                             .attr("height", h);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  // Create defs in the svg
+  var defs = svg.append("defs");
+  var fxGroup = svg.append("g").attr("id", "fx-group");
+  var sunGroup = svg.append("g").attr("id", "sun-group");
+  var asteroidsGroup = svg.append("g").attr("id","asteroids-group");
+  var labelGroup = svg.append("g").attr("id", "label-group");
+  var planetsGroup = svg.append("g").attr("id", "planet-group");
+
+  svg.attr("transform", "translate(" + w/2 + "," + h/2 + ")")
+
+  // Define starglow gradient structure
+  var starGlowGradient = defs.append("radialGradient")
+                                     .attr("id", "radial-gradient")
+                                     .attr("cx", "50%")
+                                     .attr("cy", "50%"); 
+
+  // starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "white").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "#FAFAE6").style("stop-opacity", "1");
+  // starGlowGradient.append("stop").attr("offset", "1.060%").style("stop-color", "#FBF2D6").style("stop-opacity", ".97");
+  // starGlowGradient.append("stop").attr("offset", "1.56%").style("stop-color", "#FDE4B9").style("stop-opacity", ".9");
+  // starGlowGradient.append("stop").attr("offset", "1.87%").style("stop-color", "#FFDBA6").style("stop-opacity", ".84");
+  starGlowGradient.append("stop").attr("offset", "0%").style("stop-color", "#FFD8A0").style("stop-opacity", ".8");
+  starGlowGradient.append("stop").attr("offset", "100%").style("stop-color", "#9B678C").style("stop-opacity", "0");
+
+  // var sunGlow = sunGroup.append("circle")
+  //                   .attr("cx", w/2)
+  //                   .attr("cy", h/2)
+  //                   .attr("r", 4*enlarge)
+  //                   .attr("fill", "url(#radial-gradient)");
+
+ // ASTEROID DATA 
+  var asteroiddata = d3.csv("data/neoperiod.csv", function(error, rows) {
+    if (error) throw error;
+
+    var x, y, r, v, P, E, F;
+  
+    // create the ellipses on which the asteroids will be projected
+    // use path instead of ellipse, because otherwise next step won't work
+    var asteroid = asteroidsGroup.selectAll( "path" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "path-" + d.pdes})
+      .attr("class", function(d, i){return "node " + d.pdes})
+      .attr("d", function(d, i){ 
+        var aSquared = Math.pow(d.a, 2);
+        var bSquared = Math.pow(d.a*(Math.sqrt(1-Math.pow(d.e, 2))), 2);
+        F = Math.sqrt(aSquared - bSquared); 
+        return "M" + (w/2 + F * enlarge) + " " + (h/2-(d.a * Math.sqrt(1-(Math.pow(d.e,2))) * enlarge)) + " a" + d.a*enlarge + " "  + (d.a * Math.sqrt(1-(Math.pow(d.e,2))) * enlarge) + " " + 0 + " 1 0 0.0001 0 z"; 
+      })
+      .style("fill", "none")
+      .style("stroke-width", .4)
+      .style("stroke", function(d, i){
+        if (d.pha === 'Y') {
+          return "rgba(255,0,0,.0)";
+        } else {
+          return "rgba(255,255,255,.0)";
+        }
+      })
+      .attr("transform", function(d, i){ 
+        return "rotate(" + d.M + "," + w/2 + "," + h/2 + ")";
+      });
+  
+      function transition() {
+        asteroidsGroup.selectAll("asteroid-circle").transition()
+          .duration(5000)
+          .attrTween("transform", translateAlong(path.node()))
+          .each("end", transition);
+      }
+  
+    //create a circle that corresponds to each asteroid
+    //it follows the path created earlier
+    var pointsGroup = asteroidsGroup.selectAll("g")
+      .data( rows )
+      .enter()
+      .append("g").attr("class", "pointgroup").attr("id", function(d, i) { return "g" + d.pdes; })
+      .append("circle")
+      .attr("id", function(d, i) { return d.pdes; })
+      .attr("class", "asteroid-circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", .5)
+      .style("fill", function(d, i){
+        if (d.pha === 'Y') {
+          return "rgba(255,50,100,1)";
+        } else {
+          return "rgba(255,255,255,1)";
+        }
+      })
+      .attr("transform", function(d, i) { 
+        var aSquared = Math.pow(d.a, 2);
+        var bSquared = Math.pow(d.a*(Math.sqrt(1-Math.pow(d.e, 2))), 2);
+        F = Math.sqrt(aSquared - bSquared); 
+        return "translate(" + (w/2 + (d.a + F) * enlarge) + " " + h/2 + ")"; 
+      })
+      .transition()
+      .each(transit); 
+  
+    asteroidsGroup.selectAll(".pointgroup")
+      .attr("transform", function(d, i) {
+        return "rotate(" + d.M + "," + w/2 + "," + h/2 + ")";
+      }) 
+  
+    // animate the asteroid on the path
+    function transit(d, i) {
+      var aster = d3.select(this);
+      var id = d3.select(this).attr("id");
+      (function repeat() {
+              aster = aster.transition().duration(d.per * speed).ease("linear")
+                            .attrTween("transform", asteroidTranslateAlong(asteroidsGroup.select("#path-" + id).node()))
+                            .each("end", repeat);
+      })();
+  
+      // Returns an attrTween for translating along the specified path element.
+      function asteroidTranslateAlong(path) {
+  
+        var l = path.getTotalLength();
+        return function(d, i, a) {
+          return function(t) {
+            var p = path.getPointAtLength(t * l);
+            return "translate(" + p.x + "," + p.y + ")";
+          };
+        };
+      }
+    };
+
+    ready();
+    readySetGo = true;
+    
+  }); // end asteroid stuff 
+  
+  
+
+
+  // PLANET DATA 
+  var planetdata = d3.csv("data/planets2.csv", function(error, rows) {
+    if (error) throw error;
+
+    var x, y, r, v, P, E, F;
+  
+    // create the ellipses on which the planets will be projected
+    // use svg.path instead of svg.ellipse, because otherwise next step won't work as expected
+    var planetpath = planetsGroup.selectAll( "path" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "path-" + d.name})
+      .attr("class", function(d, i){return "node " + d.name})
+      .attr("d", function(d, i){ 
+        var aSquared = Math.pow(d.a, 2);
+        var bSquared = Math.pow(d.a*(Math.sqrt(1-Math.pow(d.e, 2))), 2);
+        F = Math.sqrt(aSquared - bSquared); 
+        return "M" + (w/2 + F * enlarge) + " " + (h/2-(d.a * Math.sqrt(1-(Math.pow(d.e,2))) * enlarge)) + " a" + d.a*enlarge + " "  + (d.a * Math.sqrt(1-(Math.pow(d.e,2))) * enlarge) + " " + 0 + " 1 0 0.0001 0 z"; 
+      })
+      .style("fill", "none")
+      .style("stroke-width", .5)
+      .style("stroke", "rgba(105,111,196,0)")
+      .attr("transform", function(d, i){ 
+        return "rotate(" + +d.M + "," + w/2 + "," + h/2 + ")";
+      });
+  
+      function transition() {
+        planetsGroup.selectAll(".planet-circle").transition()
+          .duration(5000)
+          .attrTween("transform", translateAlong(path.node()))
+          .each("end", transition);
+      }
+  
+    //create a circle that corresponds to each planet
+    //it follows the path created earlier
+    var pointsGroup = planetsGroup.selectAll("g")
+      .data( rows )
+      .enter()
+      .append("g").attr("class", "pointgroup").attr("id", function(d, i) { return "g" + d.name; })
+      .append("circle")
+      .attr("id", function(d, i) { return d.name; })
+      .attr("class", "planet-circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", 2)
+      .style("fill", "rgba(105,111,196,1)")
+      .attr("transform", function(d, i) { 
+        var aSquared = Math.pow(d.a, 2);
+        var bSquared = Math.pow(d.a*(Math.sqrt(1-Math.pow(d.e, 2))), 2);
+        F = Math.sqrt(aSquared - bSquared); 
+        return "translate(" + (w/2 + (d.a + F) * enlarge) + " " + h/2 + ")"; 
+      })
+      .transition()
+      .each(transit); 
+  
+    planetsGroup.selectAll(".pointgroup")
+      .attr("transform", function(d, i) {
+        return "rotate(" + +d.M + "," + w/2 + "," + h/2 + ")";
+      }) 
+  
+    // animate the planet on the path
+    function transit(d, i) {
+      var aster = d3.select(this);
+      var id = d3.select(this).attr("id");
+      (function repeat() {
+              aster = aster.transition().duration(d.per * speed).ease("linear")
+                            .attrTween("transform", planetTranslateAlong(planetsGroup.select("#path-" + id).node()))
+                            .each("end", repeat);
+      })();
+  
+      // Returns an attrTween for translating along the specified path element.
+      function planetTranslateAlong(path) {
+  
+        var l = path.getTotalLength();
+        return function(d, i, a) {
+          return function(t) {
+            var p = path.getPointAtLength(t * l);
+            return "translate(" + p.x + "," + p.y + ")";
+          };
+        };
+      }
+    };
+    
+  }); // end planet stuff 
+
+
+  svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  svg.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
+                    .style("opacity", 1);
+  svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+  var oldURL = document.referrer;
+  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+    window.history.back();
+  } else {
+    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+  }
+};
+
+  </script>
+</body>
+</html>

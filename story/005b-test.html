@@ -8,7 +8,7 @@
       padding:0;
       margin:0;
       background-color:#12151a;
-      font-family: 'Circular Std', sans-serif;
+      font-family: "Circular Std", sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -63,10 +63,16 @@
   </div>
   <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
     <p style="font-weight:800; margin: 0;">
-      The inner solar system, including the asteroid belt. 
+      The brightest asteroids in the solar system 
     </p>
     <p style="font-weight:100; margin: 0;">
-      Potentially hazardous asteroids, objects that could pose a threat to earth, are marked in red.
+      Red ellipses represent orbits of the 8 known planets in the solar system. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      The white ellipses represent the orbits of all asteroids with a magnitude of 15 or below.  
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      The lower the magnitude, the brighter the object is perceived from earth.  
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
@@ -75,7 +81,6 @@
   </div>
   <div id="canvas-wrapper" style="z-index: -500">
   </div>
-
   <script type="text/javascript">
 
   var readySetGo = false;
@@ -84,16 +89,10 @@
   var paddingW = w/10,
       paddingH = h/10;
 
-  var number  = 1000;
-  var n = 400;
+  var number  = 0;
+  var n = 0;
 
-  var day = 5902;
-
-  function degree(x) {
-    return x - Math.floor(x/360.0)*360.0;
-  }
-
-  var enlarge = 200;
+  var enlarge = 20;
 
   // COLORS    
   // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
@@ -161,14 +160,7 @@
   // .transition().duration( function() { return Math.random() * (5000 - 2000) + 2000})
   // .style("opacity", 1);
 
-  context.fillStyle = "yellow";
-  context.strokeStyle = 'none';
-  context.beginPath();
-  context.arc(0, 0, 2, 0, 2 * Math.PI, true);
-  context.fill();
-  context.closePath();
-
-d3.csv("data/results_asteroids_n_pha3.csv", function(error, rows) {
+d3.csv("data/results_Mag15down.csv", function(error, rows) {
   if (error) throw error;
 
   // rows.forEach(function(d) {
@@ -178,63 +170,6 @@ d3.csv("data/results_asteroids_n_pha3.csv", function(error, rows) {
   //   eccentricity: +d.e;
   //   // magnitude: +d.mag;
   // });
-
-
-  var dataBinding = dataContainer.selectAll( "node" )
-    .data( rows )
-    .enter()
-    .append( "rect" )
-    .attr("id", function(d, i){return d.id})
-    .attr("class", function(d, i){return "node " + d.name})
-    .attr("x", function(d, i) { 
-      var E = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M)));
-      var x = d.a*(Math.cos(E)-d.e);
-      return 0 + x*enlarge;
-    })
-    .attr("y", function(d, i) { 
-      var E = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M))); 
-      var y = d.a*Math.sqrt(1-d.e*d.e)*Math.sin(E);
-      return 0 + y*enlarge;
-    })
-    .attr("fill", function(d, i){
-      if (d.pha === 'Y') {
-        return "red";
-      } else {
-        return "rgba(255,255,255,.25)";
-      }
-    });
-  
-  dataBinding.each(function(d) {
-    var node = d3.select(this);
-  
-    // setTimeout(function () {
-      context.fillStyle = node.attr("fill");
-      context.strokeStyle = "none";
-      context.fillRect( node.attr("x"), node.attr("y"), 1, 1);
-    // }, number++)
-  });
-
-  ready();
-  readySetGo = true;
-
-});
-
-d3.csv("data/planets2.csv", function(error, rows) {
-  if (error) throw error;
-
-  // rows.forEach(function(d) {
-  //   id: d.id;
-  //   name: d.name;
-  //   semimajor_axis: +d.a;
-  //   eccentricity: +d.e;
-  //   // magnitude: +d.mag;
-  // });
-
-  // function calc(d, i) {
-  //  var E = d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M)); 
-  //  var x = d.a*(Math.cos(E)-d.e);
-  //  var y = d.a*Math.sqrt(1-d.e*d.e)*Math.sin(E);
-  // };
 
 
   var dataBinding = dataContainer.selectAll( "node" )
@@ -243,83 +178,68 @@ d3.csv("data/planets2.csv", function(error, rows) {
     .append( "ellipse" )
     .attr("id", function(d, i){return d.id})
     .attr("class", function(d, i){return "node " + d.name})
-    .attr("cx", function(d, i) { 
-      var E = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M)));
-      var x = d.a*(Math.cos(E)-d.e);
-      return x*enlarge;
-    })
-    .attr("cy", function(d, i) { 
-      var E = (+d.M+(180/Math.PI)*d.e*Math.sin(d.M)*(1+d.e*Math.cos(d.M))); 
-      var y = d.a*Math.sqrt(1-d.e*d.e)*Math.sin(E);
-      return y*enlarge;
-    })
-    .attr("rx", function(d, i){return d.a * enlarge } )
-    .attr("ry", function(d, i){return (d.a * Math.sqrt(1-(Math.pow(d.e,2)))) * enlarge } );
+    .attr("cx", w/2)
+    .attr("cy", h/2)
+    .attr("rx", function(d, i){return d.semimaj * enlarge } )
+    .attr("ry", function(d, i){return (d.semimaj * Math.sqrt(1-(Math.pow(d.ecc,2)))) * enlarge } );
   
   dataBinding.each(function(d) {
     var node = d3.select(this);
   
     setTimeout(function () {
       context.fillStyle = "none";
-      context.strokeStyle = 'rgba(46,210,123,1)';
-      context.lineWidth = 2;
-      context.beginPath();
-      context.arc(node.attr("cx"), node.attr("cy"), 2, 0, 2 * Math.PI, true);
-      context.stroke();
-      context.closePath();
-      context.fillStyle = "none";
-      context.strokeStyle = 'rgba(46,210,123,1)';
+      context.strokeStyle = 'rgba(255,255,255,.1)';
       context.lineWidth = .5;
       context.beginPath();
-      context.ellipse(0, 0, node.attr("rx"), node.attr("ry"), 0, 0, 2 * Math.PI, true);
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), 0, 0, 2 * Math.PI, true);
       context.stroke();
       context.closePath();
-    }, 200)
-
+    }, 2000 + number++)
   });
 
-  
+  ready();
+  readySetGo = true;
 
 });
 
-// d3.csv("data/planets.csv", function(error, rows) {
-//   if (error) throw error;
+d3.csv("data/planets.csv", function(error, rows) {
+  if (error) throw error;
 
-//   // rows.forEach(function(d) {
-//   //   id: d.id;
-//   //   name: d.name;
-//   //   semimajor_axis: +d.a;
-//   //   eccentricity: +d.e;
-//   //   // magnitude: +d.mag;
-//   // });
+  // rows.forEach(function(d) {
+  //   id: d.id;
+  //   name: d.name;
+  //   semimajor_axis: +d.a;
+  //   eccentricity: +d.e;
+  //   // magnitude: +d.mag;
+  // });
 
 
-//   var dataBinding = dataContainer.selectAll( "node" )
-//     .data( rows )
-//     .enter()
-//     .append( "ellipse" )
-//     .attr("id", function(d, i){return d.id})
-//     .attr("class", function(d, i){return "node " + d.name})
-//     .attr("cx", 0)
-//     .attr("cy", 0)
-//     .attr("rx", function(d, i){return d.semimaj * enlarge } )
-//     .attr("ry", function(d, i){return (d.semimaj * Math.sqrt(1-(Math.pow(d.ecc,2)))) * enlarge } );
+  var dataBinding = dataContainer.selectAll( "node" )
+    .data( rows )
+    .enter()
+    .append( "ellipse" )
+    .attr("id", function(d, i){return d.id})
+    .attr("class", function(d, i){return "node " + d.name})
+    .attr("cx", w/2)
+    .attr("cy", h/2)
+    .attr("rx", function(d, i){return d.semimaj * enlarge } )
+    .attr("ry", function(d, i){return (d.semimaj * Math.sqrt(1-(Math.pow(d.ecc,2)))) * enlarge } );
   
-//   dataBinding.each(function(d) {
-//     var node = d3.select(this);
+  dataBinding.each(function(d) {
+    var node = d3.select(this);
   
-//     setTimeout(function () {
-//       context.fillStyle = "none";
-//       context.strokeStyle = 'rgba(46,210,123,1)';
-//       context.lineWidth = 2;
-//       context.beginPath();
-//       context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), 0, 0, 2 * Math.PI, true);
-//       context.stroke();
-//       context.closePath();
-//     }, 200)
-//   });
+    setTimeout(function () {
+      context.fillStyle = "none";
+      context.strokeStyle = 'rgba(255,0,0,1)';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.ellipse(node.attr("cx"), node.attr("cy"), node.attr("rx"), node.attr("ry"), 0, 0, 2 * Math.PI, true);
+      context.stroke();
+      context.closePath();
+    }, number++)
+  });
 
-// });
+});
 
 // function counter() {
 //   number++;
@@ -342,65 +262,65 @@ d3.csv("data/planets2.csv", function(error, rows) {
 //   // starsGroup.select(".county-border").style("stroke-width", .5 / d3.event.scale + "px");
 // }
 
-    canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
 
-var returnTimer = 0;
-var returnCountdown = 0;
-var returnLink = 0;
-var returnNotification = d3.select('#return-notification');
+  var returnTimer = 0;
+  var returnCountdown = 0;
+  var returnLink = 0;
+  var returnNotification = d3.select('#return-notification');
 
-document.body.addEventListener('mousemove', resetTimers);
+  document.body.addEventListener('mousemove', resetTimers);
 
-function resetTimers() {
-  clearTimeout(returnTimer);
-  clearInterval(returnCountdown);
-  clearTimeout(returnLink);
-  countdown = 10;
-  returnNotification.transition().duration(500).style("opacity", 0);
-  setTimeout(function() {returnNotification.style("display", "none")}, 500);
-  if (readySetGo) {
-    ready();
+  function resetTimers() {
+    clearTimeout(returnTimer);
+    clearInterval(returnCountdown);
+    clearTimeout(returnLink);
+    countdown = 10;
+    returnNotification.transition().duration(500).style("opacity", 0);
+    setTimeout(function() {returnNotification.style("display", "none")}, 500);
+    if (readySetGo) {
+      ready();
+    }
   }
-}
 
-function ready() {
-  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
-  d3.select("#loading").transition().duration(500).style("opacity", 0);
-  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
-  canvas.transition().delay(0).duration(1000)
-                     .style("-webkit-filter", "blur(" + 0 + "px)")
-                     .style("opacity",1);
-  d3.select("#info").transition().duration(500).style('opacity', 1);
-  returnTimer = setTimeout(returnToHub, 20000);
-};
+  function ready() {
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+    d3.select("#loading").transition().duration(500).style("opacity", 0);
+    setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+    canvas.transition().delay(0).duration(1000)
+                       .style("-webkit-filter", "blur(" + 0 + "px)")
+                       .style("opacity",1);
+    d3.select("#info").transition().duration(500).style('opacity', 1);
+    returnTimer = setTimeout(returnToHub, 20000);
+  };
 
-function returnToHub() {
-  returnNotification.style("display", "block").transition().duration(500)
-                    .style("opacity", 1);
-  canvas.transition().delay(0).duration(10000).ease("linear-in-out")
-                     .style("-webkit-filter", "blur(" + 5 + "px)")
-                     .style("opacity",.2);
-  d3.select("#info").transition().duration(8000).ease("linear-in-out")
-                     .style('opacity', 0);
+  function returnToHub() {
+    returnNotification.style("display", "block").transition().duration(500)
+                      .style("opacity", 1);
+    canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                       .style("-webkit-filter", "blur(" + 5 + "px)")
+                       .style("opacity",.2);
+    d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                       .style('opacity', 0);
 
-  var countdown = 10; 
-  console.log(countdown);
-  returnCountdown = setInterval(function() {
-    countdown = countdown - 1;
-    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    var countdown = 10; 
     console.log(countdown);
-  }, 1000)
-  returnLink = setTimeout(function() {returnNow();}, 10000)
-}
-
-function returnNow() {
-  var oldURL = document.referrer;
-  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
-    window.history.back();
-  } else {
-    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+    returnCountdown = setInterval(function() {
+      countdown = countdown - 1;
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+      console.log(countdown);
+    }, 1000)
+    returnLink = setTimeout(function() {returnNow();}, 10000)
   }
-};
+
+  function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+    }
+  };
 
   </script>
 </body>

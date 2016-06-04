@@ -17,10 +17,12 @@
            -o-font-smoothing: antialiased;
               font-smoothing: antialiased;
     }
+    text {
+      font-size: 20px;
+    }
     canvas { 
       width: 100%; 
-      height: 100%;
-      position:fixed; 
+      height: 100% 
     }
 
     a, a:link, a:visited {
@@ -38,11 +40,11 @@
 
     .back:before {
       content:"\2190 \2003";
+      cursor:pointer;
     }
 
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
@@ -61,21 +63,22 @@
   </div>
   <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
     <p style="font-weight:800; margin: 0;">
-      Elliptical comets in the inner solar system. 
+      Apollo twist. 
     </p>
     <p style="font-weight:100; margin: 0;">
-      Color of the orbit corresponds to the eccentricity of the orbit: blue is a perfect circle. 
+      Apollo asteroids cross the orbit of the earth.
     </p>
     <p style="font-weight:100; margin: 0;">
-      Hover the cursor over the comets to see their names. Scroll to zoom in and out.
+      Scroll to zoom in and out, and speed up and down.
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
-      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
     </p>
   </div>
   <div id="canvas-wrapper" style="z-index: -500">
   </div>
+
   <script type="text/javascript">
 
   var readySetGo = false;
@@ -92,17 +95,13 @@
       angle,
       newAngle;
 
-  var scaler = "big"; // only display labels if "big"
-
-  var mousePosX, mousePosY;
 
 
   var initialEnlarge = 100;
   var enlarge = initialEnlarge; //enlargement
-  var initialSpeed = initialEnlarge * 50;
+  var initialSpeed = 5000;
   var speed = initialSpeed; // speed in milliseconds, equals one year (eg. speed = 1000 means one earth year will be displayed as one second)
-  var initialPointRadius = 2; 
-  var pointRadius = initialPointRadius; // radius of asteroid point
+
 
   // COLORS    
   // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
@@ -114,19 +113,20 @@
 
 
   // CANVAS
-  var canvas = d3.select("#canvas-wrapper").append("canvas")
-               .attr("id", "canvas")
+  var canvas = d3.select("body").append("canvas")
                .attr("width", w)
                .attr("height", h),
     context = canvas.node().getContext("2d"),
     width = canvas.width,
     height = canvas.height;
 
+
+
       d3.select("body").style("background-color", "#12151a");
 
     var cScale = d3.scale.linear()
         .domain([0, 1])
-        .range([designerBlue, designerRed]); 
+        .range([designerGreen, designerRed]); 
 
   // // Create the SVG Viewport
   // var svg = d3.select("body").append("svg")
@@ -143,7 +143,7 @@
   var dataContainer = d3.select(detachedContainer);
 
   // ASTEROID DATA 
-  var asteroiddata = d3.csv("data/cometperiod3.csv", function(error, rows) {
+  var asteroiddata = d3.csv("data/apolloperiod.csv", function(error, rows) {
     if (error) throw error;
 
     var x, y, r, v, P, E, F;
@@ -157,7 +157,6 @@
       .append( "path" )
       .attr("id", function(d, i){return "node-" + i})
       .attr("class", function(d, i){return "node " + "node-" + i})
-      .attr("pdes", function(d, i){return d.name})
       .attr("a", function(d, i) {return d.a})
       .attr("M", function(d, i) {return d.M})
       .attr("W", function(d, i) {return d.w})
@@ -177,9 +176,9 @@
 
     dataBinding.each(function(d, i) {
       var node = d3.select(this);
-      angles.push(Math.PI/180*(+node.attr("M"))) // initial angle of the asteroid on its orbit
-      // angles.push(0);
+      angles.push(+node.attr("M"))
     });
+    console.log(angles);
     // for (i = 0; i < nodesAmount; i++) {
     //   angles.push(d.M[i]); 
     // }  
@@ -193,45 +192,14 @@
     d3.timer(step);
 
     function step() {
-
       // "clear" canvas
-      context.fillStyle = "rgba(18,21,26,.55)";
+      context.fillStyle = "rgba(18,21,26,1)";
       context.strokeStyle = "none"
       context.fillRect(0,0,w,h);
-
-      // add sun and nametag, but only if zoom level isn't too far out
-      context.fillStyle = designerWhite;
-      context.fillRect(w/2, h/2, 1, 1);
-
-      if (scaler != "tiny") {
-        context.fillText("Sun", w/2 - 9, h/2 - 9);
-      };
-
-      // function writeMessage(canvas, message) {
-      //   context.clearRect(0, 0, document.getElementById("canvas").width, document.getElementById("canvas").height);
-      //   context.fillText(message, 10, 25);
-      //   console.log(message);
-      // }
-
-      function getMousePos(canvas, evt) {
-        var rect = document.getElementById("canvas").getBoundingClientRect();
-        return {
-          x: (evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width,
-          y: (evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height
-        };
-      }
-  
-      document.getElementById("canvas").addEventListener('mousemove', function(evt) {
-        var mousePos = getMousePos(document.getElementById("canvas"), evt);
-        mousePosX = mousePos.x,
-        mousePosY = mousePos.y;
-        // var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
-      }, false);
       
       drawOrbit();
 
     }
-
 
     function drawOrbit() {
         
@@ -296,58 +264,23 @@
           
           context.translate(w/2, h/2);
 
-          var rotation = +M + (((360-getal)/+per));
-          // context.rotate(M);
-          // context.rotate(rotation);
+          // var rotation = +M + (((360-getal)/+per)/speed);
+          context.rotate(M);
   
-          // add orbit paths
           context.fillStyle = "none";
           context.strokeStyle = node.attr("stroke");
           context.lineWidth = .2;
-          context.beginPath();
-          context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
-          context.stroke();
-          context.closePath();
+          // context.beginPath();
+          // context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
+          // context.stroke();
+          // context.closePath();
+          context.fillStyle = designerWhite;
+          context.fillRect(0,0,1,1);
 
-          // add orbiting points
           context.fillStyle = node.attr("stroke");
           context.beginPath();
-          context.arc(x, y, pointRadius, 0, 2 * Math.PI);
+          context.arc(x, y, 1.5, 0, 2 * Math.PI);
           context.fill(); 
-
-          // add label
-          context.fillStyle = node.attr("stroke");
-          if (x > mousePosX - w/2 - 20 
-           && x < mousePosX - w/2 + 20 
-           && y > mousePosY - h/2 - 20 
-           && y < mousePosY - h/2 + 20) {
-            if (node.attr("pdes") != undefined && scaler != "tiny") {
-              context.font = "20px Arial"
-              context.fillText(node.attr("pdes"), x - 9, y - 9)
-            }
-          };
-          
-          // highlight neptune
-          if (node.attr("pdes") === "Neptune" ) {
-
-            context.fillStyle = "none";
-            context.strokeStyle = designerWhite;
-            context.lineWidth = 1;
-            context.beginPath();
-            context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
-            context.stroke();
-            context.closePath();
-
-            context.fillStyle = designerWhite;
-            context.fillText(node.attr("pdes"), x - 9, y - 9)
-
-            context.fillStyle = designerWhite;
-            context.beginPath();
-            context.arc(x, y, pointRadius*2, 0, 2 * Math.PI);
-            context.fill(); 
-          }
-
-
 
           context.restore();
 
@@ -357,9 +290,10 @@
           angles.push(newAngle);          
         });
       }
-  
+
     ready();
     readySetGo = true;
+  
   });
   
 
@@ -373,16 +307,9 @@
 
   function zoomed() {
 
+    console.log(d3.event.scale);
     speed = initialSpeed * d3.event.scale;
     enlarge = initialEnlarge * d3.event.scale;
-
-    if (d3.event.scale < .1) {
-      scaler = "tiny";
-    } else {
-      scaler = "big";
-    }
-    
-    resetTimers();
 
   }
 
