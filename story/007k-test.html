@@ -17,10 +17,12 @@
            -o-font-smoothing: antialiased;
               font-smoothing: antialiased;
     }
+    text {
+      font-size: 20px;
+    }
     canvas { 
       width: 100%; 
-      height: 100%;
-      position:fixed; 
+      height: 100% 
     }
 
     a, a:link, a:visited {
@@ -38,11 +40,11 @@
 
     .back:before {
       content:"\2190 \2003";
+      cursor:pointer;
     }
 
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
@@ -61,21 +63,22 @@
   </div>
   <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
     <p style="font-weight:800; margin: 0;">
-      Elliptical comets in the inner solar system. 
+      Exoplanetary Whirl. 
     </p>
     <p style="font-weight:100; margin: 0;">
-      Color of the orbit corresponds to the eccentricity of the orbit: blue is a perfect circle. 
+      Color of the exoplanet corresponds to the temperature of the planet's host star: white is warmer, red is colder. 
     </p>
     <p style="font-weight:100; margin: 0;">
-      Hover the cursor over the comets to see their names. Scroll to zoom in and out.
+      Hover the cursor over the planets to see their names. Scroll to zoom in and out.
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
-      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
     </p>
   </div>
   <div id="canvas-wrapper" style="z-index: -500">
   </div>
+
   <script type="text/javascript">
 
   var readySetGo = false;
@@ -97,24 +100,29 @@
   var mousePosX, mousePosY;
 
 
-  var initialEnlarge = 100;
+  var initialEnlarge = 5000;
   var enlarge = initialEnlarge; //enlargement
-  var initialSpeed = initialEnlarge * 50;
+  var initialSpeed = initialEnlarge * 200;
   var speed = initialSpeed; // speed in milliseconds, equals one year (eg. speed = 1000 means one earth year will be displayed as one second)
-  var initialPointRadius = 2; 
+  var initialPointRadius = 20; 
   var pointRadius = initialPointRadius; // radius of asteroid point
 
   // COLORS    
-  // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
-     var designerBlack = d3.rgb("#000000"),
-      designerRed = d3.rgb("#c83c46"),
+  var designerBlack = d3.rgb("#12151a"),
+        designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2"),
-      designerBlue = d3.rgb("#696fc4")
+       designerBlue = d3.rgb("#696fc4"),
       designerGreen = d3.rgb("#69c4be");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+          hotColor = d3.rgb("#ffffff"), // hot color in the graph
+          midColor = d3.rgb("#ffe9d2"),
+         coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
 
 
   // CANVAS
-  var canvas = d3.select("#canvas-wrapper").append("canvas")
+  var canvas = d3.select("body").append("canvas")
                .attr("id", "canvas")
                .attr("width", w)
                .attr("height", h),
@@ -124,9 +132,17 @@
 
       d3.select("body").style("background-color", "#12151a");
 
+    // var cScale = d3.scale.linear()
+    //     .domain([0, 1])
+    //     .range([designerBlue, designerRed]); 
+
     var cScale = d3.scale.linear()
-        .domain([0, 1])
-        .range([designerBlue, designerRed]); 
+                         .domain([400, 3000, 6000, 10000, 20000, 60000])
+                         .range([designerRed, coldestColor, coldColor, midColor, hotColor, hottestColor]);
+
+    var rScale = d3.scale.linear()
+                         .domain([0.00000000001, 1, 10000])
+                         .range([0.05, 1, 10000]);
 
   // // Create the SVG Viewport
   // var svg = d3.select("body").append("svg")
@@ -143,10 +159,10 @@
   var dataContainer = d3.select(detachedContainer);
 
   // ASTEROID DATA 
-  var asteroiddata = d3.csv("data/cometperiod3.csv", function(error, rows) {
+  var asteroiddata = d3.csv("data/keplerconfirmed2.csv", function(error, rows) {
     if (error) throw error;
 
-    var x, y, r, v, P, E, F;
+    // var x, y, r, v, P, E, F;
 
     
     // create the ellipses on which the asteroids will be projected
@@ -157,14 +173,17 @@
       .append( "path" )
       .attr("id", function(d, i){return "node-" + i})
       .attr("class", function(d, i){return "node " + "node-" + i})
-      .attr("pdes", function(d, i){return d.name})
-      .attr("a", function(d, i) {return d.a})
-      .attr("M", function(d, i) {return d.M})
-      .attr("W", function(d, i) {return d.w})
-      .attr("per", function (d, i) {return d.per})
-      .attr("e", function(d, i) {return d.e})
+      .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
+      .attr("a", function(d, i) {return d.pl_orbsmax})
+      .attr("M", function(d, i) {return Math.random()*360})
+      // .attr("W", function(d, i) {return d.w})
+      .attr("per", function (d, i) {return d.pl_orbper / 365.25})
+      .attr("e", function(d, i) {return d.pl_orbeccen})
+      .attr("rad", function(d, i) {return d.pl_radj})
+      .attr("radstar", function(d, i) {return d.st_rad})
+      .attr("teff", function(d, i) {return cScale(d.st_teff)})
       .attr("stroke", function(d, i){
-        return cScale(d.e);
+        return cScale(d.pl_orbeccen);
       })
 
     var getal = 1;          
@@ -177,9 +196,11 @@
 
     dataBinding.each(function(d, i) {
       var node = d3.select(this);
-      angles.push(Math.PI/180*(+node.attr("M"))) // initial angle of the asteroid on its orbit
-      // angles.push(0);
+      // angles.push(+node.attr("M")) // initial angle of the asteroid on its orbit
+      angles.push(0);
+      // angles.push(Math.random()*360);
     });
+    console.log(angles);
     // for (i = 0; i < nodesAmount; i++) {
     //   angles.push(d.M[i]); 
     // }  
@@ -195,17 +216,19 @@
     function step() {
 
       // "clear" canvas
-      context.fillStyle = "rgba(18,21,26,.55)";
+      context.fillStyle = "rgba(18,21,26,1)";
       context.strokeStyle = "none"
       context.fillRect(0,0,w,h);
 
       // add sun and nametag, but only if zoom level isn't too far out
       context.fillStyle = designerWhite;
-      context.fillRect(w/2, h/2, 1, 1);
+      context.beginPath();
+      context.arc(w/2, h/2, pointRadius, 0, 2 * Math.PI);
+      context.fill();
 
-      if (scaler != "tiny") {
-        context.fillText("Sun", w/2 - 9, h/2 - 9);
-      };
+      // if (scaler != "tiny") {
+      //   context.fillText("Sun", w/2 - 9, h/2 - 9);
+      // };
 
       // function writeMessage(canvas, message) {
       //   context.clearRect(0, 0, document.getElementById("canvas").width, document.getElementById("canvas").height);
@@ -245,7 +268,8 @@
           var a = node.attr("a");
           var e = node.attr("e");
           var per = node.attr("per") * speed;
-          var W = node.attr("W");
+          var rad = node.attr("radstar")/10 / node.attr("rad");
+          // var W = node.attr("W");
 
           // compute other values
           var b = (a * (Math.sqrt(1-e*e)));
@@ -296,56 +320,44 @@
           
           context.translate(w/2, h/2);
 
-          var rotation = +M + (((360-getal)/+per));
+          // var rotation = +M + (((360-getal)/+per));
           // context.rotate(M);
           // context.rotate(rotation);
-  
-          // add orbit paths
-          context.fillStyle = "none";
-          context.strokeStyle = node.attr("stroke");
-          context.lineWidth = .2;
-          context.beginPath();
-          context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
-          context.stroke();
-          context.closePath();
 
           // add orbiting points
-          context.fillStyle = node.attr("stroke");
+          context.fillStyle = node.attr("teff");
+          context.lineWidth = .2;
           context.beginPath();
-          context.arc(x, y, pointRadius, 0, 2 * Math.PI);
+          if (node.attr("rad") != undefined && node.attr("radstar" != undefined)) {
+            context.arc(x, y, rScale(pointRadius * ((node.attr("rad")/10) / node.attr("radstar"))), 0, 2 * Math.PI);
+          } else {
+            context.arc(x, y, pointRadius/10, 0, 2 * Math.PI);
+          }
           context.fill(); 
 
-          // add label
-          context.fillStyle = node.attr("stroke");
+          // add label on fake hover
+          context.fillStyle = node.attr("teff");
           if (x > mousePosX - w/2 - 20 
            && x < mousePosX - w/2 + 20 
            && y > mousePosY - h/2 - 20 
            && y < mousePosY - h/2 + 20) {
             if (node.attr("pdes") != undefined && scaler != "tiny") {
-              context.font = "20px Arial"
-              context.fillText(node.attr("pdes"), x - 9, y - 9)
+              context.font = "14px BretzelGrotesk"
+              context.textAlign = "center";
+              context.fillText(node.attr("pdes"), x, y - (rad * pointRadius + 5));
             }
-          };
-          
-          // highlight neptune
-          if (node.attr("pdes") === "Neptune" ) {
 
+            // add orbit paths
             context.fillStyle = "none";
-            context.strokeStyle = designerWhite;
-            context.lineWidth = 1;
+            context.strokeStyle = node.attr("teff");
+            context.lineWidth = .2;
             context.beginPath();
             context.ellipse(F, 0, a, b, 0, 0, 2 * Math.PI, true);
             context.stroke();
             context.closePath();
 
-            context.fillStyle = designerWhite;
-            context.fillText(node.attr("pdes"), x - 9, y - 9)
+          };
 
-            context.fillStyle = designerWhite;
-            context.beginPath();
-            context.arc(x, y, pointRadius*2, 0, 2 * Math.PI);
-            context.fill(); 
-          }
 
 
 
@@ -357,9 +369,10 @@
           angles.push(newAngle);          
         });
       }
+
+      ready();
+  readySetGo = true;
   
-    ready();
-    readySetGo = true;
   });
   
 
@@ -373,20 +386,28 @@
 
   function zoomed() {
 
-    speed = initialSpeed * d3.event.scale;
+    console.log(d3.event.scale);
+    // speed = initialSpeed * d3.event.scale;
     enlarge = initialEnlarge * d3.event.scale;
-
+    pointRadius = d3.event.scale * initialPointRadius;
+    // if (d3.event.scale < 1 && pointRadius >= 0.05) { 
+    //   pointRadius = initialPointRadius * (d3.event.scale);
+    // } else if (d3.event.scale > 1){
+    //   pointRadius = initialPointRadius
+    // } else if (d3.event.scale < 1 && pointRadius === 0.05) {
+    //   pointRadius += .01
+    // };
     if (d3.event.scale < .1) {
       scaler = "tiny";
     } else {
       scaler = "big";
     }
-    
-    resetTimers();
 
+    resetTimers();
+    
   }
 
-  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
 
 var returnTimer = 0;
 var returnCountdown = 0;

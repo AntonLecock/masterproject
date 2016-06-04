@@ -43,7 +43,6 @@
     }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
@@ -65,10 +64,10 @@
       Rotating orbits of the Apollo asteroids
     </p>
     <p style="font-weight:100; margin: 0;">
-      This visualisation is scientifically incorrect, as the orbits themselves shouldn't be rotating.
+      Apollo asteroids cross the orbit of the earth. Orbits of potentially hazardous asteroids are shown in red.
     </p>
     <p style="font-weight:100; margin: 0;">
-      Orbits of potentially hazardous asteroids are shown in red.
+      This visualisation is scientifically incorrect, as the orbits themselves shouldn't be rotating.
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
@@ -288,7 +287,9 @@ setTimeout( function() {
     var returnLink = 0;
     var returnNotification = d3.select('#return-notification');
 
-    document.body.addEventListener('mousemove', function() {
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
       clearTimeout(returnTimer);
       clearInterval(returnCountdown);
       clearTimeout(returnLink);
@@ -298,7 +299,7 @@ setTimeout( function() {
       if (readySetGo) {
         ready();
       }
-    });
+    };
 
     function ready() {
       document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
@@ -327,8 +328,17 @@ setTimeout( function() {
         document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
         console.log(countdown);
       }, 1000)
-      returnLink = setTimeout(function() {window.location.href = "http://antonlecock.github.io/masterproject/hub/";}, 10000)
-    }
+      returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+  var oldURL = document.referrer;
+  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+    window.history.back();
+  } else {
+    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+  }
+};
 
   </script>
 </body>
