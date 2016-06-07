@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Story</title>
+  <style type="text/css">
+    body {
+      padding:0;
+      margin:0;
+      background-color:#12151a;
+      font-family: Circular Std, sans-serif;
+      text-transform: uppercase;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    canvas { 
+      width: 100%; 
+      height: 100%;
+      position:fixed;
+    }
+
+    .bold {
+      font-weight:900;
+      color:#696fc4;
+    }
+
+    button {
+      border:none;
+      background: rgba(255,255,255,.20);
+      margin: 0 0 1px 0;
+      padding:0;
+      color:white;
+      width:100%;
+      height:30px;
+      font-size:14px;
+      outline:0;
+      opacity:0.5;
+      transition: opacity .25s ease, background .25s ease;
+      text-align: left;
+      line-height:0px;
+      font-family:'Circular Std', Roboto, helvetica, sans-serif;
+    }
+
+    button::-moz-focus-inner,
+    input::-moz-focus-inner {
+      border: 0;
+      padding: 0;
+    }
+
+    button:hover {
+      opacity:.75;
+      cursor:pointer;
+    }
+
+    button:disabled {
+      opacity: 0.2;
+      cursor:auto;
+    }
+
+    button svg {
+      margin:0;
+    }
+
+    button.active {
+      opacity: 1;
+      font-weight:800;
+    }
+
+    button.active:disabled {
+      opacity: 0.2;
+      cursor:auto;
+    }
+
+    button.active:hover {
+      background: rgba(255,255,255,.25);
+    }
+
+    button.active svg .shape {
+    }
+
+    .buttons-container {
+      position: fixed; 
+      height:100%; 
+      width:150px;
+      max-width:150px; 
+      font-size:14px; 
+      font-family:'Circular Std', Roboto, helvetica, sans-serif;
+      margin: 5px;
+      background-color:rgba(37, 37, 45, .5);
+    }
+
+    .radiobutton-svg {
+      width:10px;
+      height:10px;
+      margin:0 10px 0 10px;
+    }
+
+    .switchbutton-svg {
+      width:17px;
+      height:10px;
+      margin: 0 6px 0 10px;
+    }
+
+    .button-pause {
+      height:125px;
+      text-align: center;
+      background: rgba(255,255,255,0);
+    }
+
+    .button-pause:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .buttons-title {
+      opacity: .5;
+      text-transform:uppercase;
+      font-size:12px;
+      letter-spacing:2px;
+      text-align: center;
+      width:100%;
+      display:block;
+      margin:20px 0 10px 0;
+    }
+
+  </style>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="http://cdn.tonejs.org/latest/Tone.min.js"></script>
+</head>
+
+<body>
+<!-- <div style="position:fixed; top: 48%; width:100%; background: none;"> -->
+<!--     <h1 style=" position:fixed; top: 47.5%; width: 100%; margin: 0 auto; padding-left:100px; text-align: center; font-size: 36px; letter-spacing: 14px; font-weight:100;">
+      Exoplanets
+    </h1> -->
+<!--   </div> -->  
+  <div id="text-container" style="position: absolute; bottom:-700px; margin:0 auto; max-width:600px; font-size:30px;">
+    <p style="width:600px; font-size: 25px; text-transform: none; line-height:1.8;">
+      These are <span class="bold">exoplanets</span>, planets orbiting around a star other than the sun. Exoplanets are very common in the universe. The average star has more than one planet orbiting around it, making our solar system the rule rather than the exception. 
+    </p>
+    <p style="width:600px; font-size: 25px; text-transform: none; line-height:1.8;">
+      These are all 1963 known and confirmed exoplanets, but shown rotating around a single star. Try <span class="bold">scrolling</span> to get the complete picture: orbits of the inner planets in our solar system are highlighted.
+    </p>
+    <button onclick="info()" class="info-close" style="width:33%; display:block; text-align:center; font-size:16px; margin: 4rem auto 0 auto; text-transform: uppercase; font-weight:400; letter-spacing:2px">Close</button>
+  </div>
+
+  <div id="buttons-container" class="buttons-container">
+    <button id="pause" class="pause button-pause" type="button" onclick="togglePause()">
+      <svg id="pausesvg" class="pausesvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polygon id="pausepolygonleft" class="polygon shape left" points="0,0 12,0 12,36 0,36" style="fill:white; stroke: none;"/></polygon>
+        <polygon id="pausepolygonright" class="polygon shape right" points="24,0 36,0 36,36 24,36" style="fill:white; stroke: none;"/></polygon>
+      </svg>
+    </button>
+
+    <!-- <div class="time-elapsed">
+      Time elapsed:<br>
+      <span id="time-elapsed" class="time-elapsed-js">0</span>
+    </div> -->
+
+    <span class="buttons-title">View</span>
+
+    <button id="viewfree" class="viewfree button-viewfree active" type="button" onclick="toggleViewFree()">
+      <svg id="viewfreesvg" class="button-svg radiobutton-svg viewfreesvg">
+        <circle id="viewfreeshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewfreeshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Free
+    </button>
+
+    <button id="viewfront" class="viewfront button-viewfront" type="button" onclick="toggleViewFront()">
+      <svg id="viewfrontsvg" class="button-svg radiobutton-svg viewfrontsvg">
+        <circle id="viewfrontshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewfrontshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Front view
+    </button>
+
+    <button id="viewtop" class="viewtop button-viewtop" type="button" onclick="toggleViewTop()">
+      <svg id="viewtopsvg" class="button-svg radiobutton-svg viewtopsvg">
+        <circle id="viewtopshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="viewtopshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Top view
+    </button>
+
+    <span class="buttons-title">Highlight</span>
+
+    <button id="highlightplanets" class="highlightplanets button-highlightplanets active" type="button" onclick="toggleHighlightPlanets()">
+      <svg id="highlightplanetssvg" class="button-svg switchbutton-svg highlightplanetssvg">
+        <rect id="highlightplanetsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="highlightplanetsshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Planets
+    </button>
+
+    <button id="highlightorbits" class="highlightorbits button-highlightorbits" type="button" onclick="toggleHighlightOrbits()">
+      <svg id="highlightorbitssvg" class="button-svg switchbutton-svg highlightorbitssvg">
+        <rect id="highlightorbitsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="highlightorbitsshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Orbits
+    </button>
+
+    <button id="highlightsolarsystem" class="highlightsolarsystem button-highlightsolarsystem active" type="button" onclick="toggleHighlightSolarsystem()">
+      <svg id="highlightsolarsystemsvg" class="button-svg switchbutton-svg highlightsolarsystemsvg">
+        <rect id="highlightsolarsystemshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="highlightsolarsystemshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Solar system
+    </button>
+
+    <button id="highlightdetails" class="highlightdetails button-highlightdetails" type="button" onclick="toggleHighlightDetails()">
+      <svg id="highlightdetailssvg" class="button-svg switchbutton-svg highlightdetailssvg">
+        <rect id="highlightdetailsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="highlightdetailsshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Details
+    </button>
+
+    <button id="highlightgraphs" class="highlightgraphs button-highlightgraphs" type="button" onclick="toggleHighlightGraphs()">
+      <svg id="highlightgraphssvg" class="button-svg switchbutton-svg highlightgraphssvg">
+        <rect id="highlightgraphsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="highlightgraphsshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Graphs
+    </button>
+
+    <span class="buttons-title">Graphs</span>
+
+    <button id="graphsradius" class="graphsradius button-graphsradius graphsoption active" type="button" onclick="toggleGraphsRadius()" disabled>
+      <svg id="graphsradiussvg" class="button-svg radiobutton-svg graphsradiussvg">
+        <circle id="graphsradiusshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="graphsradiusshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Radius
+    </button>
+
+    <button id="graphseccentricity" class="graphseccentricity button-graphseccentricity graphsoption" type="button" onclick="toggleGraphsEccentricity()" disabled>
+      <svg id="graphseccentricitysvg" class="button-svg radiobutton-svg graphseccentricitysvg">
+        <circle id="graphseccentricityshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="graphseccentricityshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Eccentricity
+    </button>
+    
+    <button id="graphsinclination" class="graphsinclination button-graphsinclination graphsoption" type="button" onclick="toggleGraphsInclination()" disabled>
+      <svg id="graphsinclinationsvg" class="button-svg radiobutton-svg graphsinclinationsvg">
+        <circle id="graphsinclinationshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="graphsinclinationshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Inclination
+    </button>
+
+    <button id="graphsteff" class="graphsteff button-graphsteff graphsoption" type="button" onclick="toggleGraphsTeff()" disabled>
+      <svg id="graphsteffsvg" class="button-svg radiobutton-svg graphsteffsvg">
+        <circle id="graphsteffshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="graphsteffshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Effective temp.
+    </button>
+
+    <button id="graphsdistance" class="graphsdistance button-graphsdistance graphsoption" type="button" onclick="toggleGraphsDistance()" disabled>
+      <svg id="graphsdistancesvg" class="button-svg radiobutton-svg graphsdistancesvg">
+        <circle id="graphsdistanceshape-circle-outer" class="radio-circle-outer shape" cx="5" cy="5" r="4" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="graphsdistanceshape-circle-inner" class="radio-circle-inner shape" cx="5" cy="5" r="0" stroke="none" fill="white" /> 
+      </svg>
+      Distance
+    </button>
+
+    <span class="buttons-title">Other</span>
+
+    <button id="speedzoom" class="speedzoom button-speedzoom" type="button" onclick="toggleSpeedzoom()">
+      <svg id="speedzoomsvg" class="button-svg switchbutton-svg speedzoomsvg">
+        <rect id="speedzoomshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="speedzoomshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Zoom speed
+    </button>
+    
+    <button id="relativedistance" class="relativedistance button-relativedistance active" type="button" onclick="toggleRelativeDistance()">
+      <svg id="relativedistancesvg" class="button-svg switchbutton-svg relativedistancesvg">
+        <rect id="relativedistanceshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="relativedistanceshape-circle" class="radio-circle-inner shape" cx="11.5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Relative sizes
+    </button>
+
+    <span class="buttons-title">About</span>
+    <button id="info" class="info button-info" type="button" onclick="info()" style="background-color:rgba(105, 111, 196, .5); opacity:1;">
+      <svg id="infosvg" class="button-svg radiobutton-svg infosvg" style="transform:rotate(0deg)">
+        <polyline id="infopolyline" class="polyline shape" points="5,0 5,10 5,5 0,5 10,5" stroke="white" stroke-width="1" fill="none" /></polyline>
+      </svg>
+      Show info
+    </button>
+
+  </div>
+  <canvas style=" position: fixed; z-index:-5" width="500" height="500"></canvas>
+  
+  <script type="text/javascript">
+
+  var w = window.innerWidth, h = window.innerHeight;
+  var yEarth = 0;
+  var xEarth = 0;
+  var hMid = h/2,
+      hMidNew = hMid;
+  var wMid = w/2;
+  var paddingW = w/10,
+      paddingH = h/10;
+
+  function hMidChange(hChangeValue) {
+    hMid = hChangeValue;
+  }
+
+  function wMidChange(wChangeValue) {
+    return wMid = wChangeValue;
+  }
+
+  var number  = 0;
+  var n = 0;
+
+  var nodes,
+      angles = [],
+      angle,
+      newAngle;
+
+  var notdone = true;
+  var onlyOnce = true;
+
+  //TOGGLE THESE!
+  var running = true; // is the animation playing or paused?
+  var title = true; // should the title in the visualisation be shown or not?
+  var graphs = false, // graphs: the little graph bars on top of exoplanets
+      radiusgraphs = true, // graphs that show the radius of the planet
+      eccentricitygraphs = false, // graphs that show the eccentricity of the planet's orbit
+      inclinationgraphs = false; // graphs that show the inclination of the planet's orbit
+      teffgraphs = false; // graphs that show the effective temperature of the star the planet is orbiting around
+      distancegraphs = false; // graphs that show the mass of the planet
+
+  var planets = true; // should the planets be shown?!
+  var orbits = false; // should the orbits of the planets be shown?
+  var solarsystem = true; // should the orbits of the solar system planets be shown?
+  d3.select('#solarsystem').classed("active", true);
+  var highlight = true; // should the planets have a stroke or not?
+  d3.select('#highlight').classed("active", true);
+  var relativeDistance = true; // should the planets be positioned relative to the size of their host star? 
+                                // if false: stars are positioned relative to their distance from their host star
+  d3.select('#relativeDistance').classed("active", true);
+  var viewFree = true; // should the visualisation be changed through mouse movements? if false, top view is enabled.
+  var viewFront = false; // is the visualisation to be viewed from the front?
+  var viewTop = false; // is the visualisation to be viewed from the top?
+  var counter = true; // should there be an indicator that gives the amount of days that ellapsed?
+  var earthview = false; // is the earth the center of the visualisation?
+  var speedzoom = false; // should the zoom influence the time?
+  var measurement = true; // should the measurement ticks (in AU) be shown or not?
+  var details = false; // should the name and other details of body be shown on hover?
+
+  if (viewFront) {
+    viewFree = false;
+    orbits = false;
+  }
+
+  var infoShown = false;
+
+  var viewpointY = 1; // 1 = edge on, higher is more inclined
+  var viewpointX = 0;
+
+  function viewpointYChange(yChangeValue) {
+    return viewpointY = yChangeValue;
+  }
+
+  var scaler = "big"; // only display labels if "big"
+
+  var mousePosX, mousePosY;
+
+
+  var initialEnlarge = 50;
+  var enlarge = initialEnlarge; //enlargement
+  var initialSpeed = 1000000;
+  var speed = initialSpeed; // speed in milliseconds
+  var initialPointRadius = initialEnlarge; 
+  var pointRadius = initialPointRadius; // radius of asteroid point
+
+  var solarRadius = 0.005652 // solar radius in AU
+
+  // COLORS    
+  var designerBlack = d3.rgb("#12151a"),
+        designerRed = d3.rgb("#c83c46"),
+      designerWhite = d3.rgb("#ffe9d2"),
+       designerBlue = d3.rgb("#696fc4"),
+      designerGreen = d3.rgb("#69c4be");
+
+  var hottestColor = d3.rgb("#9eb5ff"), // hottest color in the graph
+          hotColor = d3.rgb("#ffffff"), // hot color in the graph
+          midColor = d3.rgb("#ffe9d2"),
+         coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
+      coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
+
+  // CANVAS
+  var canvas = d3.select("canvas")
+               .attr("id", "canvas")
+               .attr("width", w)
+               .attr("height", h)
+               // .style("opacity", .5)
+               // .style("-webkit-filter", "blur(5px)"),
+      context = canvas.node().getContext("2d"),
+      width = canvas.width,
+      height = canvas.height;
+
+  d3.select("body").style("background-color", "#12151a");
+
+  // Scales
+  var cScale = d3.scale.linear()
+      .domain([0, 1])
+      .range([designerBlue, designerRed]); 
+
+  var periodScale = d3.scale.pow()
+      .domain([0, 1])
+      .range([0, 100]);
+
+  var rScale = d3.scale.linear()
+                       .domain([0.00000000001, 1, 10000])
+                       .range([0.1, 1, 10000]);
+
+  var radiusScale = d3.scale.linear()
+                            .domain([0, 25])
+                            .range([0, h/4*3-20])
+
+  var eccentricityScale = d3.scale.linear()
+                                  .domain([0, 1])
+                                  .range([0, h/4*3-20]);
+
+  var inclinationScale = d3.scale.linear()
+                          .domain([0, 90])
+                          .range([0, h/4*3-20]);
+
+  var teffScale = d3.scale.linear()
+                          .domain([1, 30000])
+                          .range([0, h/4*3-20]);
+
+  var distanceScale = d3.scale.linear()
+                              .domain([1, 10000])
+                              .range([0, h/4*3-20]);
+
+  var viewpointScale = d3.scale.linear()
+                               .domain([0, 10])
+                               .range([0, 1]);
+
+  function log (logme) {
+    return Math.pow(10, logme);
+  };
+
+  var detachedContainer = document.createElement("custom");
+  var dataContainer = d3.select(detachedContainer);
+
+
+  // ASTEROID DATA 
+  var asteroiddata = d3.csv("data/keplerconfirmed4.csv", function(error, rows) {
+    if (error) throw error;
+
+    // var x, y, r, v, P, E, F;
+
+    
+    // create the ellipses on which the asteroids will be projected
+    // use path instead of ellipse, because otherwise next step won't work
+    var dataBinding = dataContainer.selectAll( "node" )
+      .data( rows )
+      .enter()
+      .append( "path" )
+      .attr("id", function(d, i){return "node-" + i})
+      .attr("realid", function(d, i){return d.id})
+      .attr("pdes", function(d, i){return d.pl_hostname + " " + d.pl_letter})
+      .attr("a", function(d, i) {return d.pl_orbsmax;})
+      .attr("M", function(d, i) {return Math.random()*360})
+      .attr("per", function (d, i) {return d.pl_orbper / 365.25})
+      .attr("e", function(d, i) {return d.pl_orbeccen})
+      .attr("rad", function(d, i) {return d.pl_radj})
+      .attr("radstar", function(d, i) {return d.st_rad})
+      .attr("teffstar", function(d, i) {return d.st_teff})
+      // .attr("mass", function(d, i) {return cScale(d.pl_bmassj)})
+      .attr("solar", function(d, i) {return d.pl_nnotes})
+      .attr("stroke", function(d, i){return cScale(d.pl_orbeccen)})
+      .attr("inclination", function(d, i) { 
+        if (d.pl_orbincl) {
+          return d.pl_orbincl
+        } else {
+          var deviation = d3.random.normal(90, 5);
+          return Math.abs(deviation());
+        }
+      })
+      .attr("discmethod", function(d, i) {return d.pl_discmethod})
+      .attr("distancestar", function(d, i) {return d.st_dist});
+
+    var getal = 1;          
+    var resolution = 10;
+    var oneTime = true;
+    var t = 0;
+
+    nodes = dataContainer.selectAll(".node"); // store all nodes in array
+    nodesAmount = nodes.size(); // get length of array, the total amount of nodes
+
+    dataBinding.each(function(d, i) {
+      var node = d3.select(this);
+      // angles.push(0);
+      if (node.attr("realid") === "earth") {
+        angles.push(0);
+      } else {
+        angles.push(Math.random()*(Math.PI*2));
+      }
+    }); 
+
+    // Variables for storing previous positions
+    var oldPoints = [];
+    var pointInterval = 5;
+    var oldTime = 0;
+    var periodTime = false;
+
+    function getMousePos(canvas, evt) {
+      var rect = document.getElementById("canvas").getBoundingClientRect();
+      return {
+        x: (evt.clientX-rect.left)/(rect.right-rect.left)*canvas.width,
+        y: (evt.clientY-rect.top)/(rect.bottom-rect.top)*canvas.height
+      };
+    }
+      
+    document.body.addEventListener('mousemove', function(evt) {
+      var mousePos = getMousePos(document.getElementById("canvas"), evt);
+      mousePosX = mousePos.x,
+      mousePosY = mousePos.y;
+  
+      var xPosScale = d3.scale.linear()
+          .domain([0, wMid, w])
+          .range([-Math.PI/20, 0, Math.PI/20])
+  
+      var yPosScale = d3.scale.pow()
+          // .exponent(2)
+          .domain([0, h])
+          .range([10, 1])
+
+      if (viewFront) {
+        if (!details) {
+          viewpointX = xPosScale(mousePosX);
+        }
+        viewpointY = 100;
+      } else if (viewTop) {
+        viewpointX = 0;
+        viewpointY = 1;
+      } else {
+        if (running) {
+          viewpointX = xPosScale(mousePosX);
+        }
+        viewpointY = yPosScale(mousePosY);
+      }
+
+      // sound
+      // planetVerb.roomSize.value = 0 + Math.abs(viewpointX)*5;
+  
+    }, false);
+
+    d3.timer(step);
+
+    function step() {
+      // if (running) {
+
+        if (viewFront) {
+          viewpointX = 0;
+        }
+
+        // "clear" canvas
+        if (relativeDistance) {
+          var gradient=context.createRadialGradient(wMid,hMid,0,wMid,hMid, enlarge*1.8);
+        } else {
+          var gradient=context.createRadialGradient(wMid,hMid,0,wMid,hMid, enlarge*.5);
+        }
+        
+          gradient.addColorStop(0,"rgba(78,81,86,1)");
+          gradient.addColorStop(1,"rgba(18,21,26,1)");
+
+        // if (relativeDistance) {
+          context.fillStyle = gradient;
+        // } else { 
+        //   context.fillStyle = "rgba(18,21,26,1)";
+        // }
+
+        context.strokeStyle = "none";
+        context.fillRect(0,0,w,h);
+  
+        context.save();
+        context.translate(wMid + xEarth, hMid + yEarth);
+        if (!earthview) {
+          context.rotate(viewpointX);
+        }
+
+        //toggle title
+        if (title && scaler === "big") {
+          context.fillStyle = "white";
+          context.font = 2 * enlarge + "px Bagnard";
+          context.textAlign = "left";
+          context.fillText("1 9 6 3   E X O P L A N E T S", enlarge*4, enlarge/1.5);
+        }
+        context.restore();
+  
+        // add sun and nametag, but only if zoom level isn't too far out
+        context.fillStyle = "rgba(255,255,255,1)";
+        context.beginPath();
+        if (relativeDistance) {
+          context.arc(wMid, hMid, pointRadius, 0, 2 * Math.PI);
+          context.closePath();
+        } else {
+          context.arc(wMid, hMid, 1, 0, 2 * Math.PI);
+          context.closePath();
+        }
+        context.fill();
+
+        // add grid lines for ease
+        function gridLine() {
+          context.strokeStyle = "white"; 
+          context.lineWidth = .1; 
+          context.beginPath()
+          context.moveTo(-w, 0);
+          context.lineTo(0, 0);
+          context.closePath();
+          context.stroke();
+        }
+
+        for (i = 0; i < 4; i++) {
+          context.save();
+          context.translate(wMid, hMid);
+          context.rotate(((i * 90) / 180 * Math.PI) + viewpointX);
+          gridLine();
+          context.restore();
+        }
+
+        function drawVerticalTick(multiplier) {
+          context.strokeStyle = "white"; 
+          context.lineWidth = .05;
+          context.textAlign = "left";
+          context.font = "10px Circular Std";
+          context.fillStyle = "rgba(255,255,255,.3)"
+          if (radiusgraphs) {
+            context.beginPath()
+            context.moveTo(0, -radiusScale(multiplier * i)*viewpointScale(viewpointY));
+            context.lineTo(20, -radiusScale(multiplier * i)*viewpointScale(viewpointY));
+            context.closePath();
+            context.stroke();
+            context.fillText(i * multiplier + " earth Radii", 50, 2-radiusScale((i*multiplier)*viewpointScale(viewpointY)));
+          } else if (eccentricitygraphs) {
+            context.beginPath()
+            context.moveTo(0,  -eccentricityScale(multiplier/20 * i)*viewpointScale(viewpointY));
+            context.lineTo(20, -eccentricityScale(multiplier/20 * i)*viewpointScale(viewpointY));
+            context.closePath();
+            context.stroke();
+            context.fillText(i * multiplier/20, 50, 2-eccentricityScale((i*multiplier/20)*viewpointScale(viewpointY)));
+          } else if (inclinationgraphs) {
+            context.beginPath()
+            context.moveTo(0,  -inclinationScale(multiplier*3 * i)*viewpointScale(viewpointY));
+            context.lineTo(20, -inclinationScale(multiplier*3 * i)*viewpointScale(viewpointY));
+            context.closePath();
+            context.stroke();
+            context.fillText(i * multiplier*3, 50, 2-inclinationScale((i*multiplier*3)*viewpointScale(viewpointY)));
+          } else if (teffgraphs) {
+            context.beginPath()
+            context.moveTo(0,  -teffScale(multiplier*1000 * i)*viewpointScale(viewpointY));
+            context.lineTo(20, -teffScale(multiplier*1000 * i)*viewpointScale(viewpointY));
+            context.closePath();
+            context.stroke();
+            context.fillText(i * multiplier*1000 + " K", 50, 2-teffScale((i*multiplier*1000)*viewpointScale(viewpointY)));
+          } else if (distancegraphs) {
+            context.beginPath()
+            context.moveTo(0,  -distanceScale(multiplier*1000 * i)*viewpointScale(viewpointY));
+            context.lineTo(20, -distanceScale(multiplier*1000 * i)*viewpointScale(viewpointY));
+            context.closePath();
+            context.stroke();
+            context.fillText(i * multiplier*1000 + " pc", 50, 2-distanceScale((i*multiplier*1000)*viewpointScale(viewpointY)));
+          }
+        }
+
+        // add ticks for scale
+        function verticalTick() {
+          context.save();
+          context.translate(wMid, hMid);
+          context.rotate(viewpointX);
+          for (i = 1; i < 100; i++) {
+            if (viewpointScale(viewpointY) > .4 ) {
+              drawVerticalTick(4);
+            } else if (viewpointScale(viewpointY) > .2 ) {
+              drawVerticalTick(8);
+            } else {
+              drawVerticalTick(12);
+            };
+          }
+          context.restore();
+        }
+
+
+        function drawHorizontalTick(multiplier) {
+          context.beginPath()
+          context.moveTo(0, 180*multiplier*i*enlarge);
+          context.lineTo(-10/viewpointScale(viewpointY), 180*multiplier*i*enlarge);
+          context.closePath();
+          context.stroke();
+          context.textAlign = "right";
+          context.font = "10px Circular Std";
+          context.fillStyle = "rgba(255,255,255,.3)"
+          context.fillText(180*multiplier*i/180 + " AU", -20/viewpointScale(viewpointY), 180*multiplier*i*enlarge + enlarge/2);
+        }
+
+        function horizontalTick() {
+          context.save();
+          context.translate(wMid, hMid);
+          context.rotate((Math.PI *1.5) + viewpointX);
+          for (i = 1; i < 100; i++) {
+            context.strokeStyle = "white"; 
+            context.lineWidth = .1;
+            if (enlarge > 10) {
+              drawHorizontalTick(.05);
+            } else if (enlarge > 2) {
+              drawHorizontalTick(.2);
+            }else if (enlarge > .5) {
+              drawHorizontalTick(1);
+            } else if (enlarge > .1) {
+              drawHorizontalTick(5);
+            } else {
+              drawHorizontalTick(10);
+            }
+            
+          }
+          context.restore();
+        }
+
+        if (!viewTop && graphs) {
+          verticalTick();
+        };
+
+        if (measurement && !relativeDistance) {
+          horizontalTick();
+        }
+
+        drawOrbit();
+      
+      // } // if
+
+    } // step
+
+
+    function drawOrbit() {
+        
+        dataBinding.each(function(d, i) {
+
+          var node = d3.select(this);
+
+          var radStar = node.attr("radstar");
+          var radMultiplier = 1/radStar;
+          var radPlanetJup = node.attr("rad");
+          var radPlanetEarth = radPlanetJup * 10.9733;
+          var rad = radStar / (radPlanetJup * 0.10045); // radius in solar radii
+          var M = node.attr("M");
+          if (relativeDistance) {
+            var a = node.attr("a") * radMultiplier / solarRadius;
+          } else {
+            var a = node.attr("a") / solarRadius;
+          }
+          var e = node.attr("e");
+          var perNoSpeed = node.attr("per");
+          var per = node.attr("per") * speed;
+          // var W = node.attr("W");
+          var inclination = 90-node.attr("inclination");
+
+          // compute other values
+          var b = (a * (Math.sqrt(1-e*e)));
+          var F = (Math.sqrt(a * a - b * b));
+
+          // enlarge values of length
+          a = a * enlarge;
+          b = b * enlarge;
+          F = F * enlarge;
+
+          // Initial position of point (angle = 0)
+          var x = a;
+          var y = 0;
+
+          t++;
+          getal++;
+
+          var r = a + F;
+
+          angle = angles[0];
+
+          function once () {
+            if (notdone) {
+              angle = 0;
+              notdone = false;
+            }
+          }
+
+          if (node.attr("realid" === "earth")) {
+            once();
+          }
+
+          if (angle >= 2*Math.PI) {
+            var newAngle = angle - 2*Math.PI
+            angle = newAngle;
+
+            //sound
+            if (rad > .5 && highlight) {
+              playRevol();
+            }
+          }
+
+          var k = 360 * a * b / (per * resolution);
+        
+          if (running) {
+            for (var j = 0; j < resolution; j++) {
+                angle += k / (r * r);
+                r = a * (1 - e * e) / (1 - e * Math.cos(angle));
+            }
+          } 
+
+          var newX = r * Math.cos(angle);
+          var newY = r * Math.sin(angle);
+
+          if (viewFront) {
+            var xPercentage = 100 - (100/90 * inclination);
+            newX = newX / 100 * xPercentage;
+  
+            var yPercentage = 100/90 * inclination;
+            // newY = newY / 100 * yPercentage;
+
+            x = newX;
+            y = newY / viewpointY + ( viewpointY / 100 * yPercentage); 
+          } else if (viewTop) {
+            var xPercentage = 100 - (100/90 * inclination);
+            // newX = newX / 100 * xPercentage;
+            
+            var yPercentage = 100/90 * inclination;
+            // newY = newY / 100 * yPercentage;
+
+            x = newX;
+            y = newY; 
+          } else { 
+            var xPercentage = 100 - (100/90 * inclination);
+            newX = newX / 100 * xPercentage;
+  
+            var yPercentage = 100/90 * inclination;
+            // newY = newY / 100 * yPercentage;
+
+            x = newX;
+            y = newY / viewpointY + ( viewpointY / 100 * yPercentage);
+          }
+
+          context.save();
+          
+          context.translate(wMid + xEarth, hMid + yEarth);
+          if (!earthview) {
+            context.rotate(viewpointX);
+          }
+          // add orbiting points
+
+            context.fillStyle = "#12151a";
+            context.strokeStyle = designerBlue;
+            context.lineWidth = .2;
+
+          if (planets) {
+            context.beginPath();
+
+            if (relativeDistance) {
+              if (rScale(pointRadius / rad) > .5) {
+                context.arc(x, y, rScale(pointRadius / rad), 0, 2 * Math.PI);
+              } else {
+                if (highlight) {
+                  context.fillStyle = designerBlue;
+                } else {
+                  context.fillStyle = "#12151a";
+                }
+                context.fillRect(x, y, 1, 1);
+              }
+            } else {
+              if (highlight) {
+                context.fillStyle = designerBlue;
+              } else {
+                context.fillStyle = "#12151a";
+              }
+              context.fillRect(x, y, 1, 1);
+              // context.arc(x, y, rScale(pointRadius / 100), 0, 2 * Math.PI);
+            }
+            context.closePath();
+
+            if (!viewTop) {
+            // make orbiting point opaque when behind sun
+              if (angle <= Math.PI) {
+                context.fill();
+                if (highlight) {
+                  context.stroke();
+                } 
+              } else {
+                if (highlight) {
+                  context.stroke();
+                } 
+              }
+            } else {
+              context.fill();
+              if (highlight) {
+                context.stroke();
+              }
+            }
+
+          } else {
+            context.lineWidth = 0;
+          };
+
+          if (orbits) {
+            context.beginPath();
+            context.lineWidth = .2;
+            context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
+            context.closePath();
+            context.stroke();
+          };
+
+          // toggle graphs
+          if (graphs) {
+            if (radiusgraphs) {
+              //toggle radius!
+              context.beginPath();
+              context.moveTo(x,y-rScale(pointRadius / rad));
+              context.lineTo(x,y-radiusScale(radPlanetEarth*viewpointScale(viewpointY)));
+              context.closePath();
+              context.stroke();
+            }
+            if (eccentricitygraphs) {
+              // toggle eccentricity
+              context.beginPath();
+              context.moveTo(x,y-rScale(pointRadius / rad));
+              context.lineTo(x,y-eccentricityScale(e*viewpointScale(viewpointY)));
+              context.closePath();
+              context.stroke();
+            }
+            if (inclinationgraphs) {
+              // toggle inclination
+              context.beginPath();
+              context.moveTo(x,y-rScale(pointRadius / rad));
+              context.lineTo(x,y-inclinationScale(inclination*viewpointScale(viewpointY)));
+              context.closePath();
+              context.stroke();
+            }
+            if (teffgraphs) {
+              context.beginPath();
+              context.moveTo(x,y-rScale(pointRadius / rad));
+              context.lineTo(x,y-teffScale(+node.attr("teffstar")*viewpointScale(viewpointY)));
+              context.closePath();
+              context.stroke();
+            }
+            if (distancegraphs) {
+              context.beginPath();
+              context.moveTo(x,y-rScale(pointRadius / rad));
+              context.lineTo(x,y-distanceScale(+node.attr("distancestar")*viewpointScale(viewpointY)));
+              context.closePath();
+              context.stroke();
+            }
+          };
+
+          if (details && !graphs) {
+            context.fillStyle = "rgba(220, 220, 220, 1)";
+            if (x > mousePosX - w/2 - 10 
+             && x < mousePosX - w/2 + 10 
+             && y > mousePosY - h/2 - 10 
+             && y < mousePosY - h/2 + 10) {
+              
+              //draw orbit of planet
+              context.strokeStyle = designerGreen;
+              context.beginPath();
+              context.lineWidth = .2;
+              context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
+              context.closePath();
+              context.stroke();
+
+              context.font = "700 14px Circular Std";
+              context.fillText(node.attr("pdes"), x - 9, y - 53);
+              context.fillStyle = "rgba(220,220,220,.5)"
+              context.font = "100 14px Circular Std";
+              context.fillText("Distance: " + node.attr("a") + " AU", x - 9, y - 37);
+              if (node.attr("rad")) {
+                context.fillText("Radius: " + Math.floor(radPlanetEarth*100)/100 + " earth radii", x - 9, y - 23);
+              } else {
+                context.fillText("Radius: ?", x - 9, y - 23);
+              }
+              context.fillText("Discovery method: " + node.attr("discmethod"), x - 9, y - 8);
+              //draw circle around planet
+              context.lineWidth = .4;
+              context.strokeStyle = designerGreen;
+              context.beginPath();
+              context.arc(x, y, 10 + rScale(pointRadius * ((node.attr("rad")/10) / node.attr("radstar"))), 0, 2 * Math.PI);
+              context.stroke();
+
+            };
+          }
+
+          if (solarsystem) {
+            if (node.attr("realid") === "mercury" || node.attr("realid") === "venus" || node.attr("realid") === "earth" || node.attr("realid") === "mars" || node.attr("realid")  === "jupiter" || node.attr("realid") === "saturn" || node.attr("realid") === "uranus" || node.attr("realid") === "neptune") {
+              context.fillStyle = "none";
+              context.strokeStyle = designerBlue;
+              context.lineWidth = .4;
+  
+              // if (orbits) {
+                context.beginPath();
+                context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
+                context.stroke();
+                context.closePath();
+              // }
+
+              context.fillStyle = designerRed;
+              context.beginPath();
+              context.arc(x, y, rScale(pointRadius * ((node.attr("rad")/10) / node.attr("radstar"))), 0, 2 * Math.PI);
+              context.fill();
+  
+              context.strokeStyle = designerRed;
+              context.beginPath();
+              context.arc(x, y, 10, 0, 2 * Math.PI);
+              context.stroke();
+    
+              context.fillStyle = "white";
+              context.font = "12px Circular Std";
+              context.textAlign = "center";
+              context.fillText(node.attr("pdes"), x, y - 20);
+            }
+          }         
+
+          
+
+          context.restore();
+
+          if (counter) {
+            if (node.attr("realid") === "earth") {
+
+              if (earthview) {
+                xEarth = x;
+                yEarth = y;
+              };
+
+              context.font = "16px Circular Std";
+              context.textAlign = "left";
+              var earthAngle = angle*(180/Math.PI);
+              var earthTime = earthAngle/360*365.25; 
+              var earthTimeRounded = earthTime.toFixed(2)
+              context.fillText("Days ellapsed: " + earthTimeRounded, 125, 74);
+              var earthTimeString = String();
+              // if (earthTimeString.indexOf(".") == -1) {
+                playTick();
+              // }
+            }
+          };
+
+          if (running) {
+            newAngle = angle;
+            angles.splice(0, 1);
+            angles.push(newAngle);
+          } else {
+            angles.splice(0, 1);
+            angles.push(angle);
+          }
+
+        });
+      
+        if (!viewFront && relativeDistance && !graphs) {
+          // adds sun top half
+          context.fillStyle = "rgba(255,255,255,1)";
+          context.beginPath();
+          context.arc(wMid, hMid, pointRadius, 0, 1 * Math.PI, true);
+          context.closePath();
+          context.fill();
+        }
+
+        if(viewTop && hMid === h/4*3) {
+          hMidInterpolate(hMid, h/2);
+        }
+
+      }
+  
+  });
+  
+  var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([0.001, 10])
+    .on("zoom", function() {
+      if(!infoShown){zoomed()}
+    });
+
+  d3.select("body").call(zoom);
+
+  function zoomed() {
+
+    if (speedzoom) {
+      speed = initialSpeed * d3.event.scale;
+    }
+    enlarge = initialEnlarge * d3.event.scale;
+    pointRadius = enlarge;
+    if (d3.event.scale < .1) {
+      scaler = "tiny";
+    } else {
+      scaler = "big";
+    }    
+
+    // sound
+    planetFilter.frequency.value = 500 * d3.event.scale + 100;
+    beepFilter.frequency.value = 600 * d3.event.scale + 100;
+
+  }
+
+  function info() {
+    if (!infoShown) {
+      var textContainerHeight = document.getElementById('text-container').clientHeight;
+      textContainer.transition().duration(1000).style("bottom", (h - textContainerHeight) / 2 + "px")
+      d3.select("canvas").transition().delay(0).duration(1000)
+                         .style("opacity", .2)
+
+      infoShown = true;
+      togglePause();
+
+      d3.select("#infosvg").transition().delay(250).duration(500)
+                           .style("transform", "rotate(90deg)")
+
+      d3.select('#infopolyline').transition().delay(250).duration(500)
+                                .attr("points", "1,1 9,9 5,5 9,1 1,9");
+
+      d3.select("#buttons-container").transition().delay(250).duration(500)
+                                     .style("opacity", .6);
+    } else {
+      textContainer.transition().duration(750).style("bottom", (h + 100) + "px")
+      d3.select("canvas").transition().delay(0).duration(1000)
+                         .style("opacity", 1)
+      infoShown = false;
+      
+      d3.select("#infosvg").transition().delay(250).duration(500)
+                           .style("transform", "rotate(90deg)"); 
+
+      d3.select('#infopolyline').transition().delay(250).duration(500)
+                                .attr("points", "5,0 5,10 5,5 0,5 10,5");
+
+      d3.select("#buttons-container").transition().delay(250).duration(500)
+                                     .style("opacity", 1); 
+
+      togglePause(); 
+
+    }
+  };
+
+  function togglePause() {
+    if (running) {
+      running = false;
+      hover = true;
+      viewpointX = 0;
+
+      // d3.select("canvas").transition().delay(0).duration(1000)
+      //                    .style("opacity", .5)
+
+      // d3.select("#pausesvg").transition().delay(250).duration(500)
+      //                      .style("transform", "rotate(90deg)");
+
+      d3.select('#pausepolygonleft').transition().delay(250).duration(500)
+                                .attr("points", "0,0 18,9 18,27 0,36");
+      d3.select('#pausepolygonright').transition().delay(250).duration(500)
+                                .attr("points", "18,9 36,18 36,18 18,27");
+    } else {
+      // d3.select("canvas").transition().delay(0).duration(750)
+      //                    .style("opacity", 1)
+
+      d3.select('#pausepolygonleft').transition().delay(250).duration(500)
+                                .attr("points", "0,0 12,0 12,36 0,36");
+      d3.select('#pausepolygonright').transition().delay(250).duration(500)
+                                .attr("points", "24,0 36,0 36,36 24,36");
+      setTimeout(function() {
+        paused = false;
+        running = true;
+        hover = false;
+      }, 750);
+    }
+  }
+
+  // INTERPOLATORS
+  function hMidInterpolate(een, twee) { 
+    d3.transition()
+      .duration(500)
+      .ease("cubic-in-out")
+      .tween("hMidder", function() {
+        var pim = d3.interpolate(een, twee);
+        return function(t) { 
+          hMidChange(pim(t)); 
+      };
+    });
+  };
+
+  function viewpointYInterpolate(one, two) { 
+    d3.transition()
+      .duration(500)
+      .ease("cubic-in-out")
+      .tween("yViewer", function() {
+        var pet = d3.interpolate(one, two);
+        return function(t) { 
+          viewpointYChange(pet(t)); 
+      };
+    });
+  };
+
+
+
+
+  // TOGGLES
+  // VIEW
+  function toggleViewFree() {
+    if (!viewFree) {
+      viewFree = true;
+      viewFront = false;
+      viewTop = false;
+
+      d3.select('#viewtop').classed("active", false);
+      d3.select('#viewfront').classed("active", false);
+      d3.select('#viewfree').classed("active", true);
+
+      if (!solarsystem) {
+        toggleHighlightSolarsystem();
+      }
+
+      document.getElementById('highlightsolarsystem').disabled = false;
+      document.getElementById('highlightorbits').disabled = false;
+      document.getElementById('highlightgraphs').disabled = false;
+      if (!graphs) {
+        document.getElementById('highlightdetails').disabled = false;
+      }
+
+
+      viewpointYInterpolate(viewpointY, 1);
+      viewpointScale = d3.scale.linear()
+                               .domain([0, 10])
+                               .range([0, 1]);
+
+      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
+                                              .attr("r", "4.5");
+      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
+                                              .attr("r", "2.75");
+      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
+                                               .attr("r", "4");
+      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
+                                               .attr("r", "0");
+      d3.select("#viewtopshape-circle-outer").transition().duration(250)
+                                             .attr("r", "4");
+      d3.select("#viewtopshape-circle-inner").transition().duration(250)
+                                             .attr("r", "0");                                   
+      playSound(.5);
+    }
+  }
+
+  function toggleViewFront() {
+    if (!viewFront) {
+      viewFront = true;
+      viewTop = false;
+      viewFree = false;
+
+      if (!graphs) {
+        setTimeout(toggleHighlightGraphs, 500);
+      }
+
+      d3.select('#viewfront').classed("active", true);
+      d3.select('#viewtop').classed("active", false);
+      d3.select('#viewfree').classed("active", false);
+
+      if (solarsystem) {
+        toggleHighlightSolarsystem();
+      }
+
+      if (orbits) {
+        toggleHighlightOrbits();
+      }
+
+      if (details) {
+        toggleHighlightDetails();
+      }
+
+      document.getElementById('highlightgraphs').disabled = false;
+
+
+      //make graphs look better instantaniously
+      viewpointYInterpolate(10, 100);
+      viewpointScale = d3.scale.linear()
+                               .domain([0, 100])
+                               .range([0, 1]);
+
+      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
+                                              .attr("r", "4");
+      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
+                                              .attr("r", "0");
+      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
+                                               .attr("r", "4.5");
+      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
+                                               .attr("r", "2.75");
+      d3.select("#viewtopshape-circle-outer").transition().duration(250)
+                                             .attr("r", "4");
+      d3.select("#viewtopshape-circle-inner").transition().duration(250)
+                                             .attr("r", "0"); 
+      playSound(.5);
+    }
+  }
+
+  function toggleViewTop() {
+    if (!viewTop) {
+      viewTop = true;
+      viewFront = false;
+      viewFree = false;
+
+      if (graphs) {
+        toggleHighlightGraphs();
+      }
+
+      d3.select('#viewtop').classed("active", true);
+      d3.select('#viewfront').classed("active", false);
+      d3.select('#viewfree').classed("active", false);
+
+      if (!solarsystem) {
+        toggleHighlightSolarsystem();
+      }
+      document.getElementById('highlightsolarsystem').disabled = false;
+      document.getElementById('highlightorbits').disabled = false;
+      document.getElementById('highlightdetails').disabled = false;
+      document.getElementById('highlightgraphs').disabled = true;
+
+      viewpointYInterpolate(viewpointY, 1);
+      viewpointScale = d3.scale.linear()
+                               .domain([0, 10])
+                               .range([0, 1]);
+
+      d3.select("#viewfreeshape-circle-outer").transition().duration(250)
+                                              .attr("r", "4");
+      d3.select("#viewfreeshape-circle-inner").transition().duration(250)
+                                              .attr("r", "0");
+      d3.select("#viewfrontshape-circle-outer").transition().duration(250)
+                                               .attr("r", "4");
+      d3.select("#viewfrontshape-circle-inner").transition().duration(250)
+                                               .attr("r", "0");
+      d3.select("#viewtopshape-circle-outer").transition().duration(250)
+                                             .attr("r", "4.5");
+      d3.select("#viewtopshape-circle-inner").transition().duration(250)
+                                             .attr("r", "2.75");
+      playSound(.5);
+    }
+  }
+
+
+  // HIGHLIGHTS
+  function toggleHighlightPlanets() {
+    if (highlight) {
+      highlight = false;
+      d3.select('#highlightplanets').classed("active", false);
+      d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
+                                                .attr("cx", 5);
+      playSound(1/4);
+    } else {
+      highlight = true;
+      d3.select('#highlightplanets').classed("active", true);
+      d3.select("#highlightplanetsshape-circle").transition().duration(500).ease("elastic-in")
+                                                .attr("cx", 11.5);
+      playSound(1);
+    }
+  }
+
+  function toggleHighlightOrbits() {
+    if (orbits) {
+      orbits = false;
+      d3.select('#highlightorbits').classed("active", false);
+      d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
+                                               .attr("cx", 5);
+      playSound(1/4);
+    } else {
+      orbits = true;
+      d3.select('#highlightorbits').classed("active", true);
+      d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
+                                               .attr("cx", 11.5);
+      playSound(1);
+    }
+  }
+
+  function toggleHighlightSolarsystem() {
+    if (solarsystem) {
+      solarsystem = false;
+      d3.select('#highlightsolarsystem').classed("active", false);
+      d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
+                                                    .attr("cx", 5);
+      playSound(1/4);
+    } else {
+      solarsystem = true;
+      d3.select('#highlightsolarsystem').classed("active", true);
+      d3.select("#highlightsolarsystemshape-circle").transition().duration(500).ease("elastic-in")
+                                                    .attr("cx", 11.5);
+      playSound(1);
+    }
+  }
+
+  function toggleHighlightDetails() {
+    if (details) {
+      details = false;
+      d3.select('#highlightdetails').classed("active", false);
+      d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
+                                                .attr("cx", 5);
+      playSound(1/4);
+    } else {
+      details = true;
+      d3.select('#highlightdetails').classed("active", true);
+      d3.select("#highlightdetailsshape-circle").transition().duration(500).ease("elastic-in")
+                                                .attr("cx", 11.5);
+      playSound(1);
+    }
+  }
+
+  function toggleHighlightGraphs() {
+    if (graphs) {
+      // setTimeout(wMidInterpolate(wMid, w/2), 1000);
+      graphs = false;
+      d3.select('#highlightgraphs').classed("active", false);
+      d3.select("#highlightgraphsshape-circle").transition().duration(500).ease("elastic-in")
+                                               .attr("cx", 5);
+
+      document.getElementById('graphsradius').disabled = true;
+      document.getElementById('graphseccentricity').disabled = true;
+      document.getElementById('graphsinclination').disabled = true;
+      document.getElementById('graphsteff').disabled = true;
+      document.getElementById('graphsdistance').disabled = true;
+
+      document.getElementById('highlightdetails').disabled = false;
+
+      hMidInterpolate(hMid, h/2);
+
+      playSound(1/4);
+
+    } else {
+      hMidInterpolate(hMid, h/4*3);
+      // setTimeout(wMidInterpolate(wMid, w/4), 1000);
+      graphs = true;
+      d3.select('#highlightgraphs').classed("active", true);
+      d3.select("#highlightgraphsshape-circle").transition().duration(500).ease("elastic-in")
+                                               .attr("cx", 11.5);
+
+      document.getElementById('graphsradius').disabled = false;
+      document.getElementById('graphseccentricity').disabled = false;
+      document.getElementById('graphsinclination').disabled = false;
+      document.getElementById('graphsteff').disabled = false;
+      document.getElementById('graphsdistance').disabled = false;
+
+      if (details) {
+        toggleHighlightDetails();
+      }
+      document.getElementById('highlightdetails').disabled = true;
+    
+      playSound(1);
+    }
+  };
+
+  // GRAPHS
+  var graphsRadiusOuter = d3.select("#graphsradiusshape-circle-outer");
+  var graphsRadiusInner = d3.select("#graphsradiusshape-circle-inner");
+  var graphsEccentricityOuter = d3.select("#graphseccentricityshape-circle-outer");
+  var graphsEccentricityInner = d3.select("#graphseccentricityshape-circle-inner");
+  var graphsInclinationOuter = d3.select("#graphsinclinationshape-circle-outer");
+  var graphsInclinationInner = d3.select("#graphsinclinationshape-circle-inner");
+  var graphsTeffOuter = d3.select("#graphsteffshape-circle-outer");
+  var graphsTeffInner = d3.select("#graphsteffshape-circle-inner");
+  var graphsDistanceOuter = d3.select("#graphsdistanceshape-circle-outer");
+  var graphsDistanceInner = d3.select("#graphsdistanceshape-circle-inner");
+
+  function toggleGraphsRadius() {
+    if (!radiusgraphs) {
+      radiusgraphs = true;
+      eccentricitygraphs = false;
+      inclinationgraphs = false;
+      teffgraphs = false;
+      distancegraphs = false;
+  
+      d3.select("#graphsradius").classed("active", true);
+      d3.select("#graphseccentricity").classed("active", false);
+      d3.select("#graphsinclination").classed("active", false);
+      d3.select("#graphsteff").classed("active", false);
+      d3.select("#graphsdistance").classed("active", false);
+
+            graphsRadiusOuter.transition().duration(250).attr("r", "4.5");
+            graphsRadiusInner.transition().duration(250).attr("r", "2.75");
+      graphsEccentricityOuter.transition().duration(250).attr("r", "4");
+      graphsEccentricityInner.transition().duration(250).attr("r", "0");
+       graphsInclinationOuter.transition().duration(250).attr("r", "4");
+       graphsInclinationInner.transition().duration(250).attr("r", "0");
+              graphsTeffOuter.transition().duration(250).attr("r", "4");
+              graphsTeffInner.transition().duration(250).attr("r", "0");
+          graphsDistanceOuter.transition().duration(250).attr("r", "4");
+          graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
+    }
+  }  
+
+  function toggleGraphsEccentricity() {
+    if (!eccentricitygraphs) {
+      radiusgraphs = false;
+      eccentricitygraphs = true;
+      inclinationgraphs = false;
+      teffgraphs = false;
+      distancegraphs = false;
+  
+      d3.select("#graphsradius").classed("active", false);
+      d3.select("#graphseccentricity").classed("active", true);
+      d3.select("#graphsinclination").classed("active", false);
+      d3.select("#graphsteff").classed("active", false);
+      d3.select("#graphsdistance").classed("active", false);
+
+            graphsRadiusOuter.transition().duration(250).attr("r", "4");
+            graphsRadiusInner.transition().duration(250).attr("r", "0");
+      graphsEccentricityOuter.transition().duration(250).attr("r", "4.5");
+      graphsEccentricityInner.transition().duration(250).attr("r", "2.75");
+       graphsInclinationOuter.transition().duration(250).attr("r", "4");
+       graphsInclinationInner.transition().duration(250).attr("r", "0");
+              graphsTeffOuter.transition().duration(250).attr("r", "4");
+              graphsTeffInner.transition().duration(250).attr("r", "0");
+          graphsDistanceOuter.transition().duration(250).attr("r", "4");
+          graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
+    }
+  }
+
+  function toggleGraphsInclination() {
+    if (!inclinationgraphs) {
+      radiusgraphs = false;
+      eccentricitygraphs = false;
+      inclinationgraphs = true;
+      teffgraphs = false;
+      distancegraphs = false;
+  
+      d3.select("#graphsradius").classed("active", false);
+      d3.select("#graphseccentricity").classed("active", false);
+      d3.select("#graphsinclination").classed("active", true);
+      d3.select("#graphsteff").classed("active", false);
+      d3.select("#graphsdistance").classed("active", false);
+
+            graphsRadiusOuter.transition().duration(250).attr("r", "4");
+            graphsRadiusInner.transition().duration(250).attr("r", "0");
+      graphsEccentricityOuter.transition().duration(250).attr("r", "4");
+      graphsEccentricityInner.transition().duration(250).attr("r", "0");
+       graphsInclinationOuter.transition().duration(250).attr("r", "4.5");
+       graphsInclinationInner.transition().duration(250).attr("r", "2.75");
+              graphsTeffOuter.transition().duration(250).attr("r", "4");
+              graphsTeffInner.transition().duration(250).attr("r", "0");
+          graphsDistanceOuter.transition().duration(250).attr("r", "4");
+          graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
+    }
+  }
+
+  function toggleGraphsTeff() {
+    if (!teffgraphs) {
+      radiusgraphs = false;
+      eccentricitygraphs = false;
+      inclinationgraphs = false;
+      teffgraphs = true;
+      distancegraphs = false;
+  
+      d3.select("#graphsradius").classed("active", false);
+      d3.select("#graphseccentricity").classed("active", false);
+      d3.select("#graphsinclination").classed("active", false);
+      d3.select("#graphsteff").classed("active", true);
+      d3.select("#graphsdistance").classed("active", false);
+
+            graphsRadiusOuter.transition().duration(250).attr("r", "4");
+            graphsRadiusInner.transition().duration(250).attr("r", "0");
+      graphsEccentricityOuter.transition().duration(250).attr("r", "4");
+      graphsEccentricityInner.transition().duration(250).attr("r", "0");
+       graphsInclinationOuter.transition().duration(250).attr("r", "4");
+       graphsInclinationInner.transition().duration(250).attr("r", "0");
+              graphsTeffOuter.transition().duration(250).attr("r", "4.5");
+              graphsTeffInner.transition().duration(250).attr("r", "2.75");
+          graphsDistanceOuter.transition().duration(250).attr("r", "4");
+          graphsDistanceInner.transition().duration(250).attr("r", "0");
+
+      playSound(.5);
+    }
+  }
+
+  function toggleGraphsDistance() {
+    if (!distancegraphs) {
+      radiusgraphs = false;
+      eccentricitygraphs = false;
+      inclinationgraphs = false;
+      teffgraphs = false;
+      distancegraphs = true;
+  
+      d3.select("#graphsradius").classed("active", false);
+      d3.select("#graphseccentricity").classed("active", false);
+      d3.select("#graphsinclination").classed("active", false);
+      d3.select("#graphsteff").classed("active", false);
+      d3.select("#graphsdistance").classed("active", true);
+
+            graphsRadiusOuter.transition().duration(250).attr("r", "4");
+            graphsRadiusInner.transition().duration(250).attr("r", "0");
+      graphsEccentricityOuter.transition().duration(250).attr("r", "4");
+      graphsEccentricityInner.transition().duration(250).attr("r", "0");
+       graphsInclinationOuter.transition().duration(250).attr("r", "4");
+       graphsInclinationInner.transition().duration(250).attr("r", "0");
+              graphsTeffOuter.transition().duration(250).attr("r", "4");
+              graphsTeffInner.transition().duration(250).attr("r", "0");
+          graphsDistanceOuter.transition().duration(250).attr("r", "4.5");
+          graphsDistanceInner.transition().duration(250).attr("r", "2.75");
+      playSound(.5);
+    }
+  }
+
+  // OTHER
+  function toggleSpeedzoom() {
+    if (speedzoom) {
+      speedzoom = false;
+      d3.select('#speedzoom').classed("active", false);
+      d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 5);
+      playSound(1/4);
+    } else {
+      speedzoom = true;
+      d3.select('#speedzoom').classed("active", true);
+      d3.select("#speedzoomshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 11.5);
+      playSound(1);
+    }
+  }
+
+  function toggleRelativeDistance() {
+    if (relativeDistance) {
+      relativeDistance = false;
+      title = false;
+      d3.select('#relativedistance').classed("active", false);
+      d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 5);
+      playSound(1/4);
+
+      //sound
+      planetFilter.type = "lowpass";
+      planetFilter.frequency.value = 400;
+    } else {
+      relativeDistance = true;
+      title = true;
+      d3.select('#relativedistance').classed("active", true);
+      d3.select("#relativedistanceshape-circle").transition().duration(500).ease("elastic-in")
+                                         .attr("cx", 11.5);
+      playSound(1);
+
+      //sound
+      planetFilter.type = "highpass";
+      planetFilter.frequency.value = 800;
+    }
+  };
+
+  // positioning
+  var textContainer = d3.select("#text-container").style("left", (wMid - 300) + "px")
+                                                  .style("bottom", (h+100) + "px");
+
+
+  // sound
+
+  Tone.Transport.start();
+  Tone.Transport.bpm.value = 110;
+
+  // AUDIO 
+  var buttonVerb = new Tone.Freeverb().toMaster();
+  buttonVerb.dampening.value = 4000;
+  buttonVerb.roomSize.value = .9;
+
+  var planetVerb = new Tone.Freeverb().toMaster();
+  planetVerb.dampening.value = 2000;
+  planetVerb.roomSize.value = .4;
+
+  var allFilter = new Tone.Filter(80, "highpass").connect(planetVerb);
+  var planetFilter = new Tone.Filter(500, "lowpass").connect(allFilter);
+  var beepFilter = new Tone.Filter(500, "highpass").connect(allFilter);
+
+  var buttonSynth = new Tone.PolySynth(5, Tone.SimpleSynth, {
+      "oscillator" : {
+        "type": "sawtooth"
+      },
+      "filter" : {
+        "type" : "highpass",
+        "frequency" : 500
+      },
+      "envelope" : {
+        "attack" : 0.5
+      }
+    }).connect(buttonVerb);
+
+
+  var tickSynth = new Tone.PolySynth(20, Tone.SimpleSynth, {
+      "oscillator" : {
+        "type" : "sawtooth"
+      },
+      "envelope" : {
+        "attack" : 0.2,
+        "decay" : 0.2,
+        "sustain" : 10,
+        "release" : 0.8
+      }
+    }).connect(planetFilter);
+
+  var revolSynth = new Tone.PolySynth(20, Tone.SimpleSynth, {
+      "oscillator" : {
+        "type" : "sawtooth"
+      },
+      "envelope" : {
+        "attack" : 0.1,
+        "decay" : 0.2,
+        "sustain" : 1,
+        "release" : 0.2
+      }
+    }).connect(planetFilter);
+
+  var arpSynth = new Tone.PolySynth(20, Tone.SimpleSynth, {
+      "oscillator" : {
+        "type" : "sawtooth"
+      },
+      "envelope" : {
+        "attack" : .1,
+        "decay" : 0.6,
+        "sustain" : .2,
+        "release" : 0.6
+      }
+    }).connect(planetVerb);
+
+  var pattern = new Tone.Pattern(function(time, note){
+    arpSynth.triggerAttackRelease(note, .1, .1);
+  }, ["Bb3", "Bb4", "Cb4", "Ab4"]);
+
+  buttonSynth.volume.value = -20;
+  tickSynth.volume.value = -10;
+  revolSynth.volume.value = -30;
+  arpSynth.volume.value = -20;
+
+  pattern.start(0);
+
+  function playSound(factor) {
+    buttonSynth.triggerAttackRelease(["Eb2"], .5, "@16n");
+  }
+
+  function playTick(factor) {
+    if (viewFree) {
+      tickSynth.triggerAttackRelease(["Eb0", "Eb1", "Bb2", "G3"], "16t", "@8t");
+    } else if (viewFront) {
+      tickSynth.triggerAttackRelease(["Bb0", "Eb1", "Cb2", "Eb3"],"16t", "@8t");
+    } else {
+      tickSynth.triggerAttackRelease(["Db0", "Eb1", "Db2", "Ab3"],"16t", "@8t");
+    }
+  }
+
+  function playRevol(factor) {
+    revolSynth.triggerAttackRelease("Eb5",  "16t", "@8t");
+  }
+
+
+  // // Redirect to hub after 10 secs
+  // setTimeout(returnToHub(), 5000);
+
+  // function returnToHub() {
+  //   setInterval(function() {
+  //     var countdown = 5; 
+  //     console.log(countdown);
+  //     countdown = countdown - 1;
+  //   }, 1000)
+  //   setTimeout(function() {window.location.href = "http://antonlecock.github.io/masterproject/hub/";}, 5000)
+  // }
+
+
+
+  </script>
+</body>
+</html>
