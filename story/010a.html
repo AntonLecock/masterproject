@@ -1369,12 +1369,20 @@
       d3.select('#highlightorbits').classed("active", false);
       d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
                                                .attr("cx", 5);
+
+      // sound
+      planetVerb.dampening.value = 2000;
+      planetVerb.roomSize.value = .2;
       playSound(1/4);
     } else {
       orbits = true;
       d3.select('#highlightorbits').classed("active", true);
       d3.select("#highlightorbitsshape-circle").transition().duration(500).ease("elastic-in")
                                                .attr("cx", 11.5);
+      
+      //sound
+      planetVerb.dampening.value = 1000;
+      planetVerb.roomSize.value = .7;
       playSound(1);
     }
   }
@@ -1637,8 +1645,10 @@
       playSound(1/4);
 
       //sound
-      planetFilter.type = "lowpass";
-      planetFilter.frequency.value = 400;
+      planetFilter.type = "highpass";
+      planetFilter.frequency.value = 800;
+
+      
     } else {
       relativeDistance = true;
       title = true;
@@ -1648,8 +1658,8 @@
       playSound(1);
 
       //sound
-      planetFilter.type = "highpass";
-      planetFilter.frequency.value = 800;
+      planetFilter.type = "lowpass";
+      planetFilter.frequency.value = 400;      
     }
   };
 
@@ -1752,7 +1762,7 @@
   }
 
   function playRevol(factor) {
-    revolSynth.triggerAttackRelease("Eb5",  "16t", "@8t");
+    revolSynth.triggerAttackRelease("Eb5",  "16t", "@8n");
   }
 
 

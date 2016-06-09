@@ -8,7 +8,7 @@
       padding:0;
       margin:0;
       background-color:#12151a;
-      font-family: BretzelGrotesk, sans-serif;
+      font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -25,13 +25,64 @@
       height: 100%;
       position:fixed; 
     }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
+
+  <div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      Pluto isn't that special, after all. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Pluto is one of many icy objects floating around in the outer reaches of the solar system.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      These orbiting points depict all the known 'trans-neptunian' objects. Scroll to zoom in and out.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="canvas-wrapper" style="z-index: -500">
+  </div>
+
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/50,
@@ -67,7 +118,7 @@
 
 
   // CANVAS
-  var canvas = d3.select("body").append("canvas")
+  var canvas = d3.select("#canvas-wrapper").append("canvas")
                .attr("width", w)
                .attr("height", h),
     context = canvas.node().getContext("2d"),
@@ -132,7 +183,7 @@
       angles.push(+node.attr("M")) // initial angle of the asteroid on its orbit
       // angles.push(0);
     });
-    console.log(angles);
+    // console.log(angles);
     // for (i = 0; i < nodesAmount; i++) {
     //   angles.push(d.M[i]); 
     // }  
@@ -159,20 +210,20 @@
       context.fill();
 
       // if (scaler != "tiny") {
-      //   context.font = "12px BretzelGrotesk";
+      //   context.font = "12px Circular Std";
       //   context.textAlign = "center";
       //   context.fillText("Sun", w/2, h/2 - 9);
       // };
 
       // add title and text
-      context.font = "24px BretzelGrotesk";
-      context.textAlign = "center";
-      context.fillText("Pluto isn't that special, after all.",  w/2, paddingH*5);
-      context.font = "16px BretzelGrotesk";
-      context.fillText("In 2006, Pluto was degraded from a planet to a dwarf planet by the IAU, ", w/2, h-paddingH*5);
-      context.fillText("because other similar objects in the outer reaches of the solar system had been discovered. ", w/2, h-paddingH*4);
-      context.fillText("These orbiting points depict other so called 'Trans-Neptunian' objects:", w/2, h-paddingH*3);
-      context.fillText(" their orbits reach further than Neptune, the furthest planet in our solar system.", w/2, h-paddingH*2);
+      // context.font = "24px Circular Std";
+      // context.textAlign = "center";
+      // context.fillText("Pluto isn't that special, after all.",  w/2, paddingH*5);
+      // context.font = "16px Circular Std";
+      // context.fillText("In 2006, Pluto was degraded from a planet to a dwarf planet by the IAU, ", w/2, h-paddingH*5);
+      // context.fillText("because other similar objects in the outer reaches of the solar system had been discovered. ", w/2, h-paddingH*4);
+      // context.fillText("These orbiting points depict other so called 'Trans-Neptunian' objects:", w/2, h-paddingH*3);
+      // context.fillText(" their orbits reach further than Neptune, the furthest planet in our solar system.", w/2, h-paddingH*2);
 
       
       drawOrbit();
@@ -263,7 +314,7 @@
 
           // add label
           context.fillStyle = node.attr("stroke");
-          context.font = "12px BretzelGrotesk"
+          context.font = "12px Circular Std"
           if (node.attr("pdes") === "Pluto" ) {
             context.fillStyle = designerWhite;
           }
@@ -325,6 +376,8 @@
         });
       }
   
+    ready();
+    readySetGo = true;
   });
   
 
@@ -337,26 +390,78 @@
   canvas.call(zoom);
 
   function zoomed() {
-
-    console.log(d3.event.scale);
     speed = initialSpeed * d3.event.scale;
     enlarge = initialEnlarge * d3.event.scale;
-    // if (d3.event.scale < 1 && pointRadius >= 0.05) { 
-    //   pointRadius = initialPointRadius * (d3.event.scale);
-    // } else if (d3.event.scale > 1){
-    //   pointRadius = initialPointRadius
-    // } else if (d3.event.scale < 1 && pointRadius === 0.05) {
-    //   pointRadius += .01
-    // };
+  
     if (d3.event.scale < .1) {
       scaler = "tiny";
     } else {
       scaler = "big";
     }
+
+    resetTimers();
     
   }
 
+  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
 
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  canvas.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
+                    .style("opacity", 1);
+  canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+  var oldURL = document.referrer;
+  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+    window.history.back();
+  } else {
+    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+  }
+};
 
   </script>
 </body>

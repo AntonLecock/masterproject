@@ -7,8 +7,8 @@
     body {
       padding:0;
       margin:0;
-      background-color:#111;
-      font-family: BretzelGrotesk, sans-serif;
+      background-color:#12151a;
+      font-family: Circular Std, sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -20,13 +20,26 @@
     text {
       font-size: 20px;
     }
-
-    html {
-      cursor: none;
-    }
     canvas { 
       width: 100%; 
       height: 100% 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
     }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
@@ -39,14 +52,45 @@
 </head>
 
 <body>
+
+  <div class="return-notification" id="return-notification" style="z-index: 997; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 998; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      The sun, the earth, and the atmosphere
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Move the cursor around to change the position of the sun and play with the earth's seasons. Nighttime, daytime.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="svg-wrapper" style="z-index: -500">
+  </div>
+
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/10,
       paddingH = 100;
 
   // COLORS    
-  var designerBlack = d3.rgb("#9B678C").darker(5),
+  var designerBlack = d3.rgb("#12151a"),
 
       // designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
       designerRed = d3.rgb("#c83c46"),
@@ -62,7 +106,7 @@
       coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
       coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
 
-      d3.select("body").style("background-color", "black");
+      d3.select("body").style("background-color", designerBlack);
 
 
 
@@ -253,29 +297,93 @@
   d3.selectAll(".star:not(.star-0)").remove();
 
   
-  var drawText = svg.append("text")
-                    .attr("x", w/2)
-                    .attr("y", h - paddingH)
-                    .attr("id", "suntext")
-                    .attr("class", "label suntext")
-                    .attr("text-anchor", "middle")
-                    .text("This is planet Earth.")
-                    .style("fill", "white")
-                    .style("opacity", 0)
-                    .transition().delay(1000).duration(2000)
-                    .style("opacity", 1);
+  // var drawText = svg.append("text")
+  //                   .attr("x", w/2)
+  //                   .attr("y", h - paddingH)
+  //                   .attr("id", "suntext")
+  //                   .attr("class", "label suntext")
+  //                   .attr("text-anchor", "middle")
+  //                   .text("This is planet Earth.")
+  //                   .style("fill", "white")
+  //                   .style("opacity", 0)
+  //                   .transition().delay(1000).duration(2000)
+  //                   .style("opacity", 1);
 
-    var drawText = svg.append("text")
-                    .attr("x", w/2)
-                    .attr("y", h - paddingH + paddingH/3)
-                    .attr("id", "suntext")
-                    .attr("class", "label suntext")
-                    .attr("text-anchor", "middle")
-                    .text("Nighttime, daytime.")
-                    .style("fill", "white")
-                    .style("opacity", 0)
-                    .transition().delay(3000).duration(2000)
+  //   var drawText = svg.append("text")
+  //                   .attr("x", w/2)
+  //                   .attr("y", h - paddingH + paddingH/3)
+  //                   .attr("id", "suntext")
+  //                   .attr("class", "label suntext")
+  //                   .attr("text-anchor", "middle")
+  //                   .text("Nighttime, daytime.")
+  //                   .style("fill", "white")
+  //                   .style("opacity", 0)
+  //                   .transition().delay(3000).duration(2000)
+  //                   .style("opacity", 1);
+
+    ready();
+    readySetGo = true;
+
+  svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  svg.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
                     .style("opacity", 1);
+  svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+  var oldURL = document.referrer;
+  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+    window.history.back();
+  } else {
+    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+  }
+};
+
 
   </script>
 </body>

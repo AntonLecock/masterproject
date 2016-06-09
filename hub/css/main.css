@@ -15,7 +15,7 @@ html {
     color: #444; /*black*/
     font-size: 22px;
     line-height: 2;
-    font-family: "Bagnard", georgia, arial, sans-serif;
+    font-family: "Circular Std", georgia, arial, sans-serif;
     font-weight:300;	
     letter-spacing: 1.1;
 
@@ -75,8 +75,8 @@ a {
 	text-decoration:none;
     color:#444;
     transition: color .15s ease, border-color .15s ease;
-    border-bottom: 2px dotted #444;
-    cursor:pointer;
+/*    border-bottom: 2px dotted #444;
+*/    cursor:pointer;
 }
 
 p a:link,
@@ -95,7 +95,6 @@ a:visited {
 
 a:hover,
 a:active {
-	color:#EEE;
 }
 
 button {
@@ -173,7 +172,6 @@ header {
 
 .list {
 	margin: 0 auto;
-	padding-top: 100px;
 }
 
 @media screen and (max-width: 1024px) {
@@ -217,13 +215,18 @@ header {
    Header styles:
 -------------------------------------------------------------------------- */
 
-h1 {
-	font-weight: 300;
+h2 {
+	font-weight: 800;
 	font-size:4em;
 	line-height:1;
-	margin:1.2em auto .2em auto;
+	margin: 2rem auto .2em auto;
 	display:inline-block;
+	position: absolute;
+	max-width:900px;
+	z-index:1000;
 	color:#FFF;
+	text-align:right;
+	right:3rem;
 /*	border-bottom: 2px solid #444;
 	padding-bottom:15px;
 */	text-transform: none;
@@ -291,18 +294,102 @@ img {
 
 .list {
 	max-width: 1440px;
-}
-.list ol {
-	display:inline;
+	display:flex;
+	flex-direction:row;
+	justify-content: center;
+	flex-wrap: wrap;
+
 }
 
-img.page-image {
+.page {
 	max-width:480px;
+	min-width:480px;
+	min-height:300px;
+	max-height:300px;
+	overflow:hidden;
+	box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    background-position: center;
+    position:relative;
 }
 
+.page-link:first-of-type .page, .page-link:last-of-type .page {
+	max-width:1440px;
+	max-height:100vh;
+	width:1440px;
+	height:100vh;
+	background-position: center;
 }
 
-.list li:hover {
-	opacity:.10;
-	transition: opacity .2s ease;
+.page-link:hover .page-bgimg {
+	outline:150px solid rgba(0,0,0,.5);
+	-webkit-filter: blur(5px);
+	   -moz-filter: blur(5px);
+		 -o-filter: blur(5px);
+			filter: blur(5px);
+}
+
+.page-link:first-of-type:hover .page-bgimg, .page-link:last-of-type:hover .page-bgimg {
+	outline:720px solid rgba(0,0,0,.5);
+	outline-offset:-720px;
+	-webkit-filter: blur(2px);
+	   -moz-filter: blur(2px);
+		 -o-filter: blur(2px);
+			filter: blur(2px);
+}
+
+.page-link:hover .page-text {
+	opacity:1;
+}
+
+.page-bgimg {
+	position:absolute;
+	z-index:1;
+	top:0;
+	height:100%;
+	width:100%;
+	outline:100px solid rgba(0,0,0,0);
+	outline-offset: -150px;
+	transition:outline .3s ease, outline-offset .2s ease, -webkit-filter 1s ease, -o-filter 1s ease, -moz-filter 1s ease, filter 1s ease;
+}
+
+.page-link:first-of-type .page-bgimg, .page-link:last-of-type .page-bgimg {
+}
+
+.page-text {
+	position:absolute;
+	z-index:2;
+	opacity:0;
+	transition:opacity .4s ease;
+	font-family: 'Circular Std', helvetica, sans-serif;
+	color:white;
+	text-shadow: 0px 0px 2px rgba(0,0,0,.2);
+	box-sizing:border-box;
+	padding:3rem 2rem;
+	font-size:15px;
+	font-weight:200;
+	height:100%;
+	width:480px;
+	top:0;
+}
+
+.page-link:first-of-type .page-text, .page-link:last-of-type .page-text {
+	top:auto;
+	bottom:0;
+	height:300px;
+}
+
+.page-title {
+	font-size: 18px;
+	font-weight:800;
+}
+
+.page-goto:before {
+	content:"\2192 \2003";
+}
+
+.page-goto:hover {
+	opacity:.5;
+	transition: opacity .5s ease;
 }
