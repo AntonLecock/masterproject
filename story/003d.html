@@ -7,8 +7,8 @@
     body {
       padding:0;
       margin:0;
-      background-color:white;
-      font-family: BretzelGrotesk, sans-serif;
+      background-color:#12151a;
+      font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -24,11 +24,57 @@
       width: 100%; 
       height: 100% 
     }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 </head>
 
 <body>
+  <div class="return-notification" id="return-notification" style="z-index: 997; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 998; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      The formation of a star.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      An enormous cloud of dust and gas starts collapsing due to gravity. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      The matter heats because of the gravitational pressure and starts radiating: a star is born. 
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="svg-wrapper" style="z-index: -500">
 
 <!--   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
    viewBox="0 0 1440 900" enable-background="new 0 0 1440 900" xml:space="preserve">
@@ -66,14 +112,17 @@
   </filter>
 </svg>
 
+  </div>
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/10,
       paddingH = 100;
 
   // COLORS    
-  var designerBlack = d3.rgb("#1F2426"), // Define a nice black color for the background, store it as var
+  var designerBlack = d3.rgb("#12151a"), // Define a nice black color for the background, store it as var
       designerWhite = d3.rgb("#ffe9d2"),
       designerRed = d3.rgb("#c83c46");
 
@@ -99,7 +148,7 @@
 
   var dustGradient = defs.append("radialGradient").attr("id", "dust-gradient").attr("cx", "50%").attr("cy", "50%");
       dustGradient.append("stop").attr("id", "grad-stop-1").attr("offset", 0.5).style("stop-color", d3.rgb("#FAFAE6").darker(5)).style("stop-opacity", ".8").transition().duration(50000).attr("offset", 0).style("stop-color", "#FAFAE6");
-      dustGradient.append("stop").attr("id", "grad-stop-2").attr("offset", 0.999).style("stop-color", d3.rgb("#FDE4B9").darker(4)).style("stop-opacity", ".5").transition().delay(25000).duration(25000).ease("circle-in").attr("offset", .001).style("stop-color", "#FDE4B9");
+      dustGradient.append("stop").attr("id", "grad-stop-2").attr("offset", 0.999).style("stop-color", d3.rgb("#FDE4B9").darker(4)).style("stop-opacity", ".5").transition().delay(25000).duration(25000).ease("circle-in").attr("offset", 0.001).style("stop-color", "#FDE4B9");
       dustGradient.append("stop").attr("id", "grad-stop-3").attr("offset", 1).style("stop-color", "#9B678C").style("stop-opacity", "0");
 
   var starGlowGradient = defs.append("radialGradient").attr("id", "stargradient").attr("cx", "50%").attr("cy", "50%");
@@ -224,6 +273,70 @@
     //                   .transition().duration(1000).ease("exp-in")
     //                   .attr("points",  (w/2-180) + "," + h + " " + (w/2-140) + "," + h + " " + w/2 + "," + h/2);
   }, 50000);
+
+  ready();
+  readySetGo = true;
+
+  svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  svg.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
+                    .style("opacity", 1);
+  svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+  var oldURL = document.referrer;
+  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+    window.history.back();
+  } else {
+    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+  }
+};
+
 
 
   </script>

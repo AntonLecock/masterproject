@@ -215,13 +215,18 @@ header {
    Header styles:
 -------------------------------------------------------------------------- */
 
-h1 {
-	font-weight: 300;
+h2 {
+	font-weight: 800;
 	font-size:4em;
 	line-height:1;
-	margin:1.2em auto .2em auto;
+	margin: 2rem auto .2em auto;
 	display:inline-block;
+	position: absolute;
+	max-width:900px;
+	z-index:1000;
 	color:#FFF;
+	text-align:right;
+	right:3rem;
 /*	border-bottom: 2px solid #444;
 	padding-bottom:15px;
 */	text-transform: none;
@@ -309,12 +314,29 @@ img {
     position:relative;
 }
 
+.page-link:first-of-type .page, .page-link:last-of-type .page {
+	max-width:1440px;
+	max-height:100vh;
+	width:1440px;
+	height:100vh;
+	background-position: center;
+}
+
 .page-link:hover .page-bgimg {
 	outline:150px solid rgba(0,0,0,.5);
 	-webkit-filter: blur(5px);
 	   -moz-filter: blur(5px);
 		 -o-filter: blur(5px);
 			filter: blur(5px);
+}
+
+.page-link:first-of-type:hover .page-bgimg, .page-link:last-of-type:hover .page-bgimg {
+	outline:720px solid rgba(0,0,0,.5);
+	outline-offset:-720px;
+	-webkit-filter: blur(2px);
+	   -moz-filter: blur(2px);
+		 -o-filter: blur(2px);
+			filter: blur(2px);
 }
 
 .page-link:hover .page-text {
@@ -329,8 +351,10 @@ img {
 	width:100%;
 	outline:100px solid rgba(0,0,0,0);
 	outline-offset: -150px;
-	transition:outline .2s ease, -webkit-filter 1s ease, -o-filter 1s ease, -moz-filter 1s ease, filter 1s ease
+	transition:outline .3s ease, outline-offset .2s ease, -webkit-filter 1s ease, -o-filter 1s ease, -moz-filter 1s ease, filter 1s ease;
+}
 
+.page-link:first-of-type .page-bgimg, .page-link:last-of-type .page-bgimg {
 }
 
 .page-text {
@@ -348,6 +372,12 @@ img {
 	height:100%;
 	width:480px;
 	top:0;
+}
+
+.page-link:first-of-type .page-text, .page-link:last-of-type .page-text {
+	top:auto;
+	bottom:0;
+	height:300px;
 }
 
 .page-title {

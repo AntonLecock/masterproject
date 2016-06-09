@@ -8,7 +8,7 @@
       padding:0;
       margin:0;
       background-color:#12151a;
-      font-family: BretzelGrotesk, sans-serif;
+      font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -17,18 +17,71 @@
            -o-font-smoothing: antialiased;
               font-smoothing: antialiased;
     }
+    text {
+      font-size: 20px;
+    }
     canvas { 
       width: 100%; 
-      height: 100%;
-      position:fixed; 
+      height: 100% 
     }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+      cursor:pointer;
+    }
+
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
+  <div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      The solar system and all 1,963 confirmed exoplanets.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      All solar system planets and exoplanets imagined in one single system.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Scroll to zoom in and out.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
+    </p>
+  </div>
+  <div id="canvas-wrapper" style="z-index: -500">
+  </div>
+
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/40,
@@ -55,7 +108,7 @@
   var pointRadius = initialPointRadius; // radius of asteroid point
 
   // COLORS    
-  var designerBlack = d3.rgb("#000000"),
+  var designerBlack = d3.rgb("#12151a"),
         designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2"),
        designerBlue = d3.rgb("#696fc4"),
@@ -177,16 +230,16 @@
       //   context.fillText("Sun", w/2 - 9, h/2 - 9);
       // };
 
-      context.font = "24px BretzelGrotesk";
-      context.textAlign = "center";
-      context.fillText("All 1,963 confirmed exoplanets",  w/2, paddingH*3);
-      context.font = "16px BretzelGrotesk";
-      context.fillText("as of March 31st, 2016", w/2, paddingH*4);
-      context.fillText("Every dot you see is a planet, orbiting around a star other than our own sun.", w/2, h-paddingH*5);
-      context.fillText("They aren’t even hypothetical: these 1,963 exoplanets have been confirmed as of March 31st, 2016.", w/2, h-paddingH*4);
-      // context.fillText("Most of these exoplanets have a very small orbit in comparison to the planets in our solar system.", w/2, h-paddingH*3);
-      context.fillText("All planets are shown here orbiting one single star, while in reality they are not part of the same system.", w/2, h-paddingH*3);
-      context.fillText("Zoom out by scrolling to explore more: orbits of the planets in our solar system are highlighted.", w/2, h-paddingH*2);
+      // context.font = "24px BretzelGrotesk";
+      // context.textAlign = "center";
+      // context.fillText("All 1,963 confirmed exoplanets",  w/2, paddingH*3);
+      // context.font = "16px BretzelGrotesk";
+      // context.fillText("as of March 31st, 2016", w/2, paddingH*4);
+      // context.fillText("Every dot you see is a planet, orbiting around a star other than our own sun.", w/2, h-paddingH*5);
+      // context.fillText("They aren’t even hypothetical: these 1,963 exoplanets have been confirmed as of March 31st, 2016.", w/2, h-paddingH*4);
+      // // context.fillText("Most of these exoplanets have a very small orbit in comparison to the planets in our solar system.", w/2, h-paddingH*3);
+      // context.fillText("All planets are shown here orbiting one single star, while in reality they are not part of the same system.", w/2, h-paddingH*3);
+      // context.fillText("Zoom out by scrolling to explore more: orbits of the planets in our solar system are highlighted.", w/2, h-paddingH*2);
 
 
       // function writeMessage(canvas, message) {
@@ -353,7 +406,8 @@
           if (node.attr("realid") === "earth") {
             var earthAngle = angle*(180/Math.PI);
             var earthTime = earthAngle/360*365.25; 
-            var earthTimeRounded = earthTime.toFixed(2)
+            var earthTimeRounded = earthTime.toFixed(2);
+            context.fillStyle = 'white';
             context.font = "12px BretzelGrotesk";
             context.textAlign = "left"
             context.fillText("Earth days ellapsed: " + earthTimeRounded, paddingH*5, paddingH*3);
@@ -366,6 +420,9 @@
           angles.push(newAngle);          
         });
       }
+
+  ready();
+    readySetGo = true;
   
   });
   
@@ -396,10 +453,70 @@
     } else {
       scaler = "big";
     }
+
+    resetTimers();
     
   }
 
+  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
 
+  var returnTimer = 0;
+  var returnCountdown = 0;
+  var returnLink = 0;
+  var returnNotification = d3.select('#return-notification');
+
+  document.body.addEventListener('mousemove', resetTimers);
+
+  function resetTimers() {
+    clearTimeout(returnTimer);
+    clearInterval(returnCountdown);
+    clearTimeout(returnLink);
+    countdown = 10;
+    returnNotification.transition().duration(500).style("opacity", 0);
+    setTimeout(function() {returnNotification.style("display", "none")}, 500);
+    if (readySetGo) {
+      ready();
+    }
+  }
+
+  function ready() {
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+    d3.select("#loading").transition().duration(500).style("opacity", 0);
+    setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+    canvas.transition().delay(0).duration(1000)
+                       .style("-webkit-filter", "blur(" + 0 + "px)")
+                       .style("opacity",1);
+    d3.select("#info").transition().duration(500).style('opacity', 1);
+    returnTimer = setTimeout(returnToHub, 20000);
+  };
+
+  function returnToHub() {
+    returnNotification.style("display", "block").transition().duration(500)
+                      .style("opacity", 1);
+    canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                       .style("-webkit-filter", "blur(" + 5 + "px)")
+                       .style("opacity",.2);
+    d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                       .style('opacity', 0);
+
+    var countdown = 10; 
+    console.log(countdown);
+    returnCountdown = setInterval(function() {
+      countdown = countdown - 1;
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+      console.log(countdown);
+    }, 1000)
+    returnLink = setTimeout(function() {returnNow();}, 10000)
+  }
+
+  function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
+    }
+  };
 
   </script>
 </body>
