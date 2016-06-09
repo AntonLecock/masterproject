@@ -457,7 +457,7 @@
 
 
   // ASTEROID DATA 
-  var asteroiddata = d3.csv("data/keplerconfirmed4.csv", function(error, rows) {
+  var asteroiddata = d3.csv("data/keplerconfirmed-may2016.csv", function(error, rows) {
     if (error) throw error;
 
     // var x, y, r, v, P, E, F;
@@ -475,7 +475,13 @@
       .attr("a", function(d, i) {return d.pl_orbsmax;})
       .attr("M", function(d, i) {return Math.random()*360})
       .attr("per", function (d, i) {return d.pl_orbper / 365.25})
-      .attr("e", function(d, i) {return d.pl_orbeccen})
+      .attr("e", function(d, i) {
+        if (d.pl_orbeccen) {
+          return d.pl_orbeccen;
+        } else {
+          return 0;
+        }
+      })
       .attr("rad", function(d, i) {return d.pl_radj})
       .attr("radstar", function(d, i) {return d.st_rad})
       .attr("teffstar", function(d, i) {return d.st_teff})
