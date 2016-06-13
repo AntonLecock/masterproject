@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: Circular Std, sans-serif;
       text-transform: uppercase;
       color:white;
@@ -128,7 +128,7 @@
   var solarRadius = 0.005652 // solar radius in AU
 
   // COLORS    
-  var designerBlack = d3.rgb("#12151a"),
+  var designerBlack = d3.rgb("#000000"),
         designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2"),
        designerBlue = d3.rgb("#696fc4"),
@@ -152,7 +152,7 @@
       width = canvas.width,
       height = canvas.height;
 
-  d3.select("body").style("background-color", "#12151a");
+  d3.select("body").style("background-color", "#000000");
 
   // Scales
   var cScale = d3.scale.linear()
@@ -259,7 +259,7 @@
         // "clear" canvas
         var gradient=context.createRadialGradient(wMid,hMid,0,wMid,hMid,enlarge/150);
         gradient.addColorStop(0,"rgba(88,91,96,1)");
-        gradient.addColorStop(1,"rgba(18,21,26,1)");
+        gradient.addColorStop(1,"rgba(0,0,0,1)");
   
         context.fillStyle = gradient;
         context.strokeStyle = "none"
@@ -365,7 +365,7 @@
 
           // add orbiting points
 
-            context.fillStyle = "#12151a";
+            context.fillStyle = "#000000";
             context.strokeStyle = "#696fc4";
             context.lineWidth = .2;
 

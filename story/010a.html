@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: Circular Std, sans-serif;
       text-transform: uppercase;
       color:white;
@@ -386,7 +386,7 @@
   var solarRadius = 0.005652 // solar radius in AU
 
   // COLORS    
-  var designerBlack = d3.rgb("#12151a"),
+  var designerBlack = d3.rgb("#000000"),
         designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2"),
        designerBlue = d3.rgb("#696fc4"),
@@ -409,7 +409,7 @@
       width = canvas.width,
       height = canvas.height;
 
-  d3.select("body").style("background-color", "#12151a");
+  d3.select("body").style("background-color", "#000000");
 
   // Scales
   var cScale = d3.scale.linear()
@@ -582,12 +582,12 @@
         }
         
           gradient.addColorStop(0,"rgba(78,81,86,1)");
-          gradient.addColorStop(1,"rgba(18,21,26,1)");
+          gradient.addColorStop(1,"rgba(0,0,0,1)");
 
         // if (relativeDistance) {
           context.fillStyle = gradient;
         // } else { 
-        //   context.fillStyle = "rgba(18,21,26,1)";
+        //   context.fillStyle = "rgba(0,0,0,1)";
         // }
 
         context.strokeStyle = "none";
@@ -864,7 +864,7 @@
           }
           // add orbiting points
 
-            context.fillStyle = "#12151a";
+            context.fillStyle = "#000000";
             context.strokeStyle = designerBlue;
             context.lineWidth = .2;
 
@@ -878,7 +878,7 @@
                 if (highlight) {
                   context.fillStyle = designerBlue;
                 } else {
-                  context.fillStyle = "#12151a";
+                  context.fillStyle = "#000000";
                 }
                 context.fillRect(x, y, 1, 1);
               }
@@ -886,7 +886,7 @@
               if (highlight) {
                 context.fillStyle = designerBlue;
               } else {
-                context.fillStyle = "#12151a";
+                context.fillStyle = "#000000";
               }
               context.fillRect(x, y, 1, 1);
               // context.arc(x, y, rScale(pointRadius / 100), 0, 2 * Math.PI);

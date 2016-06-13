@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -108,7 +108,7 @@
   var pointRadius = initialPointRadius; // radius of asteroid point
 
   // COLORS    
-  var designerBlack = d3.rgb("#12151a"),
+  var designerBlack = d3.rgb("#000000"),
         designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2"),
        designerBlue = d3.rgb("#696fc4"),
@@ -130,11 +130,11 @@
     width = canvas.width,
     height = canvas.height;
 
-      d3.select("body").style("background-color", "#12151a");
+      d3.select("body").style("background-color", "#000000");
 
     var gradient=context.createRadialGradient(w/2,h/2,0,w/2,h/2,paddingW*10);
         gradient.addColorStop(0,"rgba(38,41,46,1)");
-        gradient.addColorStop(1,"rgba(18,21,26,.8)");
+        gradient.addColorStop(1,"rgba(0,0,0,.8)");
 
     // var cScale = d3.scale.linear()
     //     .domain([0, 1])

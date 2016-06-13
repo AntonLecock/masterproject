@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: BretzelGrotesk, sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -53,7 +53,7 @@
 
       document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-      var designerBlack = d3.rgb("#12151a"),
+      var designerBlack = d3.rgb("#000000"),
             designerRed = d3.rgb("#c83c46"),
           designerWhite = d3.rgb("#ffe9d2"),
            designerBlue = d3.rgb("#696fc4"),
@@ -227,7 +227,7 @@
         }); // asteroiddata
 
         renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor( 0x12151a );
+        renderer.setClearColor( 0x000000 );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
         container.appendChild( renderer.domElement );

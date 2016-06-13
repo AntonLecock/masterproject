@@ -5,13 +5,39 @@
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" charset="utf-8"></script>
   <style type="text/css">
-  body {
-    padding:0;
-    margin:0;
-    background-color:#111;
-    font-family:sans-serif;
-    color:white;
-  }
+    body {
+      padding:0;
+      margin:0;
+      background-color:#000000;
+      font-family: 'Circular Std', sans-serif;
+      letter-spacing: 0px;
+      color:white;
+
+      -webkit-font-smoothing: antialiased;
+         -moz-font-smoothing: antialiased;
+           -o-font-smoothing: antialiased;
+              font-smoothing: antialiased;
+    }
+    text {
+      font-size: 20px;
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+    }
 
   .axis path,
   .axis line {
@@ -26,7 +52,7 @@
   }
 
   text {
-    font-family: sans-serif;
+    font-family: 'Circular Std', sans-serif;
     font-size: 11px;
     fill:white;
   }
@@ -59,20 +85,135 @@
   form#browse {
     left:50%;
   }
+  
+  button {
+    border:none;
+    background: rgba(255,255,255,.20);
+    margin: 0 0 1px 0;
+    padding:0;
+    color:white;
+    width:100%;
+    height:30px;
+    font-size:14px;
+    outline:0;
+    opacity:0.5;
+    transition: opacity .25s ease, background .25s ease;
+    text-align: left;
+    line-height:0px;
+    font-family:'Circular Std', Roboto, helvetica, sans-serif;
+  }
+
+  button::-moz-focus-inner,
+  input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+  }
+
+  button:hover {
+    opacity:.75;
+    cursor:pointer;
+  }
+
+  button:disabled {
+    opacity: 0.2;
+    cursor:auto;
+  }
+
+  button svg {
+    margin:0;
+  }
+
+  button.active {
+    opacity: 1;
+    font-weight:800;
+  }
+
+  button.active:disabled {
+    opacity: 0.2;
+    cursor:auto;
+  }
+
+  button.active:hover {
+    background: rgba(255,255,255,.25);
+  }
+‡
+  button.active svg .shape {
+  }
+
+  .buttons-container {
+    position: fixed; 
+    height:100%; 
+    width:150px;
+    max-width:150px; 
+    font-size:14px; 
+    font-family:'Circular Std', Roboto, helvetica, sans-serif;
+    margin: 5px;
+    background-color:rgba(15, 15, 25, .5);
+  }
+
+  .radiobutton-svg {
+    width:10px;
+    height:10px;
+    margin:0 10px 0 10px;
+  }
+
+  .switchbutton-svg {
+    width:17px;
+    height:10px;
+    margin: 0 6px 0 10px;
+  }
+
+  .button-pause {
+    height:125px;
+    text-align: center;
+    background: rgba(255,255,255,0);
+  }
+
+  .button-pause:hover {
+    background: rgba(255,255,255,.1);
+  }
+
+  .buttons-title {
+    opacity: .5;
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:2px;
+    text-align: center;
+    width:100%;
+    display:block;
+    margin:20px 0 10px 0;
+  }
+
+  .button-half {
+    width:50%;
+    display:inline-block;
+    text-align:center;
+    float:left;
+  }
+
+  .button-restart:hover .restartshape-g {
+    transform: rotate(-360deg) scale(.8);
+    transform-origin: 50% 50%;
+    transition: transform .5s ease;
+  }
+
+  #svg-container {
+    position: fixed;
+    right:0;
+  }
 
   </style>
 </head>
 
 <body>
 
-<form id="controls">
-  <label>Press spacebar to pause or resume</label>
+<!-- <form id="controls">
   <input id="slower-button" value="10x Slower" type="button" onClick="slower();"/>
   <input id="pause-button" value="Pause" type="button" onClick="pause();"/>
   <input id="faster-button" value="10x Faster" type="button" onClick="faster();"/>
   <label>  </label>
   <input id="ghosts-button" value="Hide previous isochrones" type="button" onClick="ghosts();">
-</form>
+</form> -->
 
 <form id="browse">
   <label>Browse through stars</label>
@@ -81,7 +222,82 @@
   <input id="mass-button" value="Display evolutionary track" type="button" onClick="getMasses();">
 </form>
 
+<div id="buttons-container" class="buttons-container">
+    <button id="pause" class="pause button-pause" type="button" onClick="pause()">
+      <svg id="pausesvg" class="pausesvg" width="36" height="36" style="transform:rotate(0deg)">
+        <polygon id="pausepolygonleft" class="polygon shape left" points="0,0 12,0 12,36 0,36" style="fill:white; stroke: none;"/></polygon>
+        <polygon id="pausepolygonright" class="polygon shape right" points="24,0 36,0 36,36 24,36" style="fill:white; stroke: none;"/></polygon>
+      </svg>
+    </button>
+
+    <!-- <div class="time-elapsed">
+      Time elapsed:<br>
+      <span id="time-elapsed" class="time-elapsed-js">0</span>
+    </div> -->
+
+    <span class="buttons-title">Speed</span>
+    <span class="buttons-title" id="buttons-title-speed" style="margin-top:-6px; text-transform: none">(x10000)</span>
+    <button id="slower-button" class="slower button-slower button-half" type="button" onClick="slower();">
+      Slower
+    </button>
+    <button id="faster-button" class="faster button-faster button-half" type="button" onClick="faster();">
+      Faster
+    </button>
+    <div style="clear: both;"></div>
+
+    <span class="buttons-title">Settings</span>
+    <button id="ghosts" class="viewtop button-viewtop" type="button" onClick="ghosts()">
+      <svg id="ghostssvg" class="button-svg switchbutton-svg ghostssvg">
+        <rect id="ghostsshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="ghostsshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Hide previous 
+    </button>
+    <button id="restart-button" class="restart button-restart" type="button" onClick="window.location.reload()">
+      <svg id="restartsvg" class="button-svg switchbutton-svg ghostssvg">
+        <g class="restartshape-g shape">
+          <path fill="none" stroke="white" d="M5,1c2.2,0,4,1.8,4,4S7.2,9,5,9S1,7.2,1,5"/>
+          <polygon fill="white" stroke="none" points="5.6,3 2.1,1 5.6,-1      "/> 
+        </g>
+      </svg>
+      Restart
+    </button>
+
+</div>
+
+<div class="return-notification" id="return-notification" style="z-index: 997; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 998; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto 6em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      Stellar evolution and the Hertzsprung-Russell diagram [023].
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Attempts at an interactive Hertzsprung-Russell diagram, that explains the evolutionary path of stars.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Click on stars to open detailed view.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+    </p>
+  </div>
+  <div id="svg-wrapper" style="z-index: -500">
+  </div>
   <script type="text/javascript">
+
+  var readySetGo = false;
 
     var ages = ["0300", "0500", "0530", "0559", "0580", "0590", "0600", "0605", "0609", "0615", "0619", "0625", "0630", "0634", "0640", "0644", "0650", "0655", "0659", "0665", "0669", "0675", "0680", "0684", "0690", "0694", "0700", "0705", "0709", "0715", "0719", "0725", "0730", "0734", "0740", "0744", "0750", "0755", "0759", "0765", "0769", "0775", "0780", "0784", "0790", "0794", "0800", "0805", "0810", "0814", "0819", "0825", "0830", "0835", "0839", "0844", "0850", "0855", "0860", "0864", "0869", "0875", "0880", "0885", "0889", "0894", "0900", "0905", "0910", "0914", "0919", "0925", "0930", "0935", "0939", "0944", "0950", "0955", "0960", "0964", "0969", "0975", "0980", "0985", "0989", "0994", "1000", "1005", "1010", "1014", "1019"]; //91 data files
 
@@ -89,8 +305,10 @@
         t = ages[age], // age, time as log, so 10^t (example: t = ages[1] => t = 300)
         tIndex = ages[age];
 
+    var paddingLeft = 150;
+
     var padding = 30,
-        w = window.innerWidth,
+        w = window.innerWidth - paddingLeft,
         h = window.innerHeight;
 
     var speed = 4, // interval rate (in miliseconds)
@@ -211,7 +429,7 @@
       gainNode.gain.value = 0;
 
     // Create the SVG Viewport
-    var svgContainer = d3.select("body").append("svg")
+    var svgContainer = d3.select("#svg-wrapper").append("svg")
                                         .attr("id","svg-container")
                                         .attr("class","svg-container")
                                         .attr("width", w)
@@ -459,7 +677,7 @@
                                         .attr("y", 0)
                                         .attr("height", 512)
                                         .attr("width", 512)
-                                        .attr("xlink:href", "img/lensflare0-b.png")
+                                        .attr("xlink:href", "img/lensflare0-b.png");
 
 
     // Create an SVG group Element for the age / mass labels
@@ -473,15 +691,24 @@
     // Create a function to determine what happens when paused
     var pause = function () {
       if (paused === false) {
+        d3.select('#pausepolygonleft').transition().delay(250).duration(500)
+                                      .attr("points", "0,0 18,9 18,27 0,36");
+        d3.select('#pausepolygonright').transition().delay(250).duration(500)
+                                       .attr("points", "18,9 36,18 36,18 18,27");
+
         paused = true;
         timeFactorTemp = timeFactor; // temporarily store the value of timefactor for when unpause happens
         timeFactor = 0;
         plusMinus = "";
         speed = 100;
-        document.getElementById("pause-button").value = "Resume";
+        // document.getElementById("pause-button").value = "Resume";
         document.getElementById("slower-button").disabled = true;
         document.getElementById("faster-button").disabled = true;
       } else if (paused === true) {
+        d3.select('#pausepolygonleft').transition().delay(250).duration(500)
+                                      .attr("points", "0,0 12,0 12,36 0,36");
+        d3.select('#pausepolygonright').transition().delay(250).duration(500)
+                                       .attr("points", "24,0 36,0 36,36 24,36");
         paused = false;
         timeFactor = timeFactorTemp;
         speed = 4;
@@ -490,7 +717,7 @@
         } else {
           plusMinus = "-";
         }
-        document.getElementById("pause-button").value = "Pause";
+        // document.getElementById("pause-button").value = "Pause";
         if (reachedMin === false) {
           document.getElementById("slower-button").disabled = false;
         } 
@@ -527,11 +754,13 @@
         timeFactor = timeFactor / 10;
         document.getElementById("slower-button").disabled = false;
         document.getElementById("faster-button").disabled = false;
+
+        document.getElementById("buttons-title-speed").innerHTML = "(x" + timeFactor + ")";
+
         reachedMin = false;
       } else {
         document.getElementById("slower-button").disabled = true;
         reachedMin = true;
-        alert("Timer has reached minimum!");
       }
     }
 
@@ -541,11 +770,13 @@
         timeFactor = timeFactor * 10;
         document.getElementById("faster-button").disabled = false;
         document.getElementById("slower-button").disabled = false;
+
+        document.getElementById("buttons-title-speed").innerHTML = "(x" + timeFactor + ")";
+
         reachedMax = false;
       } else {
         document.getElementById("faster-button").disabled = true;
         reachedMax = true;
-        alert("Timer has reached maximum!");
       }
     }
 
@@ -555,12 +786,21 @@
           d3.selectAll(".circlesgroup g:not(#g" + t + ") .star").transition().duration(250)
                                                           .style("opacity", .0);
           document.getElementById("ghosts-button").value = "Display previous isochrones";
+
+          d3.select('#ghosts').classed("active", true);
+          d3.select("#ghostsshape-circle").transition().duration(500).ease("elastic-in")
+                                                   .attr("cx", 11.5);
           ghostsOn = false;
           console.log("Ghosts are now off!");
         } else {
           d3.selectAll(".circlesgroup g:not(#g" + t + ") .star").transition().duration(250)
                                                           .style("opacity", .1);
           document.getElementById("ghosts-button").value = "Hide previous isochrones";
+
+          d3.select('#ghosts').classed("active", false);
+          d3.select("#ghostsshape-circle").transition().duration(500).ease("elastic-in")
+                                                   .attr("cx", 5);
+
           ghostsOn = true;
           console.log("Ghosts are now on!");
         }
@@ -1132,7 +1372,7 @@
                                             for (i = 0; i < properties.length; i++){
                                               d3.select("#suninfo-" + properties[i]).transition()
                                                                                     .duration(1000)
-                                                                                    .attr("y", h/3*2 + padding*(5+i/2));
+                                                                                    .attr("y", h/8 * padding*(5+i/2));
                                             }
                                           }
   
@@ -1198,7 +1438,7 @@
                                               //move the suninfo labels to right of the screen if star has large radius
                                               d3.select("#suninfo-" + properties[i]).transition()
                                                                                     .duration(1000)
-                                                                                    .attr("y", h/3*2 + padding*(5+i/2))
+                                                                                    .attr("y", h/8 + padding*(5+i/2))
                                                                                     .attr("x", sunX);
                                             }
                                           }
@@ -1325,6 +1565,73 @@
 
     
   drawDiagram();
+
+  setTimeout(function() {
+    ready();
+    readySetGo = true;  
+  }, 1000);
+
+ var svg = d3.select("#svg-container");
+
+  svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+    var returnTimer = 0;
+    var returnCountdown = 0;
+    var returnLink = 0;
+    var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+      clearTimeout(returnTimer);
+      clearInterval(returnCountdown);
+      clearTimeout(returnLink);
+      countdown = 10;
+      returnNotification.transition().duration(500).style("opacity", 0);
+      setTimeout(function() {returnNotification.style("display", "none")}, 500);
+      if (readySetGo) {
+        ready();
+      }
+    };
+
+    function ready() {
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+      d3.select("#loading").transition().duration(500).style("opacity", 0);
+      setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+      svg.transition().delay(0).duration(1000)
+                         .style("-webkit-filter", "blur(" + 0 + "px)")
+                         .style("opacity",1);
+      d3.select("#info").transition().duration(500).style('opacity', 1);
+      returnTimer = setTimeout(returnToHub, 80000);
+    };
+
+    function returnToHub() {
+      returnNotification.style("display", "block").transition().duration(500)
+                        .style("opacity", 1);
+      svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                         .style("-webkit-filter", "blur(" + 5 + "px)")
+                         .style("opacity",.2);
+      d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                         .style('opacity', 0);
+
+      var countdown = 10; 
+      console.log(countdown);
+      returnCountdown = setInterval(function() {
+        countdown = countdown - 1;
+        document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+        console.log(countdown);
+      }, 1000)
+      returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
   </script>
 </body>

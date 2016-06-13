@@ -321,9 +321,9 @@ img {
 
 .page-link-big .page, .page-link-big .page {
 	max-width:1440px;
-	max-height:100vh;
+	max-height:900px;
 	width:1440px;
-	height:100vh;
+	height:900px;
 	background-position: center;
 }
 
