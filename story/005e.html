@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -97,7 +97,7 @@
 
   // COLORS    
   // var designerBlack = d3.rgb("#12141A"), // Define a nice black color for the background, store it as var
-     var designerBlack = d3.rgb("#12151a"),
+     var designerBlack = d3.rgb("#000000"),
       designerRed = d3.rgb("#c83c46"),
       designerWhite = d3.rgb("#ffe9d2");
 
@@ -394,13 +394,13 @@ function returnToHub() {
 }
 
 function returnNow() {
-  var oldURL = document.referrer;
-  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
-    window.history.back();
-  } else {
-    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
-  }
-};
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
   </script>
 </body>

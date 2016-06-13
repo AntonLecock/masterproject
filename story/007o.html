@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -133,11 +133,11 @@
     width = canvas.width,
     height = canvas.height;
 
-      d3.select("body").style("background-color", "#12151a");
+      d3.select("body").style("background-color", "#000000");
 
     var gradient=context.createRadialGradient(w/2,h/2,0,w/2,h/2,paddingW*10);
         gradient.addColorStop(0,"rgba(38,41,46,1)");
-        gradient.addColorStop(1,"rgba(18,21,26,.9)");
+        gradient.addColorStop(1,"rgba(0,0,0,.9)");
 
     // var cScale = d3.scale.linear()
     //     .domain([0, 1])
@@ -524,13 +524,13 @@ function returnToHub() {
 }
 
 function returnNow() {
-  var oldURL = document.referrer;
-  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
-    window.history.back();
-  } else {
-    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
-  }
-};
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
 
   </script>

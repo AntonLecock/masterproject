@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: BretzelGrotesk, sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -49,7 +49,7 @@
       var windowHalfX = window.innerWidth / 2;
       var windowHalfY = window.innerHeight / 2;
 
-      var designerBlack = d3.rgb("#12151a"),
+      var designerBlack = d3.rgb("#000000"),
             designerRed = d3.rgb("#c83c46"),
           designerWhite = d3.rgb("#ffe9d2"),
            designerBlue = d3.rgb("#696fc4"),
@@ -68,7 +68,7 @@
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
         camera.position.z = 1000;
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2( 0x12151a, 0.0007 );
+        scene.fog = new THREE.FogExp2( 0x000000, 0.0007 );
         geometry = new THREE.Geometry();
 
         var detachedContainer = document.createElement("custom");

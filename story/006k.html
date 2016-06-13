@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -111,7 +111,7 @@
       coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
       coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
 
-      d3.select("body").style("background-color", "#12151a");
+      d3.select("body").style("background-color", "#000000");
 
   var cScale = d3.scale.linear()
         .domain([0, 1])
@@ -512,13 +512,13 @@ function returnToHub() {
 }
 
 function returnNow() {
-  var oldURL = document.referrer;
-  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
-    window.history.back();
-  } else {
-    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
-  }
-};
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
 
   </script>

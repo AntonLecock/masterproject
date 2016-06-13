@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
@@ -125,7 +125,7 @@
     width = canvas.width,
     height = canvas.height;
 
-      d3.select("body").style("background-color", "#12151a");
+      d3.select("body").style("background-color", "#000000");
 
     var cScale = d3.scale.linear()
         .domain([0, 1])
@@ -199,7 +199,7 @@
     function step() {
 
       // "clear" canvas
-      context.fillStyle = "rgba(18,21,26,0.8)";
+      context.fillStyle = "rgba(0,0,0,0.8)";
       context.strokeStyle = "none"
       context.fillRect(0,0,w,h);
 
@@ -455,13 +455,13 @@ function returnToHub() {
 }
 
 function returnNow() {
-  var oldURL = document.referrer;
-  if (oldURL === "http://antonlecock.github.io/masterproject/hub/test.html") {
-    window.history.back();
-  } else {
-    window.location.href = "http://antonlecock.github.io/masterproject/hub/test.html";
-  }
-};
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
   </script>
 </body>

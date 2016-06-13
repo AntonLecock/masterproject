@@ -7,7 +7,7 @@
     body {
       padding:0;
       margin:0;
-      background-color:#12151a;
+      background-color:#000000;
       font-family: Circular Std, sans-serif;
       text-transform: uppercase;
       color:white;
@@ -94,7 +94,7 @@
     width = canvas.width,
     height = canvas.height;
 
-      d3.select("body").style("background-color", "#12151a");
+      d3.select("body").style("background-color", "#000000");
 
     var cScale = d3.scale.linear()
         .domain([0, 1])
@@ -186,7 +186,7 @@
       // "clear" canvas
       var gradient=context.createRadialGradient(w/2,h/2,0,w/2,h/2,enlarge/180);
         gradient.addColorStop(0,"rgba(88,91,96,1)");
-        gradient.addColorStop(1,"rgba(18,21,26,1)");
+        gradient.addColorStop(1,"rgba(0,0,0,1)");
 
       context.fillStyle = gradient;
       context.strokeStyle = "none"
@@ -319,7 +319,7 @@
 
           // add orbiting points
           
-            context.fillStyle = "#12151a";
+            context.fillStyle = "#000000";
             context.strokeStyle = designerBlue;
 
           // context.fillStyle = cScale(e);
