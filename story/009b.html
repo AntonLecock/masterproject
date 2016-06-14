@@ -5,10 +5,11 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:white;
-      font-family: BretzelGrotesk, sans-serif;
+      font-family: "Circular Std", sans-serif;
 
       -webkit-font-smoothing: antialiased;
          -moz-font-smoothing: antialiased;
@@ -41,6 +42,40 @@
 </head>
 
 <body>
+<div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      All 1,963 confirmed exoplanets.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Color of the exoplanet corresponds to the temperature of the planet's host star: white is warmer, red is colder.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Hover the cursor over the planets to see their names.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Scroll to zoom in and out.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
+    </p>
+  </div>
+  <div id="canvas-wrapper" style="z-index: -500">
+  </div>
+
   <script type="text/javascript">
 
   var w = 1189, h = 841;

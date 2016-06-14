@@ -6,6 +6,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js" charset="utf-8"></script>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
@@ -254,7 +255,7 @@
       Hide previous 
     </button>
     <button id="restart-button" class="restart button-restart" type="button" onClick="window.location.reload()">
-      <svg id="restartsvg" class="button-svg switchbutton-svg ghostssvg">
+      <svg id="restartsvg" class="button-svg switchbutton-svg restartsvg">
         <g class="restartshape-g shape">
           <path fill="none" stroke="white" d="M5,1c2.2,0,4,1.8,4,4S7.2,9,5,9S1,7.2,1,5"/>
           <polygon fill="white" stroke="none" points="5.6,3 2.1,1 5.6,-1      "/> 
@@ -290,7 +291,7 @@
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
-      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+      <a class="back" href="javascript:void(0)" onClick="returnNow();">Return to overview</a>
     </p>
   </div>
   <div id="svg-wrapper" style="z-index: -500">
@@ -405,7 +406,7 @@
         midColor = d3.rgb("#ffe9d2")
         coldColor = d3.rgb("#ffd5a1"), // cold color in the graph
         coldestColor = d3.rgb("#ff5200"); // coldest color in the graph
-    var designer = d3.rgb("#111"); // Define a nice black color for the background, store it as var
+    var designer = d3.rgb("#000"); // Define a nice black color for the background, store it as var
 
     var clicked = false, // is there a star selected? initial is set to false
         idClicked = "";

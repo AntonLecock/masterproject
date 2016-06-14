@@ -382,6 +382,7 @@ img {
 	top:auto;
 	bottom:0;
 	height:300px;
+	margin-bottom:-50px;
 }
 
 .page-title {

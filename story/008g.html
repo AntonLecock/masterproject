@@ -5,10 +5,11 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
-      font-family: Circular Std, sans-serif;
+      font-family: "Circular Std", sans-serif;
       text-transform: uppercase;
       color:white;
 
@@ -416,7 +417,7 @@
           //  && y > mousePosY - h/2 - 20 
           //  && y < mousePosY - h/2 + 20) {
           //   if (node.attr("pdes") != undefined && scaler != "tiny") {
-          //     context.font = "14px BretzelGrotesk"
+          //     context.font = "14px Circular Std"
           //     context.textAlign = "center";
           //     context.fillText(node.attr("pdes"), x, y - (rad * pointRadius + 5));
           //   }
@@ -466,6 +467,8 @@
   d3.select("body").call(zoom);
 
   function zoomed() {
+
+resetTimers();
 
     // speed = initialSpeed * d3.event.scale;
     enlarge = initialEnlarge * d3.event.scale;

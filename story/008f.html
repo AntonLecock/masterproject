@@ -5,11 +5,12 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
-      font-family: Circular Std, sans-serif;
-      text-transform: uppercase;
+      font-family: 'Circular Std', sans-serif;
+      letter-spacing: 1px;
       color:white;
 
       -webkit-font-smoothing: antialiased;
@@ -17,31 +18,72 @@
            -o-font-smoothing: antialiased;
               font-smoothing: antialiased;
     }
+    text {
+      font-size: 20px;
+    }
     canvas { 
       width: 100%; 
-      height: 100%;
-      position:fixed;
+      height: 100% 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+      cursor:pointer;
     }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-  <script src="data/20000.js" charset="utf-8"></script>
 </head>
 
 <body>
-<!-- <div style="position:fixed; top: 48%; width:100%; background: none;"> -->
-<!--     <h1 style=" position:fixed; top: 47.5%; width: 100%; margin: 0 auto; padding-left:100px; text-align: center; font-size: 36px; letter-spacing: 14px; font-weight:100;">
-      Exoplanets
-    </h1> -->
-<!--   </div> -->  
-  <div style="position: fixed; bottom:50px; left:50px; max-width:200px;">
-    <p style="width:220px; font-size: 12.5px; text-transform: none; line-height:1.5;">
-      Every dot you see is a planet, orbiting around a star other than our own sun. These 1,963 points are all exoplanets that have been confirmed as of March 31st, 2016. Here, they are orbiting one star, while in reality they are not part of the same system. Look around by scrolling up and down to explore more: orbits of the planets in our solar system are highlighted.
+<div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
     </p>
   </div>
-  <canvas style=" position: fixed; z-index:-5" width="500" height="500"></canvas>
-<!--   <div class="kader" style="position:fixed; z-index: -6; width: 100%; height: 100%; background:none; box-sizing: border-box; border: 5px solid #c83c46;" >
-  </div> -->
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0;">
+      All 1,963 confirmed exoplanets.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      All solar system planets and exoplanets imagined in one single system.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Move the cursor to tilt the rotational plane.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      Scroll to zoom in and out.
+    </p>
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
+    </p>
+  </div>
+  <div id="canvas-wrapper" style="z-index: -500">
+  </div>
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var paddingW = w/10,
@@ -86,7 +128,7 @@
 
 
   // CANVAS
-  var canvas = d3.select("canvas")
+  var canvas = d3.select("#canvas-wrapper").append("canvas")
                .attr("id", "canvas")
                .attr("width", w)
                .attr("height", h),
@@ -373,7 +415,7 @@
           //  && y > mousePosY - h/2 - 20 
           //  && y < mousePosY - h/2 + 20) {
           //   if (node.attr("pdes") != undefined && scaler != "tiny") {
-          //     context.font = "14px BretzelGrotesk"
+          //     context.font = "14px Circular Std"
           //     context.textAlign = "center";
           //     context.fillText(node.attr("pdes"), x, y - (rad * pointRadius + 5));
           //   }
@@ -424,6 +466,8 @@
 
   function zoomed() {
 
+resetTimers();
+
     // speed = initialSpeed * d3.event.scale;
     enlarge = initialEnlarge * d3.event.scale;
     pointRadius = d3.event.scale * initialPointRadius;
@@ -445,6 +489,69 @@
 
     
   }
+
+   ready();
+    readySetGo = true;
+
+    canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  canvas.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
+                    .style("opacity", 1);
+  canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
 
   // d3.select("canvas").style("-webkit-filter", "blur(" + 0 + "px)");
