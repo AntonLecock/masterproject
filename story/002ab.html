@@ -5,10 +5,11 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#111;
-      font-family: BretzelGrotesk, sans-serif;
+      font-family: "Circular Std", sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -164,6 +165,8 @@ starsGroup.selectAll( "path" )
                         .attr("cy", h/2);
 
 function zoomed() {
+
+resetTimers();
   starsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   sunGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 

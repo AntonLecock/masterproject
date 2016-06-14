@@ -5,10 +5,11 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
-      font-family: Circular Std, sans-serif;
+      font-family: "Circular Std", sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -75,7 +76,7 @@
     </p>
     <p style="font-weight:100; margin: 0;">
       <br>
-      <a class="back" href="http://antonlecock.github.io/masterproject/hub/">Return to overview</a>
+      <a class="back" href="javascript:void(0)" onClick="returnNow();">Return to overview</a>
     </p>
   </div>
   <div id="svg-wrapper" style="z-index: -500">
@@ -186,6 +187,8 @@ starsGroup.selectAll( "path" )
   d3.select(".star-0").remove();
 
   function zoomed() {
+
+resetTimers();
     starsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     resetTimers();
   }

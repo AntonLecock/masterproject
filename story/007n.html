@@ -5,6 +5,7 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
@@ -230,10 +231,10 @@
       //   context.fillText("Sun", w/2 - 9, h/2 - 9);
       // };
 
-      // context.font = "24px BretzelGrotesk";
+      // context.font = "24px Circular Std";
       // context.textAlign = "center";
       // context.fillText("All 1,963 confirmed exoplanets",  w/2, paddingH*3);
-      // context.font = "16px BretzelGrotesk";
+      // context.font = "16px Circular Std";
       // context.fillText("as of March 31st, 2016", w/2, paddingH*4);
       // context.fillText("Every dot you see is a planet, orbiting around a star other than our own sun.", w/2, h-paddingH*5);
       // context.fillText("They aren’t even hypothetical: these 1,963 exoplanets have been confirmed as of March 31st, 2016.", w/2, h-paddingH*4);
@@ -380,7 +381,7 @@
            && y > mousePosY - h/2 - 20 
            && y < mousePosY - h/2 + 20) {
             if (node.attr("pdes") != undefined && scaler != "tiny") {
-              context.font = "14px BretzelGrotesk"
+              context.font = "14px Circular Std"
               context.textAlign = "center";
               context.fillText(node.attr("pdes"), x, y - (rad * pointRadius + 5));
             }
@@ -408,7 +409,7 @@
             var earthTime = earthAngle/360*365.25; 
             var earthTimeRounded = earthTime.toFixed(2);
             context.fillStyle = 'white';
-            context.font = "12px BretzelGrotesk";
+            context.font = "12px Circular Std";
             context.textAlign = "left"
             context.fillText("Earth days ellapsed: " + earthTimeRounded, paddingH*5, paddingH*3);
           }
@@ -436,6 +437,8 @@
   canvas.call(zoom);
 
   function zoomed() {
+
+resetTimers();
 
     console.log(d3.event.scale);
     speed = initialSpeed * d3.event.scale;

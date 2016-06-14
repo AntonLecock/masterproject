@@ -5,6 +5,7 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
@@ -350,6 +351,8 @@
   }); // end planet stuff 
 
   function zoomed() {
+
+resetTimers();
   asteroidsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   planetsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 

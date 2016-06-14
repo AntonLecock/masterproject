@@ -5,6 +5,7 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
@@ -327,6 +328,8 @@
   canvas.call(zoom);
 
   function zoomed() {
+
+resetTimers();
 
     console.log(d3.event.scale);
     speed = initialSpeed * d3.event.scale;

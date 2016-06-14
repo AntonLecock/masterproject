@@ -5,10 +5,11 @@
   <title>Story</title>
   <style type="text/css">
     body {
+    cursor:crosshair;
       padding:0;
       margin:0;
       background-color:#000000;
-      font-family: BretzelGrotesk, sans-serif;
+      font-family: 'Circular Std', sans-serif;
       letter-spacing: 1px;
       color:white;
 
@@ -22,8 +23,25 @@
     }
     canvas { 
       width: 100%; 
-      height: 100%;
-      position:fixed; 
+      height: 100% 
+    }
+
+    a, a:link, a:visited {
+      color: white;
+      text-decoration: none;
+      -webkit-transition: opacity 1s ease;
+      -moz-transition: opacity 1s ease;
+      -o-transition: opacity 1s ease;
+      transition: opacity 1s ease;
+    }
+
+    a:hover, a:active {
+      opacity: .5;
+    }
+
+    .back:before {
+      content:"\2190 \2003";
+      cursor:pointer;
     }
   </style>
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
@@ -340,6 +358,8 @@
   canvas.call(zoom);
 
   function zoomed() {
+
+resetTimers();
     console.log(d3.event.scale);
     speed = initialSpeed * d3.event.scale * 2;
     enlarge = initialEnlarge * d3.event.scale;
@@ -356,6 +376,7 @@
 
 
   // function zoomed() {
+
   // asteroidsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   // planetsGroup.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 
