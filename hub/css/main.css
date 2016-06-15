@@ -359,6 +359,13 @@ img {
 	transition:outline .3s ease, outline-offset .2s ease, -webkit-filter 1s ease, -o-filter 1s ease, -moz-filter 1s ease, filter 1s ease;
 }
 
+.page-link-big .page-bgimg {
+	-webkit-filter: blur(4px);
+	   -moz-filter: blur(4px);
+		 -o-filter: blur(4px);
+			filter: blur(4px);
+}
+
 
 
 .page-text {

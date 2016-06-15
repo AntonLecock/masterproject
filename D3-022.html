@@ -246,6 +246,22 @@
     </button>
     <div style="clear: both;"></div>
 
+    <span class="buttons-title">Detail view</span>
+    <button id="track" class="viewtop button-viewtop" type="button" onClick="getMasses();">
+      <svg id="tracksvg" class="button-svg switchbutton-svg tracksvg">
+        <rect id="trackshape-rect" class="radio-circle-outer shape" x="0.5" y="0.5" width="15.5" height="9" rx="4.5" ry="4.5" stroke="white" stroke-width="1" fill="none" /> 
+        <circle id="trackshape-circle" class="radio-circle-inner shape" cx="5" cy="5" r="2.75" stroke="none" fill="white" /> 
+      </svg>
+      Track 
+    </button>
+    <button id="previous-button" class="previous button-previous button-half" type="button" onClick="selectPreviousStar();">
+      Previous
+    </button>
+    <button id="next-button" class="next button-next button-half" type="button" onClick="selectNextStar();">
+      Next
+    </button>
+    <div style="clear: both;"></div>
+
     <span class="buttons-title">Settings</span>
     <button id="ghosts" class="viewtop button-viewtop" type="button" onClick="ghosts()">
       <svg id="ghostssvg" class="button-svg switchbutton-svg ghostssvg">

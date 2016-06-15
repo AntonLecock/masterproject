@@ -172,6 +172,13 @@
       Loading data...
     </p>
   </div>
+  <div class="info" id="info" style="z-index: 999; position: fixed; width:100%; bottom:0; text-align: center; margin:2em auto; font-family:'Circular Std', Helvetica, serif; font-size:16px; letter-spacing:0px;">
+    <p style="font-weight:100; margin: 0;">
+      <br>
+      <a class="back" href="javascript:void(0);" onclick="returnNow();">Return to overview</a>
+    </p>
+  </div>
+
   <div id="text-container" style="position: absolute; bottom:-700px; margin:0 auto; max-width:600px; font-size:30px;">
     <p style="width:600px; font-size: 25px; text-transform: none; line-height:1.8;">
       These are <span class="bold">exoplanets</span>, planets orbiting around a star other than the sun. Exoplanets are very common in the universe. The average star has more than one planet orbiting around it, making our solar system the rule rather than the exception. 
@@ -181,6 +188,7 @@
     </p>
     <button onclick="info()" class="info-close" style="width:33%; display:block; text-align:center; font-size:16px; margin: 4rem auto 0 auto; text-transform: uppercase; font-weight:400; letter-spacing:2px">Close</button>
   </div>
+
 
   <div id="buttons-container" class="buttons-container">
     <button id="pause" class="pause button-pause" type="button" onclick="togglePause()">
@@ -903,7 +911,7 @@
 
             context.fillStyle = "#000000";
             context.strokeStyle = designerBlue;
-            context.lineWidth = .2;
+            context.lineWidth = .4;
 
           if (planets) {
             context.beginPath();
@@ -955,7 +963,7 @@
 
           if (orbits) {
             context.beginPath();
-            context.lineWidth = .2;
+            context.lineWidth = .4;
             context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
             context.closePath();
             context.stroke();
@@ -1013,7 +1021,7 @@
               //draw orbit of planet
               context.strokeStyle = designerGreen;
               context.beginPath();
-              context.lineWidth = .2;
+              context.lineWidth = .4;
               context.ellipse(F, 0, a, b/viewpointY, 0, 0, 2 * Math.PI, true);
               context.closePath();
               context.stroke();
