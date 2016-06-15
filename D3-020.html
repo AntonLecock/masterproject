@@ -1338,5 +1338,72 @@
     
   drawDiagram();
 
+  setTimeout(function() {
+    ready();
+    readySetGo = true;  
+  }, 1000);
+
+ var svg = d3.select("#svg-container");
+
+  svg.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+    var returnTimer = 0;
+    var returnCountdown = 0;
+    var returnLink = 0;
+    var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+      clearTimeout(returnTimer);
+      clearInterval(returnCountdown);
+      clearTimeout(returnLink);
+      countdown = 10;
+      returnNotification.transition().duration(500).style("opacity", 0);
+      setTimeout(function() {returnNotification.style("display", "none")}, 500);
+      if (readySetGo) {
+        ready();
+      }
+    };
+
+    function ready() {
+      document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+      d3.select("#loading").transition().duration(500).style("opacity", 0);
+      setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+      svg.transition().delay(0).duration(1000)
+                         .style("-webkit-filter", "blur(" + 0 + "px)")
+                         .style("opacity",1);
+      d3.select("#info").transition().duration(500).style('opacity', 1);
+      returnTimer = setTimeout(returnToHub, 80000);
+    };
+
+    function returnToHub() {
+      returnNotification.style("display", "block").transition().duration(500)
+                        .style("opacity", 1);
+      svg.transition().delay(0).duration(10000).ease("linear-in-out")
+                         .style("-webkit-filter", "blur(" + 5 + "px)")
+                         .style("opacity",.2);
+      d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                         .style('opacity', 0);
+
+      var countdown = 10; 
+      console.log(countdown);
+      returnCountdown = setInterval(function() {
+        countdown = countdown - 1;
+        document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+        console.log(countdown);
+      }, 1000)
+      returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
+
   </script>
 </body>
