@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <title>Story</title>
   <style type="text/css">
-    bbody {
+    body {
     cursor:crosshair;
       padding:0;
       margin:0;
@@ -158,6 +158,20 @@
       Exoplanets
     </h1> -->
 <!--   </div> -->  
+
+  <div class="return-notification" id="return-notification" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px; display:none; opacity:0;">
+    <p id="return-notification-message" style="font-weight:800; margin: 0;">
+      Returning to overview in 10 seconds
+    </p>
+    <p style="font-weight:100; margin: 0; font-size:20px">
+      Move the cursor to stay on the page
+    </p>
+  </div>
+  <div class="loading" id="loading" style="z-index: 999; position: fixed; width:100%; top:45%; text-align: center; margin:0 auto; font-family:'Circular Std', Helvetica, serif; font-size:36px; letter-spacing:0px;">
+    <p style="font-weight:800; margin: 0">
+      Loading data...
+    </p>
+  </div>
   <div id="text-container" style="position: absolute; bottom:-700px; margin:0 auto; max-width:600px; font-size:30px;">
     <p style="width:600px; font-size: 25px; text-transform: none; line-height:1.8;">
       These are <span class="bold">exoplanets</span>, planets orbiting around a star other than the sun. Exoplanets are very common in the universe. The average star has more than one planet orbiting around it, making our solar system the rule rather than the exception. 
@@ -321,6 +335,8 @@
   <canvas style=" position: fixed; z-index:-5" width="500" height="500"></canvas>
   
   <script type="text/javascript">
+
+  var readySetGo = false;
 
   var w = window.innerWidth, h = window.innerHeight;
   var yEarth = 0;
@@ -1070,7 +1086,7 @@
               var earthAngle = angle*(180/Math.PI);
               var earthTime = earthAngle/360*365.25; 
               var earthTimeRounded = earthTime.toFixed(2)
-              context.fillText("Days ellapsed: " + earthTimeRounded, 125, 74);
+              context.fillText("Days ellapsed: " + earthTimeRounded, 200, 74);
               var earthTimeString = String();
               // if (earthTimeString.indexOf(".") == -1) {
                 playTick();
@@ -1807,7 +1823,69 @@ resetTimers();
   //   setTimeout(function() {window.location.href = "http://antonlecock.github.io/masterproject/hub/";}, 5000)
   // }
 
+   ready();
+    readySetGo = true;
 
+
+  canvas.style("-webkit-filter", "blur(" + 5 + "px)").style("opacity",.5);
+
+var returnTimer = 0;
+var returnCountdown = 0;
+var returnLink = 0;
+var returnNotification = d3.select('#return-notification');
+
+document.body.addEventListener('mousemove', resetTimers);
+
+function resetTimers() {
+  clearTimeout(returnTimer);
+  clearInterval(returnCountdown);
+  clearTimeout(returnLink);
+  countdown = 10;
+  returnNotification.transition().duration(500).style("opacity", 0);
+  setTimeout(function() {returnNotification.style("display", "none")}, 500);
+  if (readySetGo) {
+    ready();
+  }
+}
+
+function ready() {
+  document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
+  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  canvas.transition().delay(0).duration(1000)
+                     .style("-webkit-filter", "blur(" + 0 + "px)")
+                     .style("opacity",1);
+  d3.select("#info").transition().duration(500).style('opacity', 1);
+  returnTimer = setTimeout(returnToHub, 20000);
+};
+
+function returnToHub() {
+  returnNotification.style("display", "block").transition().duration(500)
+                    .style("opacity", 1);
+  canvas.transition().delay(0).duration(10000).ease("linear-in-out")
+                     .style("-webkit-filter", "blur(" + 5 + "px)")
+                     .style("opacity",.2);
+  d3.select("#info").transition().duration(8000).ease("linear-in-out")
+                     .style('opacity', 0);
+
+  var countdown = 10; 
+  console.log(countdown);
+  returnCountdown = setInterval(function() {
+    countdown = countdown - 1;
+    document.getElementById('return-notification-message').innerHTML = "Returning to overview in " + countdown + " seconds";
+    console.log(countdown);
+  }, 1000)
+  returnLink = setTimeout(function() {returnNow();}, 10000)
+}
+
+function returnNow() {
+    var oldURL = document.referrer;
+    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+      window.history.back();
+    } else {
+      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+    }
+  };
 
   </script>
 </body>
