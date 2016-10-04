@@ -173,7 +173,9 @@
       .domain([0, h])
       .range([90, -90]);
   
+  var loadingDOM =  d3.select("#loading");
   window.addEventListener('deviceorientation', function (e) {
+    loadingDOM.innerHTML = e.alpha;
     console.log(e.alpha, e.beta, e.gamma);
   }, true);
 
@@ -232,7 +234,7 @@ function resetTimers() {
 }
 function ready() {
   document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
-  d3.select("#loading").transition().duration(500).style("opacity", 0);
+  // d3.select("#loading").transition().duration(500).style("opacity", 0);
   setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
   svg.transition().delay(0).duration(1000)
                      .style("-webkit-filter", "blur(" + 0 + "px)")
