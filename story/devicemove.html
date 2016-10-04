@@ -176,7 +176,11 @@
   var loadingDOM = document.getElementById('loading');
   window.addEventListener('deviceorientation', function (e) {
     loadingDOM.innerHTML = e.alpha;
-    console.log(e.alpha, e.beta, e.gamma);
+    skyProjection.rotate([e.alpha, e.beta]);
+    starsGroup.selectAll("path").attr("d", skyPath);
+    sphereProjection.rotate([-e.alpha, -e.beta]);
+    planetLightGroup.selectAll("path").attr("d", sphereLightPath);
+    planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
   }, true);
 
   svg.on("mousemove", function() {
