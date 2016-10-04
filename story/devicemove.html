@@ -235,7 +235,7 @@ function resetTimers() {
 function ready() {
   document.getElementById('return-notification-message').innerHTML = "Returning to overview in 10 seconds";
   // d3.select("#loading").transition().duration(500).style("opacity", 0);
-  setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
+  // setTimeout(function() {d3.select("#loading").style("display", "none")}, 500);
   svg.transition().delay(0).duration(1000)
                      .style("-webkit-filter", "blur(" + 0 + "px)")
                      .style("opacity",1);
