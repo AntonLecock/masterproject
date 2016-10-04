@@ -181,6 +181,7 @@
 
   svg.on("mousemove", function() {
     var p = d3.mouse(this);
+    loadingDOM.innerHTML = p[0];
     skyProjection.rotate([λ(p[0]), φ(p[1])]);
     starsGroup.selectAll("path").attr("d", skyPath);
     sphereProjection.rotate([-λ(p[0]), -φ(p[1])]);
