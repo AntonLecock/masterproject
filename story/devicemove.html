@@ -240,7 +240,6 @@ function ready() {
                      .style("-webkit-filter", "blur(" + 0 + "px)")
                      .style("opacity",1);
   d3.select("#info").transition().duration(500).style('opacity', 1);
-  returnTimer = setTimeout(returnToHub, 20000);
 };
 function returnToHub() {
   returnNotification.style("display", "block").transition().duration(500)
