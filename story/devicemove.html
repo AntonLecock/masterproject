@@ -175,10 +175,10 @@
   
   var loadingDOM = document.getElementById('loading');
   window.addEventListener('deviceorientation', function (e) {
-    loadingDOM.innerHTML = e.alpha;
-    skyProjection.rotate([e.alpha, e.beta]);
+    loadingDOM.innerHTML = e.alpha + e.beta + e.gamma;
+    skyProjection.rotate([λ(e.alpha), φ(e.beta)]);
     starsGroup.selectAll("path").attr("d", skyPath);
-    sphereProjection.rotate([-e.alpha, -e.beta]);
+    sphereProjection.rotate([-λ(e.alpha), -φ(e.beta)]);
     planetLightGroup.selectAll("path").attr("d", sphereLightPath);
     planetShadeGroup.selectAll("path").attr("d", sphereShadePath);
   }, true);
