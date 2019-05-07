@@ -2,9 +2,9 @@
 <head>
   <meta charset="utf-8"/>
   <title>D3.js</title>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="js/lib/d3.v3.min.js" charset="utf-8"></script>
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.18/p5.min.js">
+  <script src="js/lib/p5.min.js">
   </script>
 
   <style type="text/css">
@@ -2314,10 +2314,10 @@ function resetTimers() {
 
 function returnNow() {
     var oldURL = document.referrer;
-    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+    if (oldURL === "hub/index.html") {
       window.history.back();
     } else {
-      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+      window.location.href = "hub/index.html";
     }
   };
 
