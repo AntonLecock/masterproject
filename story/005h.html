@@ -45,7 +45,7 @@
     }
 
   </style>
-  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="../js/lib/d3.v3.min.js" charset="utf-8"></script>
 </head>
 
 <body>
@@ -527,10 +527,10 @@ function returnToHub() {
 
 function returnNow() {
     var oldURL = document.referrer;
-    if (oldURL === "http://antonlecock.github.io/masterproject/hub/index.html") {
+    if (oldURL === "../hub/index.html") {
       window.history.back();
     } else {
-      window.location.href = "http://antonlecock.github.io/masterproject/hub/index.html";
+      window.location.href = "../hub/index.html";
     }
   };
   </script>
