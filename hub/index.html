@@ -1506,7 +1506,7 @@
 
 			window.addEventListener('scroll', scrollCheck);
 			function scrollCheck() {
-				scrolledHeight = body.scrollTop; // keep track of the scrolled height
+				scrolledHeight = window.scrollY; // keep track of the scrolled height
 				if (scrolledHeight >= height - h - 1 - 600) {
 					window.scrollTo(0, 0); // back to the top, please!
 				}
